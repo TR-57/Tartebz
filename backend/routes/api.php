@@ -1,0 +1,56 @@
+<?php
+
+use App\Http\Controllers\Admin\ActivityController;
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\TranslationsController;
+use App\Http\Controllers\Api\I18nController;
+use Illuminate\Support\Facades\Route;
+
+/*
+ | JSON API. Success: {ok:true, …}. Failure: {ok:false, error:{code, message, fields?}}.
+ | Every admin route sits behind `admin` (signed in) and a role check – the server is the authority.
+ */
+
+Route::get('health', fn () => response()->json(['ok' => true, 'time' => now()->toIso8601String()]));
+
+// ---- Storefront (public) ----
+Route::post('i18n/missing', [I18nController::class, 'missing']);
+Route::get('i18n/overrides', [I18nController::class, 'overrides']);
+
+// ---- Admin: sign-in (public) ----
+Route::prefix('admin')->group(function () {
+    Route::get('me', [AuthController::class, 'me']);
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('forgot', [AuthController::class, 'forgot']);
+    Route::post('reset', [AuthController::class, 'reset']);
+    Route::get('i18n.js', [TranslationsController::class, 'adminScript']);
+});
+
+// ---- Admin: signed in ----
+Route::prefix('admin')->middleware('admin')->group(function () {
+    // Every role (team roles included) may change their own password and report untranslated admin text.
+    Route::post('password', [AuthController::class, 'password']);
+    Route::post('i18n/missing', [TranslationsController::class, 'reportAdmin']);
+
+    Route::middleware('role:staff')->group(function () {
+        Route::get('dashboard', [DashboardController::class, 'index']);
+        Route::get('translations', [TranslationsController::class, 'index']);
+        Route::get('translations/settings', [TranslationsController::class, 'settings']);
+    });
+
+    Route::middleware('role:manager')->group(function () {
+        Route::put('translations', [TranslationsController::class, 'save']);
+        Route::post('translations/reset', [TranslationsController::class, 'reset']);
+        Route::put('translations/settings', [TranslationsController::class, 'settings']);
+    });
+
+    Route::middleware('role:owner')->group(function () {
+        Route::get('staff', [StaffController::class, 'index']);
+        Route::post('staff', [StaffController::class, 'store']);
+        Route::put('staff/{id}', [StaffController::class, 'update'])->whereNumber('id');
+        Route::get('activity', [ActivityController::class, 'index']);
+    });
+});

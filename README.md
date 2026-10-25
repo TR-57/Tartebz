@@ -46,6 +46,27 @@ assets/css/style.css  all styles, design tokens at the top
 - **Brand font:** put the Thmanyah Sans `.woff2` files in `assets/fonts/` and uncomment the `url()` lines at the top of `style.css`. Until then it falls back to Alexandria.
 
 ## Not connected yet
-This is front end only. Checkout validates the form and hands the order off to WhatsApp. Real payments (Gate-E / BenefitPay), stock and order storage need a backend: either WooCommerce (Store API) behind this front end, or turning these templates into a WordPress theme.
+The storefront pages are still front end only: checkout validates the form and hands the order off to WhatsApp. They get connected to the custom backend below (no WordPress or WooCommerce) in Phases 2–4.
 
 `docs/site-reference.md` documents everything recovered from the old site's database.
+
+## Admin panel and backend (custom build, in phases)
+
+```
+backend/   Laravel 11 API (/api/*) – see backend/README.md
+admin/     Admin panel (vanilla JS, English + Arabic) served at /admin/
+i18n/      Generated translation catalogue (node tools/i18n-build.mjs)
+tools/     Dev server, translation build
+```
+
+Local: follow `backend/README.md`, then open http://localhost:8800/ (store) and http://localhost:8800/admin/.
+
+| Phase | Scope | State |
+|---|---|---|
+| 1 | Foundation: database, settings, API errors, sessions, admin sign-in with lockout and reset, roles, staff, activity log, translations, admin shell in EN/AR | Done |
+| 2 | Catalogue and content (products, variations, stock, media library, categories, import/export, SEO, homepage, menus) | Next |
+| 3 | Cart, checkout, delivery rates | |
+| 4 | Payments (Tap, Tabby, Flooss, bank transfer, COD, payment links) | |
+| 5 | Orders, customers, fulfilment, SMSA | |
+| 6 | Promotions, emails, Meta/TikTok, Google | |
+| 7 | Reports, analytics, Odoo, maintenance, hardening |

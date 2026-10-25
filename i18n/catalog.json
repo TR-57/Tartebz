@@ -1,0 +1,1192 @@
+{
+ "site": {
+  "keys": {
+   "about_text": {
+    "en": "Tartebz is a shop for unique, modern treats, focused on sour and sweet qamar al-din in a wide, high-quality range for every taste. Since we started in the Kingdom of Bahrain, we’ve combined traditional flavours with creative presentation to give our customers an unforgettable treat.",
+    "ar": "ترتيبز هو متجر متخصص في تقديم الحلويات الفريدة بطابع عصري، مع التركيز على منتجات قمر الدين الحامض والحلو، التي نقدمها بتشكيلة متنوعة وبجودة عالية تلائم جميع الأذواق. منذ انطلاقتنا في مملكة البحرين، حرصنا على الجمع بين النكهات التقليدية والابتكار في التقديم، لنمنح عملاءنا تجربة لا تُنسى في عالم الحلوى.",
+    "where": "about.html"
+   },
+   "about_title": {
+    "en": "Who are we?",
+    "ar": "من نحن؟",
+    "where": "about.html"
+   },
+   "add": {
+    "en": "Add",
+    "ar": "أضف",
+    "where": "assets/js/app.js"
+   },
+   "add_to_cart": {
+    "en": "Add to cart",
+    "ar": "أضف للسلة",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "added": {
+    "en": "“{name}” added to your cart",
+    "ar": "أُضيف «{name}» إلى السلة",
+    "where": "assets/js/app.js"
+   },
+   "back_to_shop": {
+    "en": "Back to shop",
+    "ar": "الرجوع للمنتجات",
+    "where": "assets/js/pages.js"
+   },
+   "best_seller": {
+    "en": "Best Seller",
+    "ar": "الأكثر مبيعاً",
+    "where": "assets/js/app.js"
+   },
+   "bs_kicker": {
+    "en": "Most loved",
+    "ar": "الأكثر طلباً",
+    "where": "index.html"
+   },
+   "bs_title": {
+    "en": "Best sellers",
+    "ar": "الأكثر مبيعاً",
+    "where": "index.html"
+   },
+   "c_address": {
+    "en": "Address",
+    "ar": "العنوان",
+    "where": "contact.html"
+   },
+   "c_cr": {
+    "en": "Commercial registration",
+    "ar": "السجل التجاري",
+    "where": "contact.html"
+   },
+   "c_email": {
+    "en": "Email",
+    "ar": "البريد الإلكتروني",
+    "where": "contact.html"
+   },
+   "c_form_title": {
+    "en": "Send us a message",
+    "ar": "أرسل لنا رسالة",
+    "where": "contact.html"
+   },
+   "c_msg": {
+    "en": "Your message",
+    "ar": "رسالتك",
+    "where": "contact.html"
+   },
+   "c_name": {
+    "en": "Name",
+    "ar": "الاسم",
+    "where": "contact.html"
+   },
+   "c_phone": {
+    "en": "Phone",
+    "ar": "الهاتف",
+    "where": "contact.html"
+   },
+   "c_send": {
+    "en": "Send on WhatsApp",
+    "ar": "أرسل عبر واتساب",
+    "where": "contact.html"
+   },
+   "c_special": {
+    "en": "Occasion orders",
+    "ar": "طلبات المناسبات",
+    "where": "contact.html"
+   },
+   "c_special_text": {
+    "en": "Custom packs for weddings, newborns, events and companies.",
+    "ar": "نجهّز بكجات خاصة للأعراس، المواليد، الفعاليات والشركات.",
+    "where": "contact.html"
+   },
+   "c_whatsapp": {
+    "en": "WhatsApp",
+    "ar": "واتساب",
+    "where": "contact.html"
+   },
+   "cart": {
+    "en": "Cart",
+    "ar": "السلة",
+    "where": "assets/js/app.js"
+   },
+   "cart_checkout": {
+    "en": "Checkout",
+    "ar": "إتمام الطلب",
+    "where": "assets/js/app.js"
+   },
+   "cart_continue": {
+    "en": "Continue shopping",
+    "ar": "متابعة التسوق",
+    "where": "assets/js/app.js"
+   },
+   "cart_empty_text": {
+    "en": "Add your favourite flavour and we’ll deliver it to you.",
+    "ar": "ضيف نكهتك المفضلة وخلّنا نوصلها لك.",
+    "where": "assets/js/app.js"
+   },
+   "cart_empty_title": {
+    "en": "Your cart is empty",
+    "ar": "سلتك فاضية",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "cart_items": {
+    "en": "{n} items",
+    "ar": "{n} منتج",
+    "where": "assets/js/app.js"
+   },
+   "cart_remove": {
+    "en": "Remove",
+    "ar": "حذف",
+    "where": "assets/js/app.js"
+   },
+   "cart_ship_note_flat": {
+    "en": "Flat rate inside Bahrain",
+    "ar": "سعر ثابت داخل البحرين",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "cart_ship_note_ubex": {
+    "en": "Estimated by weight ({w} kg) via UBEX",
+    "ar": "تقديري حسب الوزن ({w} كجم) عبر UBEX",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "cart_shipping": {
+    "en": "Delivery",
+    "ar": "التوصيل",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "cart_subtotal": {
+    "en": "Subtotal",
+    "ar": "المجموع الفرعي",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "cart_title": {
+    "en": "Your cart",
+    "ar": "سلة التسوق",
+    "where": "assets/js/app.js"
+   },
+   "cart_total": {
+    "en": "Total",
+    "ar": "الإجمالي",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "cats_count": {
+    "en": "{n} products",
+    "ar": "{n} منتجات",
+    "where": "assets/js/pages.js"
+   },
+   "cats_kicker": {
+    "en": "Pick your sour",
+    "ar": "اختر حموضتك",
+    "where": "index.html, assets/js/pages.js"
+   },
+   "cats_title": {
+    "en": "Shop by flavour",
+    "ar": "تسوق حسب النكهة",
+    "where": "index.html"
+   },
+   "ch_1": {
+    "en": "Order online with secure payment",
+    "ar": "الطلب أونلاين والدفع الآمن بأكثر من وسيلة",
+    "where": "index.html"
+   },
+   "ch_2": {
+    "en": "Special orders for occasions and events",
+    "ar": "طلبات خاصة للمناسبات والفعاليات",
+    "where": "index.html"
+   },
+   "ch_3": {
+    "en": "In-store retail",
+    "ar": "بيع التجزئة داخل المتجر",
+    "where": "index.html"
+   },
+   "change": {
+    "en": "Change",
+    "ar": "تغيير",
+    "where": ""
+   },
+   "close": {
+    "en": "Close",
+    "ar": "إغلاق",
+    "where": "assets/js/app.js"
+   },
+   "co_back": {
+    "en": "Edit order",
+    "ar": "تعديل الطلب",
+    "where": "assets/js/pages.js"
+   },
+   "co_billing": {
+    "en": "Delivery details",
+    "ar": "بيانات التوصيل",
+    "where": "assets/js/pages.js"
+   },
+   "co_done_text": {
+    "en": "This is a front-end preview, so no payment was taken. Send your order to us on WhatsApp and we’ll complete it with you.",
+    "ar": "هذه نسخة تجريبية من الواجهة ولم يتم أي دفع بعد. أرسل طلبك لنا عبر واتساب ونكمل معك.",
+    "where": "assets/js/pages.js"
+   },
+   "co_done_title": {
+    "en": "Your order is ready! 🎉",
+    "ar": "تم تجهيز طلبك! 🎉",
+    "where": "assets/js/pages.js"
+   },
+   "co_empty": {
+    "en": "Your cart is empty, add some products first.",
+    "ar": "سلتك فاضية، أضف منتجات أولاً.",
+    "where": "assets/js/pages.js"
+   },
+   "co_payment": {
+    "en": "Payment method",
+    "ar": "طريقة الدفع",
+    "where": "assets/js/pages.js"
+   },
+   "co_summary": {
+    "en": "Your order",
+    "ar": "ملخص طلبك",
+    "where": "assets/js/pages.js"
+   },
+   "co_text": {
+    "en": "One step away from the sour.",
+    "ar": "خطوة وحدة وتوصلك الحموضة.",
+    "where": "checkout.html"
+   },
+   "co_title": {
+    "en": "Checkout",
+    "ar": "إتمام الطلب",
+    "where": "checkout.html, assets/js/app.js"
+   },
+   "co_whatsapp": {
+    "en": "Send order on WhatsApp",
+    "ar": "أرسل الطلب عبر واتساب",
+    "where": "assets/js/pages.js"
+   },
+   "contact_text": {
+    "en": "Got a question or a special order for an occasion? We’re here.",
+    "ar": "عندك سؤال أو طلب خاص لمناسبة؟ احنا هنا.",
+    "where": "contact.html"
+   },
+   "contact_title": {
+    "en": "Contact us",
+    "ar": "تواصل معنا",
+    "where": "contact.html"
+   },
+   "country_label": {
+    "en": "Country & currency",
+    "ar": "الدولة والعملة",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "cta_btn": {
+    "en": "Shop now",
+    "ar": "تسوق الآن",
+    "where": "index.html"
+   },
+   "cta_text": {
+    "en": "Pick your flavour and leave the rest to us.",
+    "ar": "اختر نكهتك وخلّ الباقي علينا.",
+    "where": "index.html"
+   },
+   "cta_title": {
+    "en": "Ready for the sour?",
+    "ar": "جاهز تجرب الحموضة؟",
+    "where": "index.html"
+   },
+   "decrease": {
+    "en": "Decrease",
+    "ar": "إنقاص",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "err_email": {
+    "en": "Enter a valid email",
+    "ar": "أدخل بريداً إلكترونياً صحيحاً",
+    "where": "assets/js/pages.js"
+   },
+   "err_phone": {
+    "en": "Enter a valid phone number",
+    "ar": "أدخل رقم هاتف صحيح",
+    "where": "assets/js/pages.js"
+   },
+   "err_required": {
+    "en": "This field is required",
+    "ar": "هذا الحقل مطلوب",
+    "where": "assets/js/pages.js"
+   },
+   "f_addr1": {
+    "en": "Street / Area",
+    "ar": "عنوان الشارع / الحي",
+    "where": "assets/js/pages.js"
+   },
+   "f_addr1_ph": {
+    "en": "House number and street / area",
+    "ar": "رقم المنزل واسم الشارع / الحي",
+    "where": "assets/js/pages.js"
+   },
+   "f_addr2": {
+    "en": "Apartment, suite, unit, etc.",
+    "ar": "الشقة، الجناح، الوحدة، إلخ.",
+    "where": "assets/js/pages.js"
+   },
+   "f_addr2_ph": {
+    "en": "Apartment, suite, unit, etc. (optional)",
+    "ar": "رقم الشقة، الجناح، الوحدة، إلخ. (اختياري)",
+    "where": "assets/js/pages.js"
+   },
+   "f_city": {
+    "en": "City",
+    "ar": "المدينة",
+    "where": "assets/js/pages.js"
+   },
+   "f_country": {
+    "en": "Country / Region",
+    "ar": "الدولة / المنطقة",
+    "where": "assets/js/pages.js"
+   },
+   "f_email": {
+    "en": "Email",
+    "ar": "البريد الإلكتروني",
+    "where": "assets/js/pages.js"
+   },
+   "f_first": {
+    "en": "First name",
+    "ar": "الاسم الأول",
+    "where": "assets/js/pages.js"
+   },
+   "f_last": {
+    "en": "Last name",
+    "ar": "الاسم الأخير",
+    "where": "assets/js/pages.js"
+   },
+   "f_notes": {
+    "en": "Order notes (optional)",
+    "ar": "ملاحظات الطلب (اختياري)",
+    "where": "assets/js/pages.js"
+   },
+   "f_phone": {
+    "en": "Phone",
+    "ar": "الهاتف",
+    "where": "assets/js/pages.js"
+   },
+   "f_state": {
+    "en": "Region",
+    "ar": "المنطقة",
+    "where": "assets/js/pages.js"
+   },
+   "filter_all": {
+    "en": "All",
+    "ar": "الكل",
+    "where": "assets/js/pages.js"
+   },
+   "flavor": {
+    "en": "Flavour",
+    "ar": "النكهة",
+    "where": "assets/js/pages.js"
+   },
+   "float_big": {
+    "en": "100%",
+    "ar": "100%",
+    "where": "about.html, index.html"
+   },
+   "float_small": {
+    "en": "Natural",
+    "ar": "طبيعي",
+    "where": "about.html, index.html"
+   },
+   "footer_about": {
+    "en": "At Tartebz we make treats that bring joy to every occasion, with passion and our own recipes.",
+    "ar": "في ترتيبز نصنع أشهى الحلويات التي تبعث الفرح في كل مناسبة، بشغفٍ ووصفاتٍ مميزة.",
+    "where": "assets/js/app.js"
+   },
+   "footer_cats": {
+    "en": "Categories",
+    "ar": "الأقسام",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "footer_contact": {
+    "en": "Contact",
+    "ar": "تواصل معنا",
+    "where": "assets/js/app.js"
+   },
+   "footer_cr": {
+    "en": "Commercial registration: {cr}",
+    "ar": "السجل التجاري: {cr}",
+    "where": "assets/js/app.js"
+   },
+   "footer_follow": {
+    "en": "Follow us",
+    "ar": "تابعنا",
+    "where": "assets/js/app.js"
+   },
+   "footer_links": {
+    "en": "Quick links",
+    "ar": "روابط سريعة",
+    "where": "assets/js/app.js"
+   },
+   "footer_pay": {
+    "en": "Secure payment with",
+    "ar": "دفع آمن عبر",
+    "where": "assets/js/app.js"
+   },
+   "footer_rights": {
+    "en": "© {y} Tartebz. All rights reserved.",
+    "ar": "© {y} ترتيبز. جميع الحقوق محفوظة.",
+    "where": "assets/js/app.js"
+   },
+   "founding_1": {
+    "en": "Tartebz began with a passion for giving a classic Arabic treat, qamar al-din, a new soul, aimed at a young generation of food lovers who enjoy bold flavours.",
+    "ar": "انطلقت فكرة «ترتيبز» من شغف بتقديم منتج عربي كلاسيكي كـ«قمر الدين» بروح جديدة، موجهة للجيل الشاب والذوّاقة من محبي النكهات الجريئة.",
+    "where": "about.html"
+   },
+   "founding_2": {
+    "en": "It started as a small home project that quickly took off on social media, and grew into a brand of its own that blends tradition and modernity, with wide reach and media attention today.",
+    "ar": "بدأ المشروع كمبادرة منزلية صغيرة، سرعان ما لاقت إقبالاً واسعًا على منصات التواصل الاجتماعي، وتحولت إلى علامة تجارية قائمة بذاتها تجمع بين التقاليد والحداثة، وتحظى اليوم بانتشار واسع واهتمام إعلامي وجماهيري.",
+    "where": "about.html"
+   },
+   "founding_title": {
+    "en": "How it started",
+    "ar": "قصة التأسيس",
+    "where": "about.html"
+   },
+   "gcc_delivery": {
+    "en": "Delivery to 6 Gulf countries",
+    "ar": "توصيل لـ6 دول خليجية",
+    "where": "assets/js/pages.js"
+   },
+   "hero_badge": {
+    "en": "The Original",
+    "ar": "الأصلي",
+    "where": "index.html"
+   },
+   "hero_cta": {
+    "en": "Order now",
+    "ar": "اطلب الآن",
+    "where": "index.html"
+   },
+   "hero_cta2": {
+    "en": "Our story",
+    "ar": "قصتنا",
+    "where": "index.html"
+   },
+   "hero_text": {
+    "en": "At Tartebz we make treats that bring joy to every occasion, with passion and our own recipes. Sweet & sour or electric sour: pick your level.",
+    "ar": "في ترتيبز نصنع أشهى الحلويات التي تبعث الفرح في كل مناسبة، بشغفٍ ووصفاتٍ مميزة. حامض حلو أو حامض كهرباء… اختر حموضتك.",
+    "where": "index.html"
+   },
+   "hero_title": {
+    "en": "Qamar Al-Deen<br>with a <span class=\"hl\">bold</span> new soul",
+    "ar": "قمر الدين<br>بروح <span class=\"hl\">جديدة</span>",
+    "where": "index.html"
+   },
+   "home": {
+    "en": "Home",
+    "ar": "الرئيسية",
+    "where": "about.html, checkout.html, contact.html, assets/js/pages.js"
+   },
+   "iab_copied": {
+    "en": "✓ Copied",
+    "ar": "✓ تم النسخ",
+    "where": "assets/js/app.js"
+   },
+   "iab_copy": {
+    "en": "Copy site link",
+    "ar": "نسخ رابط الموقع",
+    "where": "assets/js/app.js"
+   },
+   "iab_text": {
+    "en": "📱 To pay with Benefit successfully, open the site in your browser (Safari or Chrome): tap “⋯” at the top, then “Open in browser”.",
+    "ar": "📱 لإتمام الدفع عبر «بنفت» بنجاح، يُفضّل فتح الموقع في متصفحك (Safari أو Chrome): اضغط زر «⋯» في الأعلى ثم «فتح في المتصفح».",
+    "where": "assets/js/app.js"
+   },
+   "in_stock": {
+    "en": "In stock",
+    "ar": "متوفر",
+    "where": ""
+   },
+   "increase": {
+    "en": "Increase",
+    "ar": "زيادة",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "instock_only": {
+    "en": "In stock only",
+    "ar": "المتوفر فقط",
+    "where": "assets/js/pages.js"
+   },
+   "kg": {
+    "en": "kg",
+    "ar": "كجم",
+    "where": "assets/js/pages.js"
+   },
+   "lang_label": {
+    "en": "Change language",
+    "ar": "تغيير اللغة",
+    "where": "assets/js/app.js"
+   },
+   "lang_short": {
+    "en": "ع",
+    "ar": "EN",
+    "where": "assets/js/app.js"
+   },
+   "lang_switch": {
+    "en": "العربية",
+    "ar": "English",
+    "where": "assets/js/app.js"
+   },
+   "marquee.0": {
+    "en": "Sweet & sour",
+    "ar": "حامض حلو",
+    "where": "assets/js/pages.js"
+   },
+   "marquee.1": {
+    "en": "Electric sour",
+    "ar": "حامض كهرباء",
+    "where": "assets/js/pages.js"
+   },
+   "marquee.2": {
+    "en": "Mango",
+    "ar": "مانجو",
+    "where": "assets/js/pages.js"
+   },
+   "marquee.3": {
+    "en": "Pineapple",
+    "ar": "أناناس",
+    "where": "assets/js/pages.js"
+   },
+   "marquee.4": {
+    "en": "Berry",
+    "ar": "توت",
+    "where": "assets/js/pages.js"
+   },
+   "marquee.5": {
+    "en": "Marshmallow",
+    "ar": "مارشميلو",
+    "where": "assets/js/pages.js"
+   },
+   "marquee.6": {
+    "en": "The original qamar al-din",
+    "ar": "قمر الدين الأصلي",
+    "where": "assets/js/pages.js"
+   },
+   "marquee.7": {
+    "en": "Made in Bahrain",
+    "ar": "صنع في البحرين",
+    "where": "assets/js/pages.js"
+   },
+   "media_1": {
+    "en": "Tartebz has received wide attention from local media: our story was featured in Al Watan newspaper, and we appeared on Bahrain TV – Channel 1 in reports on successful youth businesses.",
+    "ar": "حظيت علامة ترتيبز باهتمام واسع من وسائل الإعلام المحلية، حيث تم تسليط الضوء على قصة نجاحنا في صحيفة الوطن، بالإضافة إلى ظهورنا في تلفزيون البحرين – القناة الأولى ضمن تقارير تسلّط الضوء على المشاريع الشبابية الناجحة.",
+    "where": "about.html"
+   },
+   "media_2": {
+    "en": "We were also honoured by visits from prominent figures, including His Excellency Sheikh Khalifa bin Ahmed Al Khalifa, in support of national businesses.",
+    "ar": "كما شرفنا بزيارة شخصيات بارزة إلى المتجر، من ضمنهم سعادة الشيخ خليفة بن أحمد آل خليفة، تعبيرًا عن دعمهم للمشاريع الوطنية.",
+    "where": "about.html"
+   },
+   "media_3": {
+    "en": "This recognition reflects our pride that Tartebz is more than a sweet shop: it’s a Bahraini success story that blends authenticity and renewal.",
+    "ar": "هذا التقدير يعكس فخرنا بكون «ترتيبز» ليس مجرد محل حلويات، بل نموذجًا لنجاح المشاريع البحرينية التي تجمع بين الأصالة والتجديد.",
+    "where": "about.html"
+   },
+   "media_title": {
+    "en": "Awards & media coverage",
+    "ar": "الجوائز والتغطيات الإعلامية",
+    "where": "about.html"
+   },
+   "menu": {
+    "en": "Menu",
+    "ar": "القائمة",
+    "where": "assets/js/app.js"
+   },
+   "natural": {
+    "en": "Carefully chosen ingredients",
+    "ar": "مكونات مختارة بعناية",
+    "where": "assets/js/pages.js"
+   },
+   "nav_about": {
+    "en": "About",
+    "ar": "من نحن",
+    "where": "about.html"
+   },
+   "nav_contact": {
+    "en": "Contact",
+    "ar": "تواصل معنا",
+    "where": "contact.html"
+   },
+   "nav_home": {
+    "en": "Home",
+    "ar": "الرئيسية",
+    "where": ""
+   },
+   "nav_shop": {
+    "en": "Shop",
+    "ar": "المنتجات",
+    "where": "about.html, assets/js/pages.js"
+   },
+   "no_results": {
+    "en": "Nothing found",
+    "ar": "ما لقينا شي",
+    "where": "assets/js/pages.js"
+   },
+   "no_results_text": {
+    "en": "Try another word or clear the filters.",
+    "ar": "جرّب كلمة ثانية أو امسح الفلاتر.",
+    "where": "assets/js/pages.js"
+   },
+   "not_found": {
+    "en": "Product not found",
+    "ar": "المنتج غير موجود",
+    "where": "assets/js/pages.js"
+   },
+   "open_maps": {
+    "en": "Open in Maps",
+    "ar": "افتح في الخرائط",
+    "where": "assets/js/pages.js"
+   },
+   "optional": {
+    "en": "(optional)",
+    "ar": "(اختياري)",
+    "where": ""
+   },
+   "order_now": {
+    "en": "Order now",
+    "ar": "اطلب الآن",
+    "where": "about.html, assets/js/app.js, assets/js/pages.js"
+   },
+   "out_of_stock": {
+    "en": "Out of stock",
+    "ar": "غير متوفر",
+    "where": ""
+   },
+   "pay_gatee": {
+    "en": "Debit / credit card or BenefitPay",
+    "ar": "بطاقة بنكية / بنفت بي",
+    "where": "assets/js/pages.js"
+   },
+   "pay_note": {
+    "en": "Payments are processed securely through Gate-E.",
+    "ar": "تتم معالجة الدفع بأمان عبر بوابة Gate-E.",
+    "where": "assets/js/pages.js"
+   },
+   "place_order": {
+    "en": "Place order",
+    "ar": "تأكيد الطلب",
+    "where": "assets/js/pages.js"
+   },
+   "press_1": {
+    "en": "Al Watan newspaper",
+    "ar": "صحيفة الوطن",
+    "where": "index.html"
+   },
+   "press_2": {
+    "en": "Bahrain TV – Channel 1",
+    "ar": "تلفزيون البحرين – القناة الأولى",
+    "where": "index.html"
+   },
+   "press_3": {
+    "en": "Young Bahraini business",
+    "ar": "مشروع بحريني شبابي",
+    "where": "index.html"
+   },
+   "press_title": {
+    "en": "As seen in",
+    "ar": "شافونا في",
+    "where": "about.html, index.html"
+   },
+   "prices_in": {
+    "en": "Prices in {cur}",
+    "ar": "الأسعار بـ{cur}",
+    "where": "assets/js/pages.js"
+   },
+   "qty": {
+    "en": "Quantity",
+    "ar": "الكمية",
+    "where": "assets/js/pages.js"
+   },
+   "related": {
+    "en": "You may also like",
+    "ar": "قد يعجبك أيضاً",
+    "where": "assets/js/pages.js"
+   },
+   "reset_filters": {
+    "en": "Clear filters",
+    "ar": "مسح الفلاتر",
+    "where": "assets/js/pages.js"
+   },
+   "results": {
+    "en": "{n} products",
+    "ar": "{n} منتج",
+    "where": "assets/js/pages.js"
+   },
+   "scroll": {
+    "en": "Explore",
+    "ar": "اكتشف",
+    "where": "index.html"
+   },
+   "search_label": {
+    "en": "Search",
+    "ar": "بحث",
+    "where": "assets/js/pages.js"
+   },
+   "search_ph": {
+    "en": "Search a flavour…",
+    "ar": "ابحث عن نكهة…",
+    "where": "assets/js/pages.js"
+   },
+   "secure_pay": {
+    "en": "Secure payment (card / Benefit)",
+    "ar": "دفع آمن (بطاقة / بنفت)",
+    "where": "assets/js/pages.js"
+   },
+   "ship_flat": {
+    "en": "Flat rate",
+    "ar": "سعر ثابت",
+    "where": "assets/js/pages.js"
+   },
+   "ship_from": {
+    "en": "From",
+    "ar": "يبدأ من",
+    "where": "assets/js/pages.js"
+   },
+   "ship_kicker": {
+    "en": "Wherever you are",
+    "ar": "نوصل لك وين ما كنت",
+    "where": "index.html"
+   },
+   "ship_tab_text": {
+    "en": "Flat rate inside Bahrain; the rest of the Gulf ships with UBEX based on order weight. Delivery for this item on its own:",
+    "ar": "داخل البحرين بسعر ثابت، ولباقي دول الخليج عبر شركة UBEX حسب وزن الطلب. أسعار التوصيل لهذا المنتج وحده:",
+    "where": "assets/js/pages.js"
+   },
+   "ship_text": {
+    "en": "Order online and we’ll deliver to you. Prices show in your local currency automatically.",
+    "ar": "اطلب من موقعنا وبيوصلك منتجك، والأسعار تظهر بعملة بلدك تلقائياً.",
+    "where": "index.html"
+   },
+   "ship_title": {
+    "en": "Delivery across the Gulf",
+    "ar": "التوصيل لكل دول الخليج",
+    "where": "index.html"
+   },
+   "ship_to_label": {
+    "en": "Deliver to",
+    "ar": "التوصيل إلى",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "shop_text": {
+    "en": "Every Tartebz flavour in one place. Filter by sourness and find yours.",
+    "ar": "كل نكهات ترتيبز في مكان واحد. فلتر حسب الحموضة واختر اللي يناسبك.",
+    "where": "assets/js/pages.js"
+   },
+   "shop_title": {
+    "en": "Our products",
+    "ar": "منتجاتنا",
+    "where": "assets/js/pages.js"
+   },
+   "skip": {
+    "en": "Skip to content",
+    "ar": "تخطَّ إلى المحتوى",
+    "where": "assets/js/app.js"
+   },
+   "sold_out": {
+    "en": "Sold out",
+    "ar": "نفدت الكمية",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "sort_best": {
+    "en": "Best selling",
+    "ar": "الأكثر مبيعاً",
+    "where": ""
+   },
+   "sort_default": {
+    "en": "Recommended",
+    "ar": "الترتيب المقترح",
+    "where": ""
+   },
+   "sort_label": {
+    "en": "Sort",
+    "ar": "الترتيب",
+    "where": "assets/js/pages.js"
+   },
+   "sort_price_asc": {
+    "en": "Price: low to high",
+    "ar": "السعر: من الأقل",
+    "where": ""
+   },
+   "sort_price_desc": {
+    "en": "Price: high to low",
+    "ar": "السعر: من الأعلى",
+    "where": ""
+   },
+   "sort_sour": {
+    "en": "Most sour",
+    "ar": "الأكثر حموضة",
+    "where": ""
+   },
+   "sour_1": {
+    "en": "Gentle",
+    "ar": "لطيف",
+    "where": ""
+   },
+   "sour_2": {
+    "en": "Light",
+    "ar": "خفيف",
+    "where": ""
+   },
+   "sour_3": {
+    "en": "Balanced",
+    "ar": "متوازن",
+    "where": ""
+   },
+   "sour_4": {
+    "en": "Strong",
+    "ar": "قوي",
+    "where": ""
+   },
+   "sour_5": {
+    "en": "Electric",
+    "ar": "كهرباء",
+    "where": ""
+   },
+   "sour_meter": {
+    "en": "Sour meter",
+    "ar": "مقياس الحموضة",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "stat_countries": {
+    "en": "Gulf countries we deliver to",
+    "ar": "دول خليجية نوصل لها",
+    "where": "about.html, assets/js/pages.js"
+   },
+   "stat_flavors": {
+    "en": "tropical flavours",
+    "ar": "نكهات استوائية",
+    "where": "assets/js/pages.js"
+   },
+   "stat_sold": {
+    "en": "packs delivered",
+    "ar": "عبوة وصلت لعملائنا",
+    "where": "about.html, assets/js/pages.js"
+   },
+   "story_cta": {
+    "en": "More about us",
+    "ar": "اعرف أكثر عنا",
+    "where": "index.html"
+   },
+   "story_kicker": {
+    "en": "Our story",
+    "ar": "قصتنا",
+    "where": "about.html, index.html"
+   },
+   "story_text": {
+    "en": "Tartebz began with a passion for giving a classic Arabic treat, qamar al-din, a new soul for a young generation that loves bold flavours. It started as a small home project and quickly took off on social media.",
+    "ar": "انطلقت فكرة «ترتيبز» من شغف بتقديم منتج عربي كلاسيكي كـ«قمر الدين» بروح جديدة، موجهة للجيل الشاب والذوّاقة من محبي النكهات الجريئة. بدأ المشروع كمبادرة منزلية صغيرة، سرعان ما لاقت إقبالاً واسعًا على منصات التواصل الاجتماعي.",
+    "where": "index.html"
+   },
+   "story_title": {
+    "en": "From a home project to a Bahraini brand",
+    "ar": "من مبادرة منزلية إلى علامة بحرينية",
+    "where": "about.html, index.html"
+   },
+   "tab_desc": {
+    "en": "Description",
+    "ar": "الوصف",
+    "where": "assets/js/pages.js"
+   },
+   "tab_ship": {
+    "en": "Shipping & delivery",
+    "ar": "الشحن والتوصيل",
+    "where": "assets/js/pages.js"
+   },
+   "val_1": {
+    "en": "Inspired by Arabic sweets heritage, served in a modern way.",
+    "ar": "نستلهم من تراث الحلويات العربية ونقدمه بشكل عصري.",
+    "where": "about.html"
+   },
+   "val_1_t": {
+    "en": "Authenticity",
+    "ar": "الأصالة",
+    "where": "about.html"
+   },
+   "val_2": {
+    "en": "Always developing new recipes and unusual taste experiences.",
+    "ar": "نسعى دائمًا لتطوير وصفات جديدة وتقديم تجارب طعم غير تقليدية.",
+    "where": "about.html"
+   },
+   "val_2_t": {
+    "en": "Innovation",
+    "ar": "الابتكار",
+    "where": "about.html"
+   },
+   "val_3": {
+    "en": "The best ingredients and the most careful preparation.",
+    "ar": "نلتزم بأفضل المكونات وأدق معايير التحضير.",
+    "where": "about.html"
+   },
+   "val_3_t": {
+    "en": "Quality",
+    "ar": "الجودة",
+    "where": "about.html"
+   },
+   "val_4": {
+    "en": "Your experience comes first, from order to delivery.",
+    "ar": "نضع تجربة العميل في مقدمة أولوياتنا، من لحظة الطلب وحتى التوصيل.",
+    "where": "about.html"
+   },
+   "val_4_t": {
+    "en": "Customer happiness",
+    "ar": "رضا العميل",
+    "where": "about.html"
+   },
+   "val_5": {
+    "en": "A product that’s unforgettable to look at and to taste.",
+    "ar": "نهدف إلى تقديم منتج لا يُنسى بصريًا وذوقيًا.",
+    "where": "about.html"
+   },
+   "val_5_t": {
+    "en": "Excellence",
+    "ar": "التميز",
+    "where": "about.html"
+   },
+   "values_kicker": {
+    "en": "What we believe in",
+    "ar": "اللي نؤمن فيه",
+    "where": "about.html"
+   },
+   "values_title": {
+    "en": "Our values",
+    "ar": "قيمنا",
+    "where": "about.html"
+   },
+   "view_all": {
+    "en": "All products",
+    "ar": "كل المنتجات",
+    "where": "index.html"
+   },
+   "view_cart": {
+    "en": "View cart",
+    "ar": "عرض السلة",
+    "where": "assets/js/app.js"
+   },
+   "wa_order_intro": {
+    "en": "Hi Tartebz, I’d like to order:",
+    "ar": "مرحباً ترتيبز، أبغى أطلب:",
+    "where": "assets/js/pages.js"
+   },
+   "weight": {
+    "en": "Weight",
+    "ar": "الوزن",
+    "where": "assets/js/pages.js"
+   },
+   "why_1": {
+    "en": "Signature Tartebz treats you won’t find anywhere else.",
+    "ar": "منتجات بتوقيع ترتيبز لا تتوفر في أي مكان آخر.",
+    "where": "index.html"
+   },
+   "why_1_t": {
+    "en": "Exclusive products",
+    "ar": "منتجات حصرية",
+    "where": "index.html"
+   },
+   "why_2": {
+    "en": "Eye-catching, modern packaging for every occasion.",
+    "ar": "تصميمات جذابة وعصرية تناسب مختلف المناسبات.",
+    "where": "index.html"
+   },
+   "why_2_t": {
+    "en": "Packs that pop",
+    "ar": "بكجات تفتح النفس",
+    "where": "index.html"
+   },
+   "why_3": {
+    "en": "Careful ingredient selection and preparation standards.",
+    "ar": "معايير دقيقة في اختيار المكونات وتحضير المنتجات.",
+    "where": "index.html"
+   },
+   "why_3_t": {
+    "en": "Strict quality",
+    "ar": "جودة صارمة",
+    "where": "index.html"
+   },
+   "why_4": {
+    "en": "A constantly refreshed line-up of new flavours.",
+    "ar": "تحديث مستمر للتشكيلة لتقديم كل ما هو جديد ومميز.",
+    "where": "index.html"
+   },
+   "why_4_t": {
+    "en": "Always new",
+    "ar": "دائماً جديد",
+    "where": "index.html"
+   },
+   "why_kicker": {
+    "en": "Why Tartebz?",
+    "ar": "ليش ترتيبز؟",
+    "where": "index.html"
+   },
+   "why_title": {
+    "en": "What makes us different",
+    "ar": "ما يميزنا",
+    "where": "index.html"
+   }
+  },
+  "phrases": {}
+ },
+ "admin": {
+  "phrases": {
+   "Admin": "لوحة التحكم",
+   "Loading…": "جارٍ التحميل…",
+   "Skip to content": "تخطَّ إلى المحتوى",
+   "Main menu": "القائمة الرئيسية",
+   "Menu": "القائمة",
+   "Store": "المتجر",
+   "Marketing": "التسويق",
+   "Open the store": "فتح المتجر",
+   "Sign out": "تسجيل الخروج",
+   "Your account": "حسابك",
+   "New enquiries": "استفسارات جديدة",
+   "Search orders by number, name, email or phone": "ابحث في الطلبات بالرقم أو الاسم أو البريد أو الهاتف",
+   "No such page.": "هذه الصفحة غير موجودة.",
+   "Back to the dashboard": "العودة إلى لوحة المعلومات",
+   "You cannot open this page.": "لا يمكنك فتح هذه الصفحة.",
+   "Close": "إغلاق",
+   "Cancel": "إلغاء",
+   "Continue": "متابعة",
+   "Save": "حفظ",
+   "Saved": "تم الحفظ",
+   "Saving…": "جارٍ الحفظ…",
+   "✓ Saved": "✓ تم الحفظ",
+   "Edit": "تعديل",
+   "Remove": "إزالة",
+   "Are you sure?": "هل أنت متأكد؟",
+   "Previous": "السابق",
+   "Next": "التالي",
+   "Arabic": "العربية",
+   "English": "الإنجليزية",
+   "Name": "الاسم",
+   "Email": "البريد الإلكتروني",
+   "Password": "كلمة المرور",
+   "Role": "الدور",
+   "Roles": "الأدوار",
+   "Status": "الحالة",
+   "Active": "نشط",
+   "Disabled": "معطّل",
+   "When": "الوقت",
+   "Who": "من",
+   "Action": "الإجراء",
+   "What": "ماذا",
+   "IP": "IP",
+   "Sign in": "تسجيل الدخول",
+   "Forgot your password?": "نسيت كلمة المرور؟",
+   "Go to the store": "الذهاب إلى المتجر",
+   "Back to sign in": "العودة إلى تسجيل الدخول",
+   "Enter the email of your staff account. We send a link to set a new password; it works for one hour.": "أدخل بريد حساب الموظف. سنرسل رابطاً لتعيين كلمة مرور جديدة، وهو صالح لمدة ساعة.",
+   "Send the link": "أرسل الرابط",
+   "Set a new password": "تعيين كلمة مرور جديدة",
+   "At least 10 characters. Other devices are signed out.": "10 أحرف على الأقل. سيتم تسجيل خروج الأجهزة الأخرى.",
+   "New password": "كلمة المرور الجديدة",
+   "Type it again": "اكتبها مرة أخرى",
+   "Save and sign in": "حفظ وتسجيل الدخول",
+   "Password saved – you are signed in": "تم حفظ كلمة المرور – أنت مسجّل الدخول الآن",
+   "The two passwords are not the same.": "كلمتا المرور غير متطابقتين.",
+   "Your session ended. Please sign in again.": "انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.",
+   "Wrong email or password.": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+   "Please sign in to the admin.": "يرجى تسجيل الدخول إلى لوحة التحكم.",
+   "Too many attempts. Please wait a few minutes and try again.": "محاولات كثيرة. انتظر بضع دقائق ثم حاول مرة أخرى.",
+   "If that email belongs to a staff account, a link to set a new password is on its way. It works for one hour.": "إذا كان هذا البريد لحساب موظف، فرابط تعيين كلمة مرور جديدة في الطريق إليه. الرابط صالح لمدة ساعة.",
+   "This link has expired or was already used. Ask for a new one.": "انتهت صلاحية هذا الرابط أو تم استخدامه. اطلب رابطاً جديداً.",
+   "Use at least 10 characters.": "استخدم 10 أحرف على الأقل.",
+   "That is not your current password.": "هذه ليست كلمة المرور الحالية.",
+   "Check the fields marked in red.": "راجع الحقول المحددة باللون الأحمر.",
+   "Something went wrong on our side. Please try again.": "حدث خطأ من جهتنا. يرجى المحاولة مرة أخرى.",
+   "Could not reach the server. Check your connection and try again.": "تعذّر الوصول إلى الخادم. تحقق من الاتصال وحاول مرة أخرى.",
+   "This request did not come from our website.": "هذا الطلب لم يأتِ من موقعنا.",
+   "No such endpoint.": "لا يوجد عنوان بهذا الاسم.",
+   "Method not allowed.": "طريقة الطلب غير مسموحة.",
+   "Dashboard": "لوحة المعلومات",
+   "Paid sales, net of refunds.": "المبيعات المدفوعة بعد خصم المبالغ المستردة.",
+   "Before going fully live:": "قبل التشغيل الكامل:",
+   "Email sending (SMTP)": "إرسال البريد (SMTP)",
+   "Settings > Email – until then emails are only written to the log.": "الإعدادات > البريد – حتى ذلك الحين تُكتب الرسائل في السجل فقط.",
+   "At least one active owner account": "حساب مالك نشط واحد على الأقل",
+   "Staff > Add a person": "الموظفون > إضافة شخص",
+   "Today": "اليوم",
+   "Last 7 days": "آخر 7 أيام",
+   "Last 30 days": "آخر 30 يوماً",
+   "{0} paid orders": "{0} طلبات مدفوعة",
+   "To handle": "بانتظار المعالجة",
+   "paid orders not yet marked handled": "طلبات مدفوعة لم تُعالج بعد",
+   "To ship": "بانتظار الشحن",
+   "Awaiting payment": "بانتظار الدفع",
+   "card, transfer or freight quote": "بطاقة أو تحويل أو تسعير شحن",
+   "Low stock": "مخزون منخفض",
+   "Emails failed": "رسائل فشل إرسالها",
+   "check SMTP settings": "راجع إعدادات SMTP",
+   "Sales, last 14 days": "المبيعات، آخر 14 يوماً",
+   "No paid orders yet.": "لا توجد طلبات مدفوعة بعد.",
+   "Latest orders": "أحدث الطلبات",
+   "All orders": "كل الطلبات",
+   "No orders yet.": "لا توجد طلبات بعد.",
+   "Staff": "الموظفون",
+   "Who can sign in to the admin and what each person can do.": "من يمكنه الدخول إلى لوحة التحكم وما يمكن لكل شخص فعله.",
+   "+ Add a person": "+ إضافة شخص",
+   "Add a person": "إضافة شخص",
+   "Last sign in": "آخر دخول",
+   "✉ Order emails on": "✉ رسائل الطلبات مفعّلة",
+   "Order emails off": "رسائل الطلبات متوقفة",
+   "Owner": "المالك",
+   "Manager": "مدير",
+   "Order manager": "مسؤول تجهيز الطلبات",
+   "Order assistant": "مساعد الطلبات",
+   "Order manager (prepares paid orders only)": "مسؤول تجهيز الطلبات (يجهّز الطلبات المدفوعة فقط)",
+   "Order assistant (item requests only)": "مساعد الطلبات (طلبات المنتجات فقط)",
+   "New password (leave empty to keep)": "كلمة مرور جديدة (اتركها فارغة للإبقاء على الحالية)",
+   "At least 10 characters. Give it to them in person.": "10 أحرف على الأقل. سلّمها للشخص بنفسك.",
+   "Can sign in": "يمكنه الدخول",
+   "Order emails (owners)": "رسائل الطلبات (للملاك)",
+   "An owner gets an email for every new order and every order update.": "يصل المالك بريد عند كل طلب جديد وكل تحديث على الطلبات.",
+   "Everything, including settings, payments, integrations, staff accounts and the activity log.": "كل شيء، بما في ذلك الإعدادات والمدفوعات والربط مع الأنظمة وحسابات الموظفين وسجل النشاط.",
+   "Staff, plus products, stock, shipping rates, refunds, reports, marketing reports, content, emails and promotions.": "صلاحيات الموظف، بالإضافة إلى المنتجات والمخزون وأسعار الشحن والاسترداد والتقارير وتقارير التسويق والمحتوى والرسائل والعروض.",
+   "Orders (status, notes, tracking), enquiries, customers (view), abandoned carts and viewing the catalogue.": "الطلبات (الحالة والملاحظات والتتبع) والاستفسارات والعملاء (عرض) والسلال المتروكة وعرض المنتجات.",
+   "Only Prepare orders: checks paid orders and reports missing items.": "تجهيز الطلبات فقط: يراجع الطلبات المدفوعة ويبلغ عن المنتجات الناقصة.",
+   "Only Item requests: answers the requests sent to them.": "طلبات المنتجات فقط: يرد على الطلبات المرسلة إليه.",
+   "Enter their name.": "أدخل الاسم.",
+   "Enter a valid email address.": "أدخل بريداً إلكترونياً صحيحاً.",
+   "Another staff account already uses this email.": "هذا البريد مستخدم في حساب موظف آخر.",
+   "Choose a role.": "اختر دوراً.",
+   "You cannot remove your own owner access.": "لا يمكنك إزالة صلاحية المالك عن نفسك.",
+   "No such staff account.": "لا يوجد حساب موظف بهذا الرقم.",
+   "Activity log": "سجل النشاط",
+   "The latest 300 changes made in the admin, newest first.": "آخر 300 تغيير في لوحة التحكم، الأحدث أولاً.",
+   "Nothing recorded yet.": "لا يوجد شيء مسجّل بعد.",
+   "My account": "حسابي",
+   "Your screens (Prepare orders / Item requests) appear here once the order system is switched on.": "شاشاتك (تجهيز الطلبات / طلبات المنتجات) تظهر هنا بعد تفعيل نظام الطلبات.",
+   "Change your password": "تغيير كلمة المرور",
+   "Current password": "كلمة المرور الحالية",
+   "At least 10 characters.": "10 أحرف على الأقل.",
+   "Change password": "تغيير كلمة المرور",
+   "Password changed. Other devices have been signed out.": "تم تغيير كلمة المرور. تم تسجيل خروج الأجهزة الأخرى.",
+   "Translations": "الترجمة",
+   "Every text of the website and the admin, in English and Arabic. Type the Arabic and click away – it saves by itself and shows on the next page load.": "كل نصوص الموقع ولوحة التحكم بالإنجليزية والعربية. اكتب الترجمة العربية ثم انقر خارج الحقل – تُحفظ تلقائياً وتظهر عند تحميل الصفحة التالي.",
+   "Language the website opens in": "لغة الموقع عند أول زيارة",
+   "For first-time visitors. A visitor's own choice is remembered in their browser.": "للزوار الجدد. اختيار الزائر للغة يُحفظ في متصفحه.",
+   "Website text": "نصوص الموقع",
+   "Admin panel text": "نصوص لوحة التحكم",
+   "Missing Arabic": "بدون ترجمة عربية",
+   "All text": "كل النصوص",
+   "Changed here": "تم تعديله هنا",
+   "No translation needed": "لا يحتاج ترجمة",
+   "Search in English or Arabic": "ابحث بالإنجليزية أو العربية",
+   "Nothing is missing – every text has its Arabic.": "لا شيء ناقص – كل النصوص مترجمة.",
+   "Nothing matches.": "لا توجد نتائج مطابقة.",
+   "Found on the Arabic site": "ظهر في الموقع العربي",
+   "Change the English wording": "تعديل الصياغة الإنجليزية",
+   "English wording": "الصياغة الإنجليزية",
+   "Back to original": "العودة إلى الأصل",
+   "Back to the original text": "تمت العودة إلى النص الأصلي",
+   "Remove from the list": "إزالة من القائمة",
+   "Removed from the list": "تمت الإزالة من القائمة",
+   "Remove this text from the list? It comes back if a page reports it again.": "إزالة هذا النص من القائمة؟ سيعود إذا أبلغت عنه صفحة مرة أخرى.",
+   "Saved – new visitors now see the site in Arabic": "تم الحفظ – الزوار الجدد يرون الموقع بالعربية الآن",
+   "Saved – new visitors now see the site in English": "تم الحفظ – الزوار الجدد يرون الموقع بالإنجليزية الآن",
+   "Original:": "الأصل:",
+   "Choose English or Arabic.": "اختر الإنجليزية أو العربية.",
+   "Pick a text to translate.": "اختر نصاً لترجمته.",
+   "This text is not in the list any more. Reload the page.": "هذا النص لم يعد في القائمة. أعد تحميل الصفحة.",
+   "Hello": "مرحباً",
+   "Staff member": "موظف"
+  }
+ }
+}
