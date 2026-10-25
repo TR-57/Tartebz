@@ -1,0 +1,391 @@
+/* Tartebz — page renderers. Each one is re-run when the language or country changes. */
+(function () {
+  var TZ = window.TZ;
+  var doc = document;
+  var t = function (k, v) { return TZ.t(k, v); };
+  var e = function (s) { return TZ.esc(s); };
+  function $(s, r) { return (r || doc).querySelector(s); }
+  function set(sel, html) { var el = $(sel); if (el) el.innerHTML = html; return el; }
+  function byOrder(a, b) { return a.order - b.order; }
+  function inCat(p, cat) { return !cat || cat === 'all' || p.cats.indexOf(cat) > -1; }
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Numbers count up when they scroll into view */
+  function countUp(root) {
+    var els = (root || doc).querySelectorAll('[data-count]');
+    if (!('IntersectionObserver' in window) || reduced) {
+      els.forEach(function (el) { el.textContent = el.getAttribute('data-prefix') + el.getAttribute('data-count'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        io.unobserve(en.target);
+        var el = en.target, end = +el.getAttribute('data-count'), pre = el.getAttribute('data-prefix') || '', t0 = performance.now();
+        (function tick(now) {
+          var k = Math.min(1, (now - t0) / 1400), v = Math.round(end * (1 - Math.pow(1 - k, 3)));
+          el.textContent = pre + v.toLocaleString('en-US');
+          if (k < 1) requestAnimationFrame(tick);
+        })(t0);
+      });
+    }, { threshold: 0.4 });
+    els.forEach(function (el) { el.textContent = (el.getAttribute('data-prefix') || '') + '0'; io.observe(el); });
+  }
+
+  var catColors = {
+    'best-sellers': ['#FFD700', '#FF8A00'],
+    'sweet-sour': ['#FF4D9D', '#E30613'],
+    'electric-sour': ['#2B2F8F', '#141652'],
+    'mixed': ['#E30613', '#991B1B']
+  };
+  var catArt = { 'best-sellers': 'tartebz-fruits', 'sweet-sour': 'marshmallow-red-berry', 'electric-sour': 'electric-sour-strips', 'mixed': 'tartebz-fruits-mango' };
+
+  TZ.pages = {
+    /* ================= HOME ================= */
+    home: function () {
+      var sold = TZ.products.reduce(function (s, p) { return s + p.sold; }, 0);
+      set('#hero-stats',
+        '<li><span class="val" data-count="' + Math.floor(sold / 1000) * 1000 + '" data-prefix="+">+' + Math.floor(sold / 1000) * 1000 + '</span><span class="lbl">' + e(t('stat_sold')) + '</span></li>' +
+        '<li><span class="val" data-count="' + TZ.countries.length + '" data-prefix="">' + TZ.countries.length + '</span><span class="lbl">' + e(t('stat_countries')) + '</span></li>' +
+        '<li><span class="val">' + TZ.fruitIcon() + '</span><span class="lbl">' + e(t('stat_flavors')) + '</span></li>');
+      countUp($('#hero-stats'));
+
+      set('#hero-logo', TZ.logoSVG());
+      set('#hero-pack-1', TZ.productArt(TZ.find('tartebz-fruits')));
+      set('#hero-pack-2', TZ.productArt(TZ.find('electric-sour-strips')));
+
+      var items = t('marquee').map(function (m) { return '<span>' + e(m) + '</span>' + TZ.icon('sparkle', 'mq-star'); }).join('');
+      set('#marquee', '<div class="marquee-track"><div class="mq-group">' + items + '</div><div class="mq-group" aria-hidden="true">' + items + '</div></div>');
+
+      set('#cat-grid', TZ.categories.map(function (c, i) {
+        var n = TZ.products.filter(function (p) { return inCat(p, c.id); }).length;
+        var col = catColors[c.id] || ['#E30613', '#B30000'];
+        return '<a class="cat-card reveal" style="--c1:' + col[0] + ';--c2:' + col[1] + ';--d:' + i * 90 + 'ms" href="' + TZ.url('shop.html?cat=' + c.id) + '">' +
+          '<span class="cat-ico">' + TZ.icon(c.icon) + '</span>' +
+          '<span class="cat-text"><b>' + e(TZ.L(c.name)) + '</b><small>' + e(TZ.L(c.desc)) + '</small><em>' + e(t('cats_count', { n: n })) + '</em></span>' +
+          '<span class="cat-art">' + TZ.productArt(TZ.find(catArt[c.id])) + '</span>' +
+          '<span class="cat-go">' + TZ.icon('arrow', 'flip-rtl') + '</span></a>';
+      }).join(''));
+
+      var bs = TZ.products.filter(function (p) { return p.bestSeller; }).sort(byOrder);
+      set('#bs-grid', bs.map(TZ.card).join(''));
+
+      set('#ship-list', TZ.countries.map(function (c, i) {
+        var flat = c.ship === 'flat';
+        return '<li class="ship-item reveal" style="--d:' + i * 60 + 'ms"><span class="ship-flag">' + c.flag + '</span><span class="ship-name">' + e(TZ.L(c.name)) + '</span>' +
+          '<span class="ship-cost"><small>' + e(flat ? t('ship_flat') : t('ship_from')) + '</small>' + e(TZ.money(flat ? TZ.shipping.flatBH : TZ.shipping.ubex[0][1], c)) + '</span></li>';
+      }).join(''));
+    },
+
+    /* ================= SHOP ================= */
+    shop: function () {
+      var root = $('#shop-root'); if (!root) return;
+      var q = new URLSearchParams(location.search);
+      var st = root._state || (root._state = { cat: q.get('cat') || 'all', q: q.get('q') || '', sort: q.get('sort') || 'default', stock: q.get('stock') === '1' });
+      if (st.cat !== 'all' && !TZ.cat(st.cat)) st.cat = 'all';
+
+      var chips = [{ id: 'all', name: { ar: t('filter_all'), en: t('filter_all') } }].concat(TZ.categories).map(function (c) {
+        var n = TZ.products.filter(function (p) { return inCat(p, c.id); }).length;
+        return '<button type="button" class="chip' + (st.cat === c.id ? ' is-active' : '') + '" data-cat="' + c.id + '" aria-pressed="' + (st.cat === c.id) + '">' +
+          (c.icon ? TZ.icon(c.icon) : '') + e(TZ.L(c.name)) + '<span class="chip-n">' + n + '</span></button>';
+      }).join('');
+      var sorts = ['default', 'best', 'price_asc', 'price_desc', 'sour'].map(function (s) {
+        return '<option value="' + s + '"' + (st.sort === s ? ' selected' : '') + '>' + e(t('sort_' + s)) + '</option>';
+      }).join('');
+      var cat = TZ.cat(st.cat);
+
+      root.innerHTML =
+        '<section class="page-hero"><div class="hero-decor"><span class="deco deco-1"></span><span class="deco deco-2"></span></div>' +
+        '<div class="container page-hero-inner"><nav class="crumbs" aria-label="breadcrumb"><a href="' + TZ.url('index.html') + '">' + e(t('home')) + '</a>' + TZ.icon('chevron', 'flip-rtl') + '<span>' + e(t('shop_title')) + '</span></nav>' +
+        '<h1 id="shop-h1">' + e(cat ? TZ.L(cat.name) : t('shop_title')) + '</h1><p id="shop-sub">' + e(cat ? TZ.L(cat.desc) : t('shop_text')) + '</p></div>' +
+        '<svg class="hero-wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 Q 360 0 720 30 T 1440 30 V60 H0Z"/></svg></section>' +
+        '<div class="shop-bar"><div class="container">' +
+        '<div class="chips" role="group" aria-label="' + e(t('footer_cats')) + '">' + chips + '</div>' +
+        '<div class="shop-tools">' +
+        '<label class="search"><span class="sr-only">' + e(t('search_label')) + '</span>' + TZ.icon('search') + '<input type="search" id="shop-q" value="' + e(st.q) + '" placeholder="' + e(t('search_ph')) + '" autocomplete="off"></label>' +
+        '<label class="switch"><input type="checkbox" id="shop-stock"' + (st.stock ? ' checked' : '') + '><span class="switch-ui" aria-hidden="true"></span><span>' + e(t('instock_only')) + '</span></label>' +
+        '<label class="sort"><span>' + e(t('sort_label')) + '</span><span class="select-wrap"><select id="shop-sort">' + sorts + '</select>' + TZ.icon('chevron', 'chev') + '</span></label>' +
+        '</div></div></div>' +
+        '<section class="section shop-section"><div class="container">' +
+        '<div class="shop-meta"><span id="shop-count" aria-live="polite"></span><span class="prices-in">' + TZ.icon('globe') + e(t('prices_in', { cur: TZ.L(TZ.country().sym) })) + '</span></div>' +
+        '<div class="grid products-grid" id="shop-grid"></div></div></section>';
+
+      function grid() {
+        var term = st.q.trim().toLowerCase();
+        var list = TZ.products.filter(function (p) {
+          if (!inCat(p, st.cat)) return false;
+          if (st.stock && !p.inStock) return false;
+          if (term && (p.name.ar + ' ' + p.name.en + ' ' + p.flavor.ar + ' ' + p.flavor.en).toLowerCase().indexOf(term) === -1) return false;
+          return true;
+        });
+        var sorters = {
+          'default': function (a, b) { return (b.inStock - a.inStock) || byOrder(a, b); },
+          best: function (a, b) { return b.sold - a.sold; },
+          price_asc: function (a, b) { return a.price - b.price || byOrder(a, b); },
+          price_desc: function (a, b) { return b.price - a.price || byOrder(a, b); },
+          sour: function (a, b) { return b.sour - a.sour || byOrder(a, b); }
+        };
+        list.sort(sorters[st.sort] || sorters['default']);
+        $('#shop-count').textContent = t('results', { n: list.length });
+        var g = $('#shop-grid');
+        g.innerHTML = list.length ? list.map(TZ.card).join('') :
+          '<div class="empty-state"><div class="empty-ico">' + TZ.icon('search') + '</div><h2>' + e(t('no_results')) + '</h2><p>' + e(t('no_results_text')) + '</p>' +
+          '<button class="btn btn-primary" type="button" data-reset>' + e(t('reset_filters')) + '</button></div>';
+        TZ.reveal(g);
+        var u = new URL(location.href);
+        [['cat', st.cat !== 'all' ? st.cat : ''], ['q', st.q], ['sort', st.sort !== 'default' ? st.sort : ''], ['stock', st.stock ? '1' : '']].forEach(function (kv) {
+          if (kv[1]) u.searchParams.set(kv[0], kv[1]); else u.searchParams.delete(kv[0]);
+        });
+        history.replaceState(null, '', u.toString());
+      }
+      root._grid = grid;
+      grid();
+
+      if (!root._bound) {
+        root._bound = true;
+        root.addEventListener('click', function (ev) {
+          var chip = ev.target.closest('[data-cat]');
+          if (chip) { root._state.cat = chip.getAttribute('data-cat'); TZ.pages.shop(); TZ.applyI18n(root); return; }
+          if (ev.target.closest('[data-reset]')) { root._state = { cat: 'all', q: '', sort: 'default', stock: false }; TZ.pages.shop(); }
+        });
+        root.addEventListener('input', function (ev) {
+          if (ev.target.id === 'shop-q') { root._state.q = ev.target.value; root._grid(); }
+        });
+        root.addEventListener('change', function (ev) {
+          if (ev.target.id === 'shop-sort') { root._state.sort = ev.target.value; root._grid(); }
+          if (ev.target.id === 'shop-stock') { root._state.stock = ev.target.checked; root._grid(); }
+        });
+      }
+    },
+
+    /* ================= PRODUCT ================= */
+    product: function () {
+      var root = $('#product-root'); if (!root) return;
+      var slug = new URLSearchParams(location.search).get('p');
+      var p = TZ.find(slug);
+      if (!p) {
+        root.innerHTML = '<section class="section"><div class="container empty-state"><div class="empty-ico">' + TZ.icon('search') + '</div><h1>' + e(t('not_found')) + '</h1>' +
+          '<a class="btn btn-primary" href="' + TZ.url('shop.html') + '">' + e(t('back_to_shop')) + '</a></div></section>';
+        return;
+      }
+      var name = TZ.L(p.name), cat = TZ.mainCat(p), c = TZ.country();
+      var qty = root._qty && root._pid === p.id ? root._qty : 1;
+      root._pid = p.id; root._qty = qty;
+      doc.title = name + ' | ' + TZ.L(TZ.store.name);
+
+      var shipRows = TZ.countries.map(function (cc) {
+        return '<tr' + (cc.code === c.code ? ' class="is-current"' : '') + '><td>' + cc.flag + ' ' + e(TZ.L(cc.name)) + '</td><td>' + e(TZ.money(TZ.shipCost(p.weight, cc), cc)) + '</td></tr>';
+      }).join('');
+      var related = TZ.products.filter(function (x) { return x.id !== p.id && x.cats.some(function (k) { return p.cats.indexOf(k) > -1 && k !== 'best-sellers'; }); })
+        .sort(function (a, b) { return (b.inStock - a.inStock) || byOrder(a, b); }).slice(0, 4);
+      if (related.length < 4) related = related.concat(TZ.products.filter(function (x) { return x.id !== p.id && related.indexOf(x) === -1; }).sort(byOrder).slice(0, 4 - related.length));
+
+      var buy = p.inStock ?
+        '<div class="buy-row"><div class="qty qty-lg" role="group" aria-label="' + e(t('qty')) + '">' +
+        '<button type="button" data-pqty="-1" aria-label="' + e(t('decrease')) + '">' + TZ.icon('minus') + '</button>' +
+        '<output id="pd-qty" aria-live="polite">' + qty + '</output>' +
+        '<button type="button" data-pqty="1" aria-label="' + e(t('increase')) + '">' + TZ.icon('plus') + '</button></div>' +
+        '<button class="btn btn-primary btn-lg btn-add-lg" id="pd-add" type="button" data-add="' + p.id + '" data-qty-val="' + qty + '">' + TZ.icon('bag') + e(t('add_to_cart')) + '</button></div>' :
+        '<div class="buy-row"><button class="btn btn-disabled btn-lg btn-block" type="button" disabled>' + e(t('sold_out')) + '</button></div>';
+
+      root.innerHTML =
+        '<section class="pd" style="--c1:' + p.art.colors[0] + ';--c2:' + p.art.colors[1] + '"><div class="container">' +
+        '<nav class="crumbs crumbs-dark" aria-label="breadcrumb"><a href="' + TZ.url('index.html') + '">' + e(t('home')) + '</a>' + TZ.icon('chevron', 'flip-rtl') +
+        '<a href="' + TZ.url('shop.html') + '">' + e(t('nav_shop')) + '</a>' + TZ.icon('chevron', 'flip-rtl') +
+        (cat ? '<a href="' + TZ.url('shop.html?cat=' + cat.id) + '">' + e(TZ.L(cat.name)) + '</a>' + TZ.icon('chevron', 'flip-rtl') : '') + '<span>' + e(name) + '</span></nav>' +
+        '<div class="pd-grid">' +
+        '<div class="pd-gallery" data-id="' + p.id + '"><div class="pd-stage">' + TZ.badges(p) +
+        '<div class="pd-blob"></div><div class="pd-ring"></div>' + TZ.productArt(p, 'pd-art') +
+        '<span class="pd-spark s1">' + TZ.icon('sparkle') + '</span><span class="pd-spark s2">' + TZ.icon('sparkle') + '</span><span class="pd-spark s3">' + TZ.icon('star') + '</span></div></div>' +
+        '<div class="pd-info">' +
+        '<div class="pd-cats">' + p.cats.map(function (k) { var cc = TZ.cat(k); return cc ? '<a class="tag" href="' + TZ.url('shop.html?cat=' + k) + '">' + e(TZ.L(cc.name)) + '</a>' : ''; }).join('') + '</div>' +
+        '<h1 class="pd-title">' + e(name) + '</h1>' +
+        '<p class="pd-flavor">' + e(t('flavor')) + ': <b>' + e(TZ.L(p.flavor)) + '</b></p>' +
+        '<div class="pd-price-row"><span class="pd-price">' + e(TZ.money(p.price)) + '</span>' +
+        '<span class="badge badge-stock ' + (p.inStock ? 'in' : 'out') + '">' + e(t(p.inStock ? 'in_stock' : 'out_of_stock')) + '</span></div>' +
+        '<p class="pd-cur">' + TZ.icon('globe') + e(t('prices_in', { cur: TZ.L(c.sym) })) + ' · <label class="inline-select"><span class="sr-only">' + e(t('country_label')) + '</span><select data-country>' + TZ.countryOptions() + '</select></label></p>' +
+        TZ.sourMeter(p.sour, true) +
+        '<p class="pd-desc">' + e(TZ.L(p.desc)) + '</p>' + buy +
+        '<div class="pd-ship">' + TZ.icon('truck') + '<div><b>' + e(t('ship_to_label')) + ' ' + c.flag + ' ' + e(TZ.L(c.name)) + ': ' + e(TZ.money(TZ.shipCost(p.weight))) + '</b>' +
+        '<small>' + e(c.ship === 'flat' ? t('cart_ship_note_flat') : t('cart_ship_note_ubex', { w: p.weight })) + '</small></div></div>' +
+        '<ul class="pd-perks"><li>' + TZ.icon('shield') + e(t('secure_pay')) + '</li><li>' + TZ.icon('truck') + e(t('gcc_delivery')) + '</li><li>' + TZ.icon('leaf') + e(t('natural')) + '</li></ul>' +
+        '</div></div>' +
+        '<div class="tabs" id="pd-tabs"><div class="tab-list" role="tablist">' +
+        '<button role="tab" id="tab-a" aria-controls="panel-a" aria-selected="true" type="button">' + e(t('tab_desc')) + '</button>' +
+        '<button role="tab" id="tab-b" aria-controls="panel-b" aria-selected="false" tabindex="-1" type="button">' + e(t('tab_ship')) + '</button></div>' +
+        '<div class="tab-panel" role="tabpanel" id="panel-a" aria-labelledby="tab-a"><p>' + e(TZ.L(p.desc)) + '</p>' +
+        '<dl class="spec"><div><dt>' + e(t('flavor')) + '</dt><dd>' + e(TZ.L(p.flavor)) + '</dd></div><div><dt>' + e(t('sour_meter')) + '</dt><dd>' + e(t('sour_' + p.sour)) + ' (' + p.sour + '/5)</dd></div>' +
+        '<div><dt>' + e(t('weight')) + '</dt><dd>' + p.weight + ' ' + e(t('kg')) + '</dd></div></dl></div>' +
+        '<div class="tab-panel" role="tabpanel" id="panel-b" aria-labelledby="tab-b" hidden><p>' + e(t('ship_tab_text')) + '</p><table class="ship-table"><tbody>' + shipRows + '</tbody></table></div></div>' +
+        '</div></section>' +
+        '<section class="section section-cream"><div class="container"><div class="section-head reveal"><span class="kicker">' + TZ.icon('sparkle') + e(t('cats_kicker')) + '</span><h2>' + e(t('related')) + '</h2></div>' +
+        '<div class="grid products-grid">' + related.map(TZ.card).join('') + '</div></div></section>' +
+        (p.inStock ? '<div class="buybar" id="buybar"><div class="buybar-info">' + TZ.productArt(p, 'buybar-art') + '<span><b>' + e(name) + '</b><em>' + e(TZ.money(p.price)) + '</em></span></div>' +
+          '<button class="btn btn-primary" type="button" data-add="' + p.id + '" data-qty-val="' + qty + '">' + TZ.icon('bag') + e(t('add_to_cart')) + '</button></div>' : '');
+
+      /* Sticky buy bar appears once the main button scrolls away */
+      var addBtn = $('#pd-add'), bar = $('#buybar');
+      if (addBtn && bar && 'IntersectionObserver' in window) {
+        if (root._io) root._io.disconnect();
+        root._io = new IntersectionObserver(function (en) {
+          var show = !en[0].isIntersecting && en[0].boundingClientRect.top < 0;
+          bar.classList.toggle('show', show); doc.body.classList.toggle('has-buybar', show);
+        });
+        root._io.observe(addBtn);
+      }
+
+      if (!root._bound) {
+        root._bound = true;
+        root.addEventListener('click', function (ev) {
+          var q = ev.target.closest('[data-pqty]');
+          if (q) {
+            root._qty = Math.max(1, Math.min(99, root._qty + (+q.getAttribute('data-pqty'))));
+            $('#pd-qty').textContent = root._qty;
+            root.querySelectorAll('[data-qty-val]').forEach(function (b) { b.setAttribute('data-qty-val', root._qty); });
+          }
+          var tab = ev.target.closest('[role="tab"]');
+          if (tab) selectTab(tab);
+        });
+        root.addEventListener('keydown', function (ev) {
+          var tab = ev.target.closest('[role="tab"]');
+          if (!tab || (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight')) return;
+          var tabs = [].slice.call(root.querySelectorAll('[role="tab"]')), i = tabs.indexOf(tab);
+          var next = tabs[(i + 1) % tabs.length]; selectTab(next); next.focus();
+        });
+      }
+      /* 3D tilt on the product stage (stage is rebuilt each render, so bind directly) */
+      var stage = $('.pd-stage', root);
+      if (stage && !reduced) {
+        stage.addEventListener('pointermove', function (ev) {
+          if (ev.pointerType === 'touch') return;
+          var r = stage.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width - 0.5, y = (ev.clientY - r.top) / r.height - 0.5;
+          stage.style.setProperty('--rx', (-y * 10).toFixed(2) + 'deg'); stage.style.setProperty('--ry', (x * 14).toFixed(2) + 'deg');
+        });
+        stage.addEventListener('pointerleave', function () { stage.style.setProperty('--rx', '0deg'); stage.style.setProperty('--ry', '0deg'); });
+      }
+      function selectTab(tab) {
+        root.querySelectorAll('[role="tab"]').forEach(function (b) {
+          var on = b === tab; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1;
+          $('#' + b.getAttribute('aria-controls')).hidden = !on;
+        });
+      }
+    },
+
+    /* ================= CHECKOUT ================= */
+    checkout: function () {
+      var root = $('#checkout-root'); if (!root) return;
+      var memo = {};
+      root.querySelectorAll('input, textarea').forEach(function (f) { if (f.name) memo[f.name] = f.value; });
+      var lines = TZ.cart.lines(), c = TZ.country();
+
+      if (!lines.length) {
+        root.innerHTML = '<div class="empty-state co-empty">' + TZ.icon('bag') + '<h2>' + e(t('cart_empty_title')) + '</h2><p>' + e(t('co_empty')) + '</p>' +
+          '<a class="btn btn-primary" href="' + TZ.url('shop.html') + '">' + e(t('order_now')) + '</a></div>';
+        return;
+      }
+      function field(name, label, opts) {
+        opts = opts || {};
+        var req = !opts.optional;
+        return '<div class="field' + (opts.half ? ' half' : '') + '"><label for="f-' + name + '">' + e(label) + (req ? ' <abbr title="' + e(t('err_required')) + '">*</abbr>' : '') + '</label>' +
+          (opts.textarea ? '<textarea id="f-' + name + '" name="' + name + '" rows="3"' + (opts.ph ? ' placeholder="' + e(opts.ph) + '"' : '') + '></textarea>' :
+            '<input id="f-' + name + '" name="' + name + '" type="' + (opts.type || 'text') + '"' + (req ? ' required' : '') + (opts.ac ? ' autocomplete="' + opts.ac + '"' : '') +
+            (opts.ph ? ' placeholder="' + e(opts.ph) + '"' : '') + (opts.dir ? ' dir="' + opts.dir + '"' : '') + '>') +
+          '<span class="field-err" id="err-' + name + '"></span></div>';
+      }
+      var w = Math.round(TZ.cart.weight() * 10) / 10;
+      root.innerHTML =
+        '<form class="co-form" id="co-form" novalidate><div class="co-card"><h2>' + TZ.icon('pin') + e(t('co_billing')) + '</h2><div class="fields">' +
+        field('first', t('f_first'), { half: true, ac: 'given-name' }) + field('last', t('f_last'), { half: true, ac: 'family-name' }) +
+        '<div class="field"><label for="f-country">' + e(t('f_country')) + ' <abbr>*</abbr></label><span class="select-wrap"><select id="f-country" data-country>' + TZ.countryOptions() + '</select>' + TZ.icon('chevron', 'chev') + '</span></div>' +
+        field('addr1', t('f_addr1'), { ph: t('f_addr1_ph'), ac: 'address-line1' }) +
+        field('addr2', t('f_addr2'), { ph: t('f_addr2_ph'), optional: true, ac: 'address-line2' }) +
+        field('city', t('f_city'), { half: true, ac: 'address-level2' }) + field('state', t('f_state'), { half: true, ac: 'address-level1' }) +
+        field('phone', t('f_phone'), { half: true, type: 'tel', ac: 'tel', dir: 'ltr' }) + field('email', t('f_email'), { half: true, type: 'email', ac: 'email', dir: 'ltr' }) +
+        field('notes', t('f_notes'), { optional: true, textarea: true }) +
+        '</div></div>' +
+        '<div class="co-card"><h2>' + TZ.icon('card') + e(t('co_payment')) + '</h2>' +
+        '<label class="pay-option is-selected"><input type="radio" name="pay" value="gatee" checked><span class="pay-dot"></span><span><b>' + e(t('pay_gatee')) + '</b><small>' + e(t('pay_note')) + '</small></span>' +
+        '<span class="pay-logos"><span class="pay-chip">BenefitPay</span><span class="pay-chip">VISA</span><span class="pay-chip">MC</span></span></label></div></form>' +
+        '<aside class="co-summary"><div class="co-card sticky"><h2>' + TZ.icon('bag') + e(t('co_summary')) + '</h2><ul class="co-lines">' +
+        lines.map(function (l) {
+          return '<li><span class="co-thumb">' + TZ.productArt(l.p) + '<i>' + l.qty + '</i></span><span class="co-name">' + e(TZ.L(l.p.name)) + '</span><b>' + e(TZ.money(l.p.price * l.qty)) + '</b></li>';
+        }).join('') + '</ul>' +
+        '<dl class="totals"><div><dt>' + e(t('cart_subtotal')) + '</dt><dd>' + e(TZ.money(TZ.cart.subtotal())) + '</dd></div>' +
+        '<div><dt>' + e(t('cart_shipping')) + '<small>' + c.flag + ' ' + e(c.ship === 'flat' ? t('cart_ship_note_flat') : t('cart_ship_note_ubex', { w: w })) + '</small></dt><dd>' + e(TZ.money(TZ.cart.shipping())) + '</dd></div>' +
+        '<div class="grand"><dt>' + e(t('cart_total')) + '</dt><dd>' + e(TZ.money(TZ.cart.total())) + '</dd></div></dl>' +
+        '<button class="btn btn-primary btn-block btn-lg" type="submit" form="co-form" id="place-order">' + TZ.icon('shield') + e(t('place_order')) + '</button>' +
+        '<p class="co-secure">' + TZ.icon('shield') + e(t('pay_note')) + '</p></div></aside>';
+
+      Object.keys(memo).forEach(function (k) { var f = root.querySelector('[name="' + k + '"]'); if (f) f.value = memo[k]; });
+
+      var form = $('#co-form');
+      form.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        var ok = true, first;
+        ['first', 'last', 'addr1', 'city', 'state', 'phone', 'email'].forEach(function (n) {
+          var f = form.elements[n], v = f.value.trim(), msg = '';
+          if (!v) msg = t('err_required');
+          else if (n === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) msg = t('err_email');
+          else if (n === 'phone' && v.replace(/\D/g, '').length < 7) msg = t('err_phone');
+          $('#err-' + n).textContent = msg;
+          f.setAttribute('aria-invalid', msg ? 'true' : 'false');
+          if (msg) f.setAttribute('aria-describedby', 'err-' + n); else f.removeAttribute('aria-describedby');
+          if (msg && ok) { ok = false; first = f; }
+        });
+        if (!ok) { first.focus(); first.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); return; }
+        done(form);
+      });
+      form.addEventListener('input', function (ev) {
+        if (ev.target.getAttribute('aria-invalid') === 'true') { ev.target.setAttribute('aria-invalid', 'false'); var er = $('#err-' + ev.target.name); if (er) er.textContent = ''; }
+      });
+
+      /* Front-end only: no payment gateway yet, so the order is handed off to WhatsApp. */
+      function done(f) {
+        var v = function (n) { return f.elements[n].value.trim(); };
+        var msg = [t('wa_order_intro'), ''].concat(TZ.cart.lines().map(function (l) { return '• ' + TZ.L(l.p.name) + ' × ' + l.qty + ' = ' + TZ.money(l.p.price * l.qty); }))
+          .concat(['', t('cart_shipping') + ': ' + TZ.money(TZ.cart.shipping()), t('cart_total') + ': ' + TZ.money(TZ.cart.total()), '',
+            v('first') + ' ' + v('last'), v('phone') + ' · ' + v('email'),
+            [TZ.L(TZ.country().name), v('state'), v('city'), v('addr1'), v('addr2')].filter(Boolean).join('، '), v('notes')]).filter(function (x, i, a) { return x !== '' || a[i - 1] !== ''; }).join('\n');
+        var modal = doc.createElement('div');
+        modal.className = 'modal-wrap';
+        modal.innerHTML = '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="done-h"><div class="confetti" aria-hidden="true">' + new Array(18).join('<i></i>') + '</div>' +
+          '<div class="modal-ico">' + TZ.icon('check') + '</div><h2 id="done-h">' + e(t('co_done_title')) + '</h2><p>' + e(t('co_done_text')) + '</p>' +
+          '<a class="btn btn-whatsapp btn-lg btn-block" target="_blank" rel="noopener" href="https://wa.me/' + TZ.store.phoneRaw + '?text=' + encodeURIComponent(msg) + '">' + TZ.brandIcon('whatsapp') + e(t('co_whatsapp')) + '</a>' +
+          '<button class="btn-link" type="button" data-close-modal>' + e(t('co_back')) + '</button></div>';
+        doc.body.appendChild(modal);
+        requestAnimationFrame(function () { modal.classList.add('open'); });
+        modal.querySelector('.btn-whatsapp').focus();
+        function closeModal() { modal.remove(); doc.removeEventListener('keydown', onKey); var b = $('#place-order'); if (b) b.focus(); }
+        function onKey(ev) { if (ev.key === 'Escape') closeModal(); }
+        doc.addEventListener('keydown', onKey);
+        modal.addEventListener('click', function (ev) {
+          if (ev.target === modal || ev.target.closest('[data-close-modal]')) closeModal();
+        });
+      }
+    },
+
+    /* ================= CONTACT ================= */
+    contact: function () {
+      set('#c-email', '<a href="mailto:' + TZ.store.email + '">' + TZ.store.email + '</a>');
+      set('#c-phone', '<a href="tel:+' + TZ.store.phoneRaw + '" dir="ltr">' + TZ.store.phone + '</a>');
+      set('#c-wa', '<a href="https://wa.me/' + TZ.store.phoneRaw + '" target="_blank" rel="noopener" dir="ltr">' + TZ.store.phone + '</a>');
+      set('#c-addr', e(TZ.L(TZ.store.address)) + ' <a class="btn-link" href="' + TZ.store.mapsUrl + '" target="_blank" rel="noopener">' + e(t('open_maps')) + '</a>');
+      set('#c-cr', e(TZ.store.cr));
+      set('#c-social', TZ.socialLinks());
+      var form = $('#c-form');
+      if (form && !form._bound) {
+        form._bound = true;
+        form.addEventListener('submit', function (ev) {
+          ev.preventDefault();
+          var n = form.elements.name.value.trim(), m = form.elements.message.value.trim();
+          if (!m) { form.elements.message.setAttribute('aria-invalid', 'true'); form.elements.message.focus(); return; }
+          window.open('https://wa.me/' + TZ.store.phoneRaw + '?text=' + encodeURIComponent((n ? n + ':\n' : '') + m), '_blank', 'noopener');
+        });
+      }
+    },
+
+    about: function () { countUp(doc); }
+  };
+
+  doc.addEventListener('tz:cart', function () { if (doc.body.getAttribute('data-page') === 'checkout') TZ.pages.checkout(); });
+})();

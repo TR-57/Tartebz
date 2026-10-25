@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>تواصل معنا | ترتيبز</title>
+  <meta name="description" content="تواصل مع ترتيبز: البريد، الهاتف، واتساب والعنوان في الرفاع الغربي.">
+  <meta name="theme-color" content="#E30613">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script>(function(){try{var l=new URLSearchParams(location.search).get('lang')||JSON.parse(localStorage.getItem('tz_lang')||'"ar"');if(l==='en'){document.documentElement.lang='en';document.documentElement.dir='ltr';}}catch(e){}})();</script>
+</head>
+<body data-page="contact" data-title="nav_contact" class="has-hero">
+  <div id="site-header"></div>
+  <main id="main">
+    <section class="page-hero">
+      <div class="hero-decor" aria-hidden="true"><span class="deco deco-1"></span><span class="deco deco-2"></span></div>
+      <div class="container page-hero-inner">
+        <nav class="crumbs" aria-label="breadcrumb"><a data-href="index.html" href="index.html" data-i18n="home"></a><span class="flip-rtl" data-icon="chevron"></span><span data-i18n="nav_contact"></span></nav>
+        <h1 data-i18n="contact_title"></h1>
+        <p data-i18n="contact_text"></p>
+      </div>
+      <svg class="hero-wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 Q 360 0 720 30 T 1440 30 V60 H0Z"/></svg>
+    </section>
+    <section class="section" style="padding-top:36px">
+      <div class="container contact-grid">
+        <div class="contact-cards">
+          <div class="contact-card reveal"><span class="why-ico" data-icon="mail"></span><div><h3 data-i18n="c_email"></h3><div id="c-email"></div></div></div>
+          <div class="contact-card reveal" style="--d:60ms"><span class="why-ico" data-icon="phone"></span><div><h3 data-i18n="c_phone"></h3><div id="c-phone"></div></div></div>
+          <div class="contact-card reveal" style="--d:120ms"><span class="why-ico" style="background:#25D366" data-brand-icon="whatsapp"></span><div><h3 data-i18n="c_whatsapp"></h3><div id="c-wa"></div></div></div>
+          <div class="contact-card reveal" style="--d:180ms"><span class="why-ico" data-icon="pin"></span><div><h3 data-i18n="c_address"></h3><div id="c-addr"></div></div></div>
+          <div class="contact-card reveal" style="--d:240ms"><span class="why-ico" data-icon="doc"></span><div><h3 data-i18n="c_cr"></h3><div id="c-cr"></div><div class="contact-social" id="c-social"></div></div></div>
+        </div>
+        <div>
+          <form class="co-card reveal" id="c-form" novalidate>
+            <h2><span data-icon="mail"></span><span data-i18n="c_form_title"></span></h2>
+            <div class="fields">
+              <div class="field"><label for="c-name" data-i18n="c_name"></label><input id="c-name" name="name" autocomplete="name"></div>
+              <div class="field"><label for="c-msg"><span data-i18n="c_msg"></span> <abbr>*</abbr></label><textarea id="c-msg" name="message" rows="5" required></textarea></div>
+            </div>
+            <button class="btn btn-whatsapp btn-lg btn-block" type="submit" style="margin-top:16px"><span data-brand-icon="whatsapp"></span><span data-i18n="c_send"></span></button>
+          </form>
+          <div class="special-card reveal"><h3><span data-icon="cake"></span> <span data-i18n="c_special"></span></h3><p data-i18n="c_special_text"></p></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/art.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/pages.js" defer></script>
+</body>
+</html>
