@@ -1,0 +1,3483 @@
+{
+ "source": "tartebz.shop WordPress database dump (2026-10-23)",
+ "total": 335,
+ "used": 27,
+ "files": [
+  {
+   "id": 9114,
+   "title": "IMG-20250612-WA0002",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0002-2.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0002-2.jpg",
+   "usedBy": [
+    "page 147 من نحن (content)"
+   ],
+   "width": 1152,
+   "height": 2048
+  },
+  {
+   "id": 9113,
+   "title": "IMG-20250612-WA0003",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0003-5.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0003-5.jpg",
+   "usedBy": [
+    "page 147 من نحن (content)"
+   ],
+   "width": 1536,
+   "height": 2048
+  },
+  {
+   "id": 9111,
+   "title": "IMG-20250612-WA0005",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0005-3.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0005-3.jpg",
+   "usedBy": [
+    "page 147 من نحن (content)"
+   ],
+   "width": 1536,
+   "height": 2048
+  },
+  {
+   "id": 9112,
+   "title": "IMG-20250612-WA0006",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0006-5.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0006-5.jpg",
+   "usedBy": [
+    "page 147 من نحن (content)"
+   ],
+   "width": 1152,
+   "height": 2048
+  },
+  {
+   "id": 9080,
+   "title": "IMG-20250612-WA0007",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0007.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0007.jpg",
+   "usedBy": [
+    "page 147 من نحن (Elementor)",
+    "page 9528 من نحن (Elementor)",
+    "page 147 من نحن (content)"
+   ],
+   "width": 2048,
+   "height": 1152
+  },
+  {
+   "id": 9094,
+   "title": "IMG-20250612-WA0008",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0008-2.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0008-2.jpg",
+   "usedBy": [
+    "page 147 من نحن (Elementor)",
+    "page 9528 من نحن (Elementor)",
+    "page 147 من نحن (content)"
+   ],
+   "width": 1536,
+   "height": 2048
+  },
+  {
+   "id": 8865,
+   "title": "Marshmello",
+   "mime": "image/jpeg",
+   "file": "2025/06/Marshmello-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Marshmello-1-scaled.jpg",
+   "usedBy": [
+    "product 8986 مارشميلو الأصفر – main photo"
+   ],
+   "width": 2560,
+   "height": 2560
+  },
+  {
+   "id": 8792,
+   "title": "Untitled_design__6_-removebg-preview",
+   "mime": "image/webp",
+   "file": "2025/06/Untitled_design__6_-removebg-preview-1.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Untitled_design__6_-removebg-preview-1.webp",
+   "usedBy": [
+    "site icon (favicon)",
+    "old Elementor logo/favicon"
+   ],
+   "width": 500,
+   "height": 500
+  },
+  {
+   "id": 8782,
+   "title": "Untitled_design__9_-removebg-preview",
+   "mime": "image/png",
+   "file": "2025/06/Untitled_design__9_-removebg-preview.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Untitled_design__9_-removebg-preview.png",
+   "usedBy": [
+    "page 9210 Home (Elementor)"
+   ],
+   "width": 500,
+   "height": 500
+  },
+  {
+   "id": 9276,
+   "title": "cropped-cropped_circle_image.png",
+   "mime": "image/png",
+   "file": "2025/06/cropped-cropped_circle_image.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/cropped-cropped_circle_image.png",
+   "usedBy": [
+    "page 149 تواصل معنا (Elementor)",
+    "page 149 تواصل معنا (content)"
+   ],
+   "width": 783,
+   "height": 784
+  },
+  {
+   "id": 9454,
+   "title": "DSC05622",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05622-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05622-scaled.jpg",
+   "usedBy": [
+    "product 9470 ترتيبز فرووتس اناناس – gallery"
+   ],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05622.jpg"
+  },
+  {
+   "id": 9453,
+   "title": "DSC05623",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05623-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05623-scaled.jpg",
+   "usedBy": [
+    "product 9467 ترتيبز فرووتس توت – main photo",
+    "product 9470 ترتيبز فرووتس اناناس – main photo",
+    "product 9472 ترتيبز فرووتس مانجو – main photo"
+   ],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05623.jpg"
+  },
+  {
+   "id": 9473,
+   "title": "DSC05627",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05627-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05627-scaled.jpg",
+   "usedBy": [
+    "product 9472 ترتيبز فرووتس مانجو – gallery"
+   ],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05627.jpg"
+  },
+  {
+   "id": 9451,
+   "title": "DSC05632",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05632-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05632-scaled.jpg",
+   "usedBy": [
+    "product 9467 ترتيبز فرووتس توت – gallery"
+   ],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05632.jpg"
+  },
+  {
+   "id": 10582,
+   "title": "DSC06726-1",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC06726-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC06726-1-scaled.jpg",
+   "usedBy": [
+    "product 9448 ترتيبز فرووتس – gallery"
+   ],
+   "width": 2560,
+   "height": 1707,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC06726-1.jpg"
+  },
+  {
+   "id": 10577,
+   "title": "DSC06765-1",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC06765-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC06765-1-scaled.jpg",
+   "usedBy": [
+    "product 9448 ترتيبز فرووتس – main photo"
+   ],
+   "width": 2560,
+   "height": 1706,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC06765-1.jpg"
+  },
+  {
+   "id": 9834,
+   "title": "DSC06689-1",
+   "mime": "image/webp",
+   "file": "2025/10/DSC06689-1-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06689-1-scaled.webp",
+   "usedBy": [
+    "product 9841 الغرقانة حامض حلو مانجا (draft) – main photo",
+    "product 10024 الغرقانه حامض حلو توت احمر – main photo"
+   ],
+   "width": 1920,
+   "height": 960,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06689-1.jpg"
+  },
+  {
+   "id": 9835,
+   "title": "DSC06692-1",
+   "mime": "image/webp",
+   "file": "2025/10/DSC06692-1-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06692-1-scaled.webp",
+   "usedBy": [
+    "product 9833 الغرقانة حامض كهرباء توت احمر – main photo"
+   ],
+   "width": 1920,
+   "height": 960,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06692-1.jpg"
+  },
+  {
+   "id": 9846,
+   "title": "DSC06695",
+   "mime": "image/jpeg",
+   "file": "2025/10/DSC06695-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06695-scaled.jpg",
+   "usedBy": [
+    "product 9851 مارشميلو توت احمر – gallery"
+   ],
+   "width": 2560,
+   "height": 1707,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06695.jpg"
+  },
+  {
+   "id": 9845,
+   "title": "DSC06743",
+   "mime": "image/jpeg",
+   "file": "2025/10/DSC06743-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06743-scaled.jpg",
+   "usedBy": [
+    "product 9849 شرايط حامض حلو – gallery"
+   ],
+   "width": 2560,
+   "height": 1707,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06743.jpg"
+  },
+  {
+   "id": 9847,
+   "title": "DSC06747",
+   "mime": "image/jpeg",
+   "file": "2025/10/DSC06747-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06747-scaled.jpg",
+   "usedBy": [
+    "product 9844 شرايط حامض كهرباء – gallery"
+   ],
+   "width": 2560,
+   "height": 1707,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06747.jpg"
+  },
+  {
+   "id": 9836,
+   "title": "DSC06768-1",
+   "mime": "image/webp",
+   "file": "2025/10/DSC06768-1-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06768-1-scaled.webp",
+   "usedBy": [
+    "product 9851 مارشميلو توت احمر – main photo"
+   ],
+   "width": 1920,
+   "height": 960,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06768-1.jpg"
+  },
+  {
+   "id": 9837,
+   "title": "DSC06769-1",
+   "mime": "image/webp",
+   "file": "2025/10/DSC06769-1-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06769-1-scaled.webp",
+   "usedBy": [
+    "product 10022 مارشميلو توت ازرق – main photo"
+   ],
+   "width": 1920,
+   "height": 960,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06769-1.jpg"
+  },
+  {
+   "id": 9838,
+   "title": "DSC06772-1",
+   "mime": "image/jpeg",
+   "file": "2025/10/DSC06772-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06772-1-scaled.jpg",
+   "usedBy": [
+    "product 9849 شرايط حامض حلو – main photo"
+   ],
+   "width": 2560,
+   "height": 1280,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06772-1.jpg"
+  },
+  {
+   "id": 9839,
+   "title": "DSC06773-1",
+   "mime": "image/jpeg",
+   "file": "2025/10/DSC06773-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06773-1-scaled.jpg",
+   "usedBy": [
+    "product 9844 شرايط حامض كهرباء – main photo"
+   ],
+   "width": 2560,
+   "height": 1280,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/10/DSC06773-1.jpg"
+  },
+  {
+   "id": 10621,
+   "title": "Untitled design (71)",
+   "mime": "image/png",
+   "file": "2026/06/Untitled-design-71.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2026/06/Untitled-design-71.png",
+   "usedBy": [
+    "About section image (current theme)"
+   ],
+   "width": 1357,
+   "height": 1159
+  },
+  {
+   "id": 10527,
+   "title": "cropped-ChatGPT-Image-Jun-17-2026-09_28_04-PM.png",
+   "mime": "image/png",
+   "file": "2026/06/cropped-ChatGPT-Image-Jun-17-2026-09_28_04-PM.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2026/06/cropped-ChatGPT-Image-Jun-17-2026-09_28_04-PM.png",
+   "usedBy": [
+    "site logo (current theme)"
+   ],
+   "width": 789,
+   "height": 822
+  },
+  {
+   "id": 8977,
+   "title": "Footer",
+   "mime": "image/png",
+   "file": "2022/01/Footer-.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/Footer-.png",
+   "usedBy": [],
+   "width": 1440,
+   "height": 500
+  },
+  {
+   "id": 8978,
+   "title": "Inspirational Gradient Desktop Background",
+   "mime": "image/png",
+   "file": "2022/01/Inspirational-Gradient-Desktop-Background.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/Inspirational-Gradient-Desktop-Background.png",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1080
+  },
+  {
+   "id": 701,
+   "title": "blog-01",
+   "mime": "image/jpeg",
+   "file": "2022/01/blog-01.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/blog-01.jpg",
+   "usedBy": [],
+   "width": 1400,
+   "height": 840
+  },
+  {
+   "id": 710,
+   "title": "blog-02",
+   "mime": "image/jpeg",
+   "file": "2022/01/blog-02.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/blog-02.jpg",
+   "usedBy": [],
+   "width": 1400,
+   "height": 840
+  },
+  {
+   "id": 711,
+   "title": "blog-03",
+   "mime": "image/jpeg",
+   "file": "2022/01/blog-03.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/blog-03.jpg",
+   "usedBy": [],
+   "width": 1400,
+   "height": 840
+  },
+  {
+   "id": 712,
+   "title": "blog-04",
+   "mime": "image/jpeg",
+   "file": "2022/01/blog-04.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/blog-04.jpg",
+   "usedBy": [],
+   "width": 1400,
+   "height": 840
+  },
+  {
+   "id": 713,
+   "title": "blog-05",
+   "mime": "image/jpeg",
+   "file": "2022/01/blog-05.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/blog-05.jpg",
+   "usedBy": [],
+   "width": 1400,
+   "height": 840
+  },
+  {
+   "id": 714,
+   "title": "blog-06",
+   "mime": "image/jpeg",
+   "file": "2022/01/blog-06.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/blog-06.jpg",
+   "usedBy": [],
+   "width": 1400,
+   "height": 840
+  },
+  {
+   "id": 715,
+   "title": "blog-07",
+   "mime": "image/jpeg",
+   "file": "2022/01/blog-07.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/blog-07.jpg",
+   "usedBy": [],
+   "width": 1400,
+   "height": 840
+  },
+  {
+   "id": 716,
+   "title": "blog-08",
+   "mime": "image/jpeg",
+   "file": "2022/01/blog-08.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/blog-08.jpg",
+   "usedBy": [],
+   "width": 1400,
+   "height": 840
+  },
+  {
+   "id": 717,
+   "title": "blog-09",
+   "mime": "image/jpeg",
+   "file": "2022/01/blog-09.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/blog-09.jpg",
+   "usedBy": [],
+   "width": 1400,
+   "height": 840
+  },
+  {
+   "id": 718,
+   "title": "blog-10",
+   "mime": "image/jpeg",
+   "file": "2022/01/blog-10.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/blog-10.jpg",
+   "usedBy": [],
+   "width": 1400,
+   "height": 840
+  },
+  {
+   "id": 719,
+   "title": "blog-11",
+   "mime": "image/jpeg",
+   "file": "2022/01/blog-11.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/blog-11.jpg",
+   "usedBy": [],
+   "width": 1400,
+   "height": 840
+  },
+  {
+   "id": 720,
+   "title": "blog-12",
+   "mime": "image/jpeg",
+   "file": "2022/01/blog-12.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/blog-12.jpg",
+   "usedBy": [],
+   "width": 1400,
+   "height": 840
+  },
+  {
+   "id": 1519,
+   "title": "breadcrumbs-woo",
+   "mime": "image/jpeg",
+   "file": "2022/01/breadcrumbs-woo-scaled-1.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/breadcrumbs-woo-scaled-1.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 267
+  },
+  {
+   "id": 6955,
+   "title": "logo",
+   "mime": "image/png",
+   "file": "2022/01/logo-1.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/logo-1.png",
+   "usedBy": [],
+   "width": 153,
+   "height": 62
+  },
+  {
+   "id": 5474,
+   "title": "logo",
+   "mime": "image/svg+xml",
+   "file": "2022/01/logo-1.svg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/logo-1.svg",
+   "usedBy": [],
+   "width": 200,
+   "height": 62
+  },
+  {
+   "id": 104,
+   "title": "product-01",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-01.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-01.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 105,
+   "title": "product-02",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-02.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-02.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 106,
+   "title": "product-03",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-03.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-03.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 107,
+   "title": "product-04",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-04.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-04.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 108,
+   "title": "product-05",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-05.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-05.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 109,
+   "title": "product-06",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-06.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-06.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 110,
+   "title": "product-07",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-07.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-07.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 111,
+   "title": "product-08",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-08.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-08.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 112,
+   "title": "product-09",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-09.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-09.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 113,
+   "title": "product-10",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-10.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-10.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 114,
+   "title": "product-11",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-11.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-11.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 115,
+   "title": "product-12",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-12.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-12.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 116,
+   "title": "product-13",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-13.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-13.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 117,
+   "title": "product-14",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-14.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-14.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 118,
+   "title": "product-15",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-15.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-15.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 119,
+   "title": "product-16",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-16.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-16.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 120,
+   "title": "product-17",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-17.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-17.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 121,
+   "title": "product-18",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-18.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-18.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 8646,
+   "title": "product-19",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-19.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-19.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 123,
+   "title": "product-20",
+   "mime": "image/jpeg",
+   "file": "2022/01/product-20.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/product-20.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 799,
+   "title": "single-blog-01",
+   "mime": "image/jpeg",
+   "file": "2022/01/single-blog-01.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/single-blog-01.jpg",
+   "usedBy": [],
+   "width": 508,
+   "height": 508
+  },
+  {
+   "id": 800,
+   "title": "single-blog-02",
+   "mime": "image/jpeg",
+   "file": "2022/01/single-blog-02.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/single-blog-02.jpg",
+   "usedBy": [],
+   "width": 508,
+   "height": 508
+  },
+  {
+   "id": 1393,
+   "title": "testi-01",
+   "mime": "image/png",
+   "file": "2022/01/testi-01.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/testi-01.png",
+   "usedBy": [],
+   "width": 100,
+   "height": 100
+  },
+  {
+   "id": 1394,
+   "title": "testi-02",
+   "mime": "image/png",
+   "file": "2022/01/testi-02.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/testi-02.png",
+   "usedBy": [],
+   "width": 100,
+   "height": 100
+  },
+  {
+   "id": 1395,
+   "title": "testi-03",
+   "mime": "image/png",
+   "file": "2022/01/testi-03.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/testi-03.png",
+   "usedBy": [],
+   "width": 100,
+   "height": 100
+  },
+  {
+   "id": 6,
+   "title": "woocommerce-placeholder",
+   "mime": "image/png",
+   "file": "2022/01/woocommerce-placeholder.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/01/woocommerce-placeholder.png",
+   "usedBy": [],
+   "width": 1200,
+   "height": 1200
+  },
+  {
+   "id": 3244,
+   "title": "brand-01",
+   "mime": "image/png",
+   "file": "2022/03/brand-01.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/03/brand-01.png",
+   "usedBy": [],
+   "width": 125,
+   "height": 125
+  },
+  {
+   "id": 3245,
+   "title": "brand-02",
+   "mime": "image/png",
+   "file": "2022/03/brand-02.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/03/brand-02.png",
+   "usedBy": [],
+   "width": 125,
+   "height": 125
+  },
+  {
+   "id": 3246,
+   "title": "brand-03",
+   "mime": "image/png",
+   "file": "2022/03/brand-03.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/03/brand-03.png",
+   "usedBy": [],
+   "width": 125,
+   "height": 125
+  },
+  {
+   "id": 3247,
+   "title": "brand-04",
+   "mime": "image/png",
+   "file": "2022/03/brand-04.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/03/brand-04.png",
+   "usedBy": [],
+   "width": 125,
+   "height": 125
+  },
+  {
+   "id": 3248,
+   "title": "brand-05",
+   "mime": "image/png",
+   "file": "2022/03/brand-05.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/03/brand-05.png",
+   "usedBy": [],
+   "width": 125,
+   "height": 125
+  },
+  {
+   "id": 3249,
+   "title": "brand-06",
+   "mime": "image/png",
+   "file": "2022/03/brand-06.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/03/brand-06.png",
+   "usedBy": [],
+   "width": 125,
+   "height": 125
+  },
+  {
+   "id": 3072,
+   "title": "safe-checkout",
+   "mime": "image/png",
+   "file": "2022/03/safe-checkout.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/03/safe-checkout.png",
+   "usedBy": [],
+   "width": 528,
+   "height": 51
+  },
+  {
+   "id": 5585,
+   "title": "in-box-01",
+   "mime": "image/jpeg",
+   "file": "2022/08/in-box-01.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/08/in-box-01.jpg",
+   "usedBy": [],
+   "width": 216,
+   "height": 216
+  },
+  {
+   "id": 5596,
+   "title": "in-box-02",
+   "mime": "image/jpeg",
+   "file": "2022/08/in-box-02.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/08/in-box-02.jpg",
+   "usedBy": [],
+   "width": 216,
+   "height": 216
+  },
+  {
+   "id": 5597,
+   "title": "in-box-03",
+   "mime": "image/jpeg",
+   "file": "2022/08/in-box-03.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/08/in-box-03.jpg",
+   "usedBy": [],
+   "width": 216,
+   "height": 216
+  },
+  {
+   "id": 5598,
+   "title": "in-box-04",
+   "mime": "image/jpeg",
+   "file": "2022/08/in-box-04.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/08/in-box-04.jpg",
+   "usedBy": [],
+   "width": 216,
+   "height": 216
+  },
+  {
+   "id": 5599,
+   "title": "in-box-05",
+   "mime": "image/jpeg",
+   "file": "2022/08/in-box-05.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/08/in-box-05.jpg",
+   "usedBy": [],
+   "width": 216,
+   "height": 216
+  },
+  {
+   "id": 3862,
+   "title": "payment",
+   "mime": "image/png",
+   "file": "2022/08/payment.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/08/payment.png",
+   "usedBy": [],
+   "width": 372,
+   "height": 32
+  },
+  {
+   "id": 5544,
+   "title": "single-product",
+   "mime": "image/jpeg",
+   "file": "2022/08/single-product.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/08/single-product.jpg",
+   "usedBy": [],
+   "width": 1400,
+   "height": 680
+  },
+  {
+   "id": 6794,
+   "title": "tMyw0RxyMMY",
+   "mime": "image/jpeg",
+   "file": "2022/08/tMyw0RxyMMY.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/08/tMyw0RxyMMY.jpg",
+   "usedBy": [],
+   "width": 1280,
+   "height": 720
+  },
+  {
+   "id": 4332,
+   "title": "banner-07",
+   "mime": "image/jpeg",
+   "file": "2022/09/banner-07.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/09/banner-07.jpg",
+   "usedBy": [],
+   "width": 1400,
+   "height": 150
+  },
+  {
+   "id": 4333,
+   "title": "banner-08",
+   "mime": "image/jpeg",
+   "file": "2022/09/banner-08.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/09/banner-08.jpg",
+   "usedBy": [],
+   "width": 320,
+   "height": 588
+  },
+  {
+   "id": 4341,
+   "title": "brand-01",
+   "mime": "image/png",
+   "file": "2022/09/brand-01.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/09/brand-01.png",
+   "usedBy": [],
+   "width": 248,
+   "height": 80
+  },
+  {
+   "id": 4342,
+   "title": "brand-02",
+   "mime": "image/png",
+   "file": "2022/09/brand-02.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/09/brand-02.png",
+   "usedBy": [],
+   "width": 248,
+   "height": 80
+  },
+  {
+   "id": 4343,
+   "title": "brand-03",
+   "mime": "image/png",
+   "file": "2022/09/brand-03.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/09/brand-03.png",
+   "usedBy": [],
+   "width": 248,
+   "height": 80
+  },
+  {
+   "id": 4344,
+   "title": "brand-04",
+   "mime": "image/png",
+   "file": "2022/09/brand-04.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/09/brand-04.png",
+   "usedBy": [],
+   "width": 248,
+   "height": 80
+  },
+  {
+   "id": 4345,
+   "title": "brand-05",
+   "mime": "image/png",
+   "file": "2022/09/brand-05.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2022/09/brand-05.png",
+   "usedBy": [],
+   "width": 248,
+   "height": 80
+  },
+  {
+   "id": 5399,
+   "title": "logo",
+   "mime": "image/png",
+   "file": "2023/03/logo.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/03/logo.png",
+   "usedBy": [],
+   "width": 140,
+   "height": 44
+  },
+  {
+   "id": 5884,
+   "title": "banner-01",
+   "mime": "image/png",
+   "file": "2023/06/banner-01.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/06/banner-01.png",
+   "usedBy": [],
+   "width": 1440,
+   "height": 400
+  },
+  {
+   "id": 5885,
+   "title": "banner-02",
+   "mime": "image/jpeg",
+   "file": "2023/06/banner-02.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/06/banner-02.jpg",
+   "usedBy": [],
+   "width": 920,
+   "height": 800
+  },
+  {
+   "id": 5886,
+   "title": "banner-03",
+   "mime": "image/png",
+   "file": "2023/06/banner-03.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/06/banner-03.png",
+   "usedBy": [],
+   "width": 400,
+   "height": 646
+  },
+  {
+   "id": 5887,
+   "title": "banner-04",
+   "mime": "image/png",
+   "file": "2023/06/banner-04.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/06/banner-04.png",
+   "usedBy": [],
+   "width": 676,
+   "height": 675
+  },
+  {
+   "id": 5888,
+   "title": "banner-05",
+   "mime": "image/png",
+   "file": "2023/06/banner-05.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/06/banner-05.png",
+   "usedBy": [],
+   "width": 587,
+   "height": 368
+  },
+  {
+   "id": 5913,
+   "title": "banner-06",
+   "mime": "image/png",
+   "file": "2023/06/banner-06.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/06/banner-06.png",
+   "usedBy": [],
+   "width": 646,
+   "height": 743
+  },
+  {
+   "id": 5889,
+   "title": "bg-banner-01",
+   "mime": "image/jpeg",
+   "file": "2023/06/bg-banner-01.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/06/bg-banner-01.jpg",
+   "usedBy": [],
+   "width": 1400,
+   "height": 780
+  },
+  {
+   "id": 5890,
+   "title": "bg-banner-02",
+   "mime": "image/jpeg",
+   "file": "2023/06/bg-banner-02.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/06/bg-banner-02.jpg",
+   "usedBy": [],
+   "width": 1920,
+   "height": 787
+  },
+  {
+   "id": 5747,
+   "title": "cropped-logo.png",
+   "mime": "image/png",
+   "file": "2023/06/cropped-logo.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/06/cropped-logo.png",
+   "usedBy": [],
+   "width": 512,
+   "height": 512
+  },
+  {
+   "id": 5746,
+   "title": "logo",
+   "mime": "image/png",
+   "file": "2023/06/logo.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/06/logo.png",
+   "usedBy": [],
+   "width": 200,
+   "height": 62
+  },
+  {
+   "id": 6319,
+   "title": "bg-about-us-01",
+   "mime": "image/png",
+   "file": "2023/07/bg-about-us-01.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/bg-about-us-01.png",
+   "usedBy": [],
+   "width": 1920,
+   "height": 600
+  },
+  {
+   "id": 6736,
+   "title": "bg-newsletter",
+   "mime": "image/jpeg",
+   "file": "2023/07/bg-newsletter.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/bg-newsletter.jpg",
+   "usedBy": [],
+   "width": 440,
+   "height": 520
+  },
+  {
+   "id": 6265,
+   "title": "bg-slider-01",
+   "mime": "image/jpeg",
+   "file": "2023/07/bg-slider-01.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/bg-slider-01.jpg",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1022
+  },
+  {
+   "id": 6364,
+   "title": "contact-brand-01",
+   "mime": "image/png",
+   "file": "2023/07/contact-brand-01.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/contact-brand-01.png",
+   "usedBy": [],
+   "width": 100,
+   "height": 25
+  },
+  {
+   "id": 6365,
+   "title": "contact-brand-02",
+   "mime": "image/png",
+   "file": "2023/07/contact-brand-02.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/contact-brand-02.png",
+   "usedBy": [],
+   "width": 52,
+   "height": 25
+  },
+  {
+   "id": 6366,
+   "title": "contact-brand-03",
+   "mime": "image/png",
+   "file": "2023/07/contact-brand-03.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/contact-brand-03.png",
+   "usedBy": [],
+   "width": 128,
+   "height": 25
+  },
+  {
+   "id": 6367,
+   "title": "contact-brand-04",
+   "mime": "image/png",
+   "file": "2023/07/contact-brand-04.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/contact-brand-04.png",
+   "usedBy": [],
+   "width": 150,
+   "height": 23
+  },
+  {
+   "id": 6368,
+   "title": "contact-brand-05",
+   "mime": "image/png",
+   "file": "2023/07/contact-brand-05.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/contact-brand-05.png",
+   "usedBy": [],
+   "width": 155,
+   "height": 23
+  },
+  {
+   "id": 6369,
+   "title": "contact-brand-06",
+   "mime": "image/png",
+   "file": "2023/07/contact-brand-06.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/contact-brand-06.png",
+   "usedBy": [],
+   "width": 139,
+   "height": 24
+  },
+  {
+   "id": 6330,
+   "title": "gallery-01",
+   "mime": "image/jpeg",
+   "file": "2023/07/gallery-01.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/gallery-01.jpg",
+   "usedBy": [],
+   "width": 720,
+   "height": 975
+  },
+  {
+   "id": 6331,
+   "title": "gallery-02",
+   "mime": "image/jpeg",
+   "file": "2023/07/gallery-02.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/gallery-02.jpg",
+   "usedBy": [],
+   "width": 720,
+   "height": 975
+  },
+  {
+   "id": 6332,
+   "title": "gallery-03",
+   "mime": "image/jpeg",
+   "file": "2023/07/gallery-03.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/gallery-03.jpg",
+   "usedBy": [],
+   "width": 720,
+   "height": 975
+  },
+  {
+   "id": 6333,
+   "title": "gallery-04",
+   "mime": "image/jpeg",
+   "file": "2023/07/gallery-04.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/gallery-04.jpg",
+   "usedBy": [],
+   "width": 720,
+   "height": 975
+  },
+  {
+   "id": 6422,
+   "title": "gallery-our-team-01",
+   "mime": "image/jpeg",
+   "file": "2023/07/gallery-our-team-01.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/gallery-our-team-01.jpg",
+   "usedBy": [],
+   "width": 320,
+   "height": 320
+  },
+  {
+   "id": 6423,
+   "title": "gallery-our-team-02",
+   "mime": "image/jpeg",
+   "file": "2023/07/gallery-our-team-02.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/gallery-our-team-02.jpg",
+   "usedBy": [],
+   "width": 320,
+   "height": 320
+  },
+  {
+   "id": 6424,
+   "title": "gallery-our-team-03",
+   "mime": "image/jpeg",
+   "file": "2023/07/gallery-our-team-03.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/gallery-our-team-03.jpg",
+   "usedBy": [],
+   "width": 320,
+   "height": 320
+  },
+  {
+   "id": 6425,
+   "title": "gallery-our-team-04",
+   "mime": "image/jpeg",
+   "file": "2023/07/gallery-our-team-04.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/gallery-our-team-04.jpg",
+   "usedBy": [],
+   "width": 320,
+   "height": 320
+  },
+  {
+   "id": 6426,
+   "title": "gallery-our-team-05",
+   "mime": "image/jpeg",
+   "file": "2023/07/gallery-our-team-05.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/gallery-our-team-05.jpg",
+   "usedBy": [],
+   "width": 320,
+   "height": 320
+  },
+  {
+   "id": 6427,
+   "title": "gallery-our-team-06",
+   "mime": "image/jpeg",
+   "file": "2023/07/gallery-our-team-06.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/gallery-our-team-06.jpg",
+   "usedBy": [],
+   "width": 320,
+   "height": 320
+  },
+  {
+   "id": 6428,
+   "title": "gallery-our-team-07",
+   "mime": "image/jpeg",
+   "file": "2023/07/gallery-our-team-07.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/gallery-our-team-07.jpg",
+   "usedBy": [],
+   "width": 320,
+   "height": 320
+  },
+  {
+   "id": 6429,
+   "title": "gallery-our-team-08",
+   "mime": "image/jpeg",
+   "file": "2023/07/gallery-our-team-08.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/gallery-our-team-08.jpg",
+   "usedBy": [],
+   "width": 320,
+   "height": 320
+  },
+  {
+   "id": 6318,
+   "title": "img-about-us-01",
+   "mime": "image/png",
+   "file": "2023/07/img-about-us-01.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/img-about-us-01.png",
+   "usedBy": [],
+   "width": 616,
+   "height": 342
+  },
+  {
+   "id": 6329,
+   "title": "img-about-us-02",
+   "mime": "image/png",
+   "file": "2023/07/img-about-us-02.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/img-about-us-02.png",
+   "usedBy": [],
+   "width": 746,
+   "height": 746
+  },
+  {
+   "id": 6430,
+   "title": "img-our-team-01",
+   "mime": "image/jpeg",
+   "file": "2023/07/img-our-team-01.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/img-our-team-01.jpg",
+   "usedBy": [],
+   "width": 920,
+   "height": 340
+  },
+  {
+   "id": 6266,
+   "title": "img-slider1-01",
+   "mime": "image/png",
+   "file": "2023/07/img-slider1-01.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/img-slider1-01.png",
+   "usedBy": [],
+   "width": 680,
+   "height": 782
+  },
+  {
+   "id": 6522,
+   "title": "review-01",
+   "mime": "image/jpeg",
+   "file": "2023/07/review-01.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/review-01.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 6523,
+   "title": "review-02",
+   "mime": "image/jpeg",
+   "file": "2023/07/review-02.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/review-02.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 6524,
+   "title": "review-03",
+   "mime": "image/jpeg",
+   "file": "2023/07/review-03.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/review-03.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 6525,
+   "title": "review-04",
+   "mime": "image/jpeg",
+   "file": "2023/07/review-04.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/review-04.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 6526,
+   "title": "review-05",
+   "mime": "image/jpeg",
+   "file": "2023/07/review-05.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/review-05.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 6527,
+   "title": "review-06",
+   "mime": "image/jpeg",
+   "file": "2023/07/review-06.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/review-06.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 6528,
+   "title": "review-07",
+   "mime": "image/jpeg",
+   "file": "2023/07/review-07.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/review-07.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 6529,
+   "title": "review-08",
+   "mime": "image/jpeg",
+   "file": "2023/07/review-08.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/review-08.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 6530,
+   "title": "review-09",
+   "mime": "image/jpeg",
+   "file": "2023/07/review-09.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/review-09.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 1065
+  },
+  {
+   "id": 6431,
+   "title": "testi-our-team-01",
+   "mime": "image/jpeg",
+   "file": "2023/07/testi-our-team-01.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/testi-our-team-01.jpg",
+   "usedBy": [],
+   "width": 225,
+   "height": 225
+  },
+  {
+   "id": 6432,
+   "title": "testi-our-team-02",
+   "mime": "image/jpeg",
+   "file": "2023/07/testi-our-team-02.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2023/07/testi-our-team-02.jpg",
+   "usedBy": [],
+   "width": 225,
+   "height": 225
+  },
+  {
+   "id": 8857,
+   "title": "7lz-blue",
+   "mime": "image/jpeg",
+   "file": "2025/06/7lz-blue-2-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/7lz-blue-2-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560
+  },
+  {
+   "id": 8858,
+   "title": "7lz-red",
+   "mime": "image/jpeg",
+   "file": "2025/06/7lz-red-2-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/7lz-red-2-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560
+  },
+  {
+   "id": 8859,
+   "title": "Dw-1",
+   "mime": "image/jpeg",
+   "file": "2025/06/Dw-1-2-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Dw-1-2-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560
+  },
+  {
+   "id": 8860,
+   "title": "Dw-2",
+   "mime": "image/jpeg",
+   "file": "2025/06/Dw-2-2-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Dw-2-2-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560
+  },
+  {
+   "id": 9066,
+   "title": "IMG-20250612-WA0001",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0001-1.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0001-1.jpg",
+   "usedBy": [],
+   "width": 1152,
+   "height": 2048
+  },
+  {
+   "id": 9087,
+   "title": "IMG-20250612-WA0001",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0001-2.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0001-2.jpg",
+   "usedBy": [],
+   "width": 1152,
+   "height": 2048
+  },
+  {
+   "id": 9115,
+   "title": "IMG-20250612-WA0001",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0001-3.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0001-3.jpg",
+   "usedBy": [],
+   "width": 1152,
+   "height": 2048
+  },
+  {
+   "id": 9088,
+   "title": "IMG-20250612-WA0002",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0002-1.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0002-1.jpg",
+   "usedBy": [],
+   "width": 1152,
+   "height": 2048
+  },
+  {
+   "id": 9065,
+   "title": "IMG-20250612-WA0003",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0003-3.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0003-3.jpg",
+   "usedBy": [],
+   "width": 1536,
+   "height": 2048
+  },
+  {
+   "id": 9089,
+   "title": "IMG-20250612-WA0003",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0003-4.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0003-4.jpg",
+   "usedBy": [],
+   "width": 1536,
+   "height": 2048
+  },
+  {
+   "id": 9090,
+   "title": "IMG-20250612-WA0004",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0004-2.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0004-2.jpg",
+   "usedBy": [],
+   "width": 1152,
+   "height": 2048
+  },
+  {
+   "id": 9091,
+   "title": "IMG-20250612-WA0005",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0005-2.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0005-2.jpg",
+   "usedBy": [],
+   "width": 1536,
+   "height": 2048
+  },
+  {
+   "id": 9067,
+   "title": "IMG-20250612-WA0006",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0006-3.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0006-3.jpg",
+   "usedBy": [],
+   "width": 1152,
+   "height": 2048
+  },
+  {
+   "id": 9092,
+   "title": "IMG-20250612-WA0006",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0006-4.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0006-4.jpg",
+   "usedBy": [],
+   "width": 1152,
+   "height": 2048
+  },
+  {
+   "id": 9093,
+   "title": "IMG-20250612-WA0007",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0007-1.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0007-1.jpg",
+   "usedBy": [],
+   "width": 2048,
+   "height": 1152
+  },
+  {
+   "id": 9095,
+   "title": "IMG-20250612-WA0010",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0010-2.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0010-2.jpg",
+   "usedBy": [],
+   "width": 1536,
+   "height": 2048
+  },
+  {
+   "id": 9096,
+   "title": "IMG-20250612-WA0011",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0011-2.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0011-2.jpg",
+   "usedBy": [],
+   "width": 1536,
+   "height": 2048
+  },
+  {
+   "id": 9097,
+   "title": "IMG-20250612-WA0012",
+   "mime": "image/jpeg",
+   "file": "2025/06/IMG-20250612-WA0012-2.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/IMG-20250612-WA0012-2.jpg",
+   "usedBy": [],
+   "width": 945,
+   "height": 2048
+  },
+  {
+   "id": 8863,
+   "title": "Mar9o9a-1",
+   "mime": "image/jpeg",
+   "file": "2025/06/Mar9o9a-1-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Mar9o9a-1-1-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560
+  },
+  {
+   "id": 8866,
+   "title": "P1",
+   "mime": "image/jpeg",
+   "file": "2025/06/P1-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/P1-1-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560
+  },
+  {
+   "id": 8867,
+   "title": "P2",
+   "mime": "image/jpeg",
+   "file": "2025/06/P2-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/P2-1-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560
+  },
+  {
+   "id": 8868,
+   "title": "P3",
+   "mime": "image/jpeg",
+   "file": "2025/06/P3-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/P3-1-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560
+  },
+  {
+   "id": 8869,
+   "title": "Package 8-1",
+   "mime": "image/jpeg",
+   "file": "2025/06/Package-8-1-2-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Package-8-1-2-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560
+  },
+  {
+   "id": 8955,
+   "title": "Red, Black, and White Photographic Automotive and Cars Retail Website (1)",
+   "mime": "image/png",
+   "file": "2025/06/Red-Black-and-White-Photographic-Automotive-and-Cars-Retail-Website-1.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Red-Black-and-White-Photographic-Automotive-and-Cars-Retail-Website-1.png",
+   "usedBy": [],
+   "width": 1366,
+   "height": 768
+  },
+  {
+   "id": 8956,
+   "title": "Red, Black, and White Photographic Automotive and Cars Retail Website (2)",
+   "mime": "image/png",
+   "file": "2025/06/Red-Black-and-White-Photographic-Automotive-and-Cars-Retail-Website-2.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Red-Black-and-White-Photographic-Automotive-and-Cars-Retail-Website-2.png",
+   "usedBy": [],
+   "width": 1366,
+   "height": 768
+  },
+  {
+   "id": 8954,
+   "title": "Red, Black, and White Photographic Automotive and Cars Retail Website",
+   "mime": "image/png",
+   "file": "2025/06/Red-Black-and-White-Photographic-Automotive-and-Cars-Retail-Website.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Red-Black-and-White-Photographic-Automotive-and-Cars-Retail-Website.png",
+   "usedBy": [],
+   "width": 1366,
+   "height": 768
+  },
+  {
+   "id": 8953,
+   "title": "Untitled design",
+   "mime": "video/mp4",
+   "file": "2025/06/Untitled-design-1.mp4",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Untitled-design-1.mp4",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1080
+  },
+  {
+   "id": 8795,
+   "title": "Untitled design (7)",
+   "mime": "image/png",
+   "file": "2025/06/Untitled-design-7-1.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Untitled-design-7-1.png",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 8776,
+   "title": "Untitled design (8)",
+   "mime": "image/png",
+   "file": "2025/06/Untitled-design-8.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Untitled-design-8.png",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 8791,
+   "title": "Untitled design (9)",
+   "mime": "image/png",
+   "file": "2025/06/Untitled-design-9.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Untitled-design-9.png",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 8952,
+   "title": "Untitled design",
+   "mime": "video/mp4",
+   "file": "2025/06/Untitled-design.mp4",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Untitled-design.mp4",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1080
+  },
+  {
+   "id": 8836,
+   "title": "WhatsApp Image 2025-04-09 at 5.47.53 PM",
+   "mime": "image/jpeg",
+   "file": "2025/06/WhatsApp-Image-2025-04-09-at-5.47.53-PM-1.jpeg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/WhatsApp-Image-2025-04-09-at-5.47.53-PM-1.jpeg",
+   "usedBy": [],
+   "width": 2048,
+   "height": 2048
+  },
+  {
+   "id": 8951,
+   "title": "Your paragraph text",
+   "mime": "image/png",
+   "file": "2025/06/Your-paragraph-text.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/Your-paragraph-text.png",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 8846,
+   "title": "cropped_circle_image",
+   "mime": "image/png",
+   "file": "2025/06/cropped_circle_image.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/cropped_circle_image.png",
+   "usedBy": [],
+   "width": 784,
+   "height": 784
+  },
+  {
+   "id": 9073,
+   "title": "flag-for-flag-bahrain-svgrepo-com (1)",
+   "mime": "image/svg+xml",
+   "file": "2025/06/flag-for-flag-bahrain-svgrepo-com-1-1.svg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/flag-for-flag-bahrain-svgrepo-com-1-1.svg",
+   "usedBy": [],
+   "width": 800,
+   "height": 800
+  },
+  {
+   "id": 9068,
+   "title": "flag-for-flag-bahrain-svgrepo-com (1)",
+   "mime": "image/svg+xml",
+   "file": "2025/06/flag-for-flag-bahrain-svgrepo-com-1.svg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/flag-for-flag-bahrain-svgrepo-com-1.svg",
+   "usedBy": [],
+   "width": 800,
+   "height": 800
+  },
+  {
+   "id": 9074,
+   "title": "flag-for-flag-bahrain-svgrepo-com",
+   "mime": "image/svg+xml",
+   "file": "2025/06/flag-for-flag-bahrain-svgrepo-com.svg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/flag-for-flag-bahrain-svgrepo-com.svg",
+   "usedBy": [],
+   "width": 800,
+   "height": 800
+  },
+  {
+   "id": 8943,
+   "title": "ht-slider-pro-for-elementor-2025-03-04-04-05-53-utc.zip",
+   "mime": "",
+   "file": "2025/06/ht-slider-pro-for-elementor-2025-03-04-04-05-53-utc.zip",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/ht-slider-pro-for-elementor-2025-03-04-04-05-53-utc.zip",
+   "usedBy": []
+  },
+  {
+   "id": 9072,
+   "title": "idea-svgrepo-com",
+   "mime": "image/svg+xml",
+   "file": "2025/06/idea-svgrepo-com.svg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/idea-svgrepo-com.svg",
+   "usedBy": [],
+   "width": 800,
+   "height": 800
+  },
+  {
+   "id": 9070,
+   "title": "love-2-svgrepo-com",
+   "mime": "image/svg+xml",
+   "file": "2025/06/love-2-svgrepo-com.svg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/love-2-svgrepo-com.svg",
+   "usedBy": [],
+   "width": 800,
+   "height": 800
+  },
+  {
+   "id": 8864,
+   "title": "mar9o9a-2",
+   "mime": "image/jpeg",
+   "file": "2025/06/mar9o9a-2-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/mar9o9a-2-1-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560
+  },
+  {
+   "id": 8861,
+   "title": "mar9o9a S-1",
+   "mime": "image/jpeg",
+   "file": "2025/06/mar9o9a-S-1-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/mar9o9a-S-1-1-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560
+  },
+  {
+   "id": 8862,
+   "title": "mar9o9a S-2",
+   "mime": "image/jpeg",
+   "file": "2025/06/mar9o9a-S-2-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/mar9o9a-S-2-1-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560
+  },
+  {
+   "id": 8870,
+   "title": "package8-2",
+   "mime": "image/jpeg",
+   "file": "2025/06/package8-2-2-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/package8-2-2-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560
+  },
+  {
+   "id": 9069,
+   "title": "people-svgrepo-com",
+   "mime": "image/svg+xml",
+   "file": "2025/06/people-svgrepo-com.svg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/people-svgrepo-com.svg",
+   "usedBy": [],
+   "width": 800,
+   "height": 800
+  },
+  {
+   "id": 9071,
+   "title": "quality-certificate-award-svgrepo-com",
+   "mime": "image/svg+xml",
+   "file": "2025/06/quality-certificate-award-svgrepo-com.svg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/quality-certificate-award-svgrepo-com.svg",
+   "usedBy": [],
+   "width": 800,
+   "height": 800
+  },
+  {
+   "id": 9016,
+   "title": "الخبراء للإنشاءات (1)",
+   "mime": "image/gif",
+   "file": "2025/06/الخبراء-للإنشاءات-1.gif",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/الخبراء-للإنشاءات-1.gif",
+   "usedBy": [],
+   "width": 500,
+   "height": 500
+  },
+  {
+   "id": 9015,
+   "title": "الخبراء للإنشاءات",
+   "mime": "image/gif",
+   "file": "2025/06/الخبراء-للإنشاءات.gif",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/06/الخبراء-للإنشاءات.gif",
+   "usedBy": [],
+   "width": 500,
+   "height": 500
+  },
+  {
+   "id": 9385,
+   "title": "1-removebg-preview",
+   "mime": "image/png",
+   "file": "2025/08/1-removebg-preview.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/1-removebg-preview.png",
+   "usedBy": [],
+   "width": 52,
+   "height": 44
+  },
+  {
+   "id": 9388,
+   "title": "1-removebg-preview",
+   "mime": "image/webp",
+   "file": "2025/08/1-removebg-preview.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/1-removebg-preview.webp",
+   "usedBy": [],
+   "width": 52,
+   "height": 44
+  },
+  {
+   "id": 9383,
+   "title": "1",
+   "mime": "image/png",
+   "file": "2025/08/1.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/1.png",
+   "usedBy": [],
+   "width": 52,
+   "height": 44
+  },
+  {
+   "id": 9387,
+   "title": "1",
+   "mime": "image/webp",
+   "file": "2025/08/1.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/1.webp",
+   "usedBy": [],
+   "width": 52,
+   "height": 44
+  },
+  {
+   "id": 9384,
+   "title": "2",
+   "mime": "image/png",
+   "file": "2025/08/2.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/2.png",
+   "usedBy": [],
+   "width": 52,
+   "height": 44
+  },
+  {
+   "id": 9386,
+   "title": "2",
+   "mime": "image/webp",
+   "file": "2025/08/2.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/2.webp",
+   "usedBy": [],
+   "width": 52,
+   "height": 44
+  },
+  {
+   "id": 9341,
+   "title": "Add a heading",
+   "mime": "image/png",
+   "file": "2025/08/Add-a-heading.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Add-a-heading.png",
+   "usedBy": [],
+   "width": 692,
+   "height": 735
+  },
+  {
+   "id": 9342,
+   "title": "Add-a-heading",
+   "mime": "image/webp",
+   "file": "2025/08/Add-a-heading.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Add-a-heading.webp",
+   "usedBy": [],
+   "width": 692,
+   "height": 735
+  },
+  {
+   "id": 9287,
+   "title": "DSC05620-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05620-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05620-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05620-scaled.webp"
+  },
+  {
+   "id": 9285,
+   "title": "DSC05620",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05620-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05620-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05620.jpg"
+  },
+  {
+   "id": 9459,
+   "title": "DSC05622-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05622-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05622-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1920,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05622-scaled.webp"
+  },
+  {
+   "id": 9452,
+   "title": "DSC05623-1-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05623-1-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05623-1-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1920,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05623-1-scaled.webp"
+  },
+  {
+   "id": 9450,
+   "title": "DSC05623 (1)",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05623-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05623-1-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05623-1.jpg"
+  },
+  {
+   "id": 9455,
+   "title": "DSC05623-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05623-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05623-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1920,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05623-scaled.webp"
+  },
+  {
+   "id": 9291,
+   "title": "DSC05624-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05624-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05624-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05624-scaled.webp"
+  },
+  {
+   "id": 9286,
+   "title": "DSC05624",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05624-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05624-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05624.jpg"
+  },
+  {
+   "id": 9290,
+   "title": "DSC05625-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05625-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05625-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05625-scaled.webp"
+  },
+  {
+   "id": 9288,
+   "title": "DSC05625",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05625-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05625-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05625.jpg"
+  },
+  {
+   "id": 9474,
+   "title": "DSC05627-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05627-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05627-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1920,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05627-scaled.webp"
+  },
+  {
+   "id": 9293,
+   "title": "DSC05630-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05630-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05630-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05630-scaled.webp"
+  },
+  {
+   "id": 9289,
+   "title": "DSC05630",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05630-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05630-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05630.jpg"
+  },
+  {
+   "id": 9456,
+   "title": "DSC05632-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05632-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05632-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1920,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05632-scaled.webp"
+  },
+  {
+   "id": 9449,
+   "title": "DSC05637",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05637-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05637-scaled.webp",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1920,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05637.jpg"
+  },
+  {
+   "id": 9296,
+   "title": "DSC05638-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05638-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05638-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05638-scaled.webp"
+  },
+  {
+   "id": 9292,
+   "title": "DSC05638",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05638-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05638-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05638.jpg"
+  },
+  {
+   "id": 9299,
+   "title": "DSC05643-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05643-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05643-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05643-scaled.webp"
+  },
+  {
+   "id": 9294,
+   "title": "DSC05643",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05643-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05643-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05643.jpg"
+  },
+  {
+   "id": 9465,
+   "title": "DSC05647-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05647-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05647-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1920,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05647-scaled.webp"
+  },
+  {
+   "id": 9464,
+   "title": "DSC05647",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05647-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05647-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05647.jpg"
+  },
+  {
+   "id": 9298,
+   "title": "DSC05648-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05648-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05648-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05648-scaled.webp"
+  },
+  {
+   "id": 9295,
+   "title": "DSC05648",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05648-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05648-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05648.jpg"
+  },
+  {
+   "id": 9303,
+   "title": "DSC05649-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05649-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05649-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05649-scaled.webp"
+  },
+  {
+   "id": 9297,
+   "title": "DSC05649",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05649-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05649-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05649.jpg"
+  },
+  {
+   "id": 9302,
+   "title": "DSC05652-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05652-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05652-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05652-scaled.webp"
+  },
+  {
+   "id": 9300,
+   "title": "DSC05652",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05652-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05652-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05652.jpg"
+  },
+  {
+   "id": 9461,
+   "title": "DSC05655-1-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05655-1-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05655-1-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1920,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05655-1-scaled.webp"
+  },
+  {
+   "id": 9458,
+   "title": "DSC05655 (1)",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05655-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05655-1-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05655-1.jpg"
+  },
+  {
+   "id": 9463,
+   "title": "DSC05655-2-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05655-2-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05655-2-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1920,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05655-2-scaled.webp"
+  },
+  {
+   "id": 9460,
+   "title": "DSC05655",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05655-2-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05655-2-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05655-2.jpg"
+  },
+  {
+   "id": 9306,
+   "title": "DSC05655-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05655-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05655-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05655-scaled.webp"
+  },
+  {
+   "id": 9301,
+   "title": "DSC05655",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05655-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05655-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05655.jpg"
+  },
+  {
+   "id": 9462,
+   "title": "DSC05656-1-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05656-1-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05656-1-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1920,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05656-1-scaled.webp"
+  },
+  {
+   "id": 9457,
+   "title": "DSC05656",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05656-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05656-1-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05656-1.jpg"
+  },
+  {
+   "id": 9307,
+   "title": "DSC05656-scaled",
+   "mime": "image/webp",
+   "file": "2025/08/DSC05656-scaled-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05656-scaled-scaled.webp",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05656-scaled.webp"
+  },
+  {
+   "id": 9304,
+   "title": "DSC05656",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05656-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05656-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05656.jpg"
+  },
+  {
+   "id": 9305,
+   "title": "DSC05660",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC05660-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05660-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC05660.jpg"
+  },
+  {
+   "id": 10580,
+   "title": "DSC06702-1",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC06702-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC06702-1-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 1707,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC06702-1.jpg"
+  },
+  {
+   "id": 10581,
+   "title": "DSC06708-1",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC06708-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC06708-1-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 1707,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC06708-1.jpg"
+  },
+  {
+   "id": 10578,
+   "title": "DSC06742-1",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC06742-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC06742-1-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 1707,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC06742-1.jpg"
+  },
+  {
+   "id": 10579,
+   "title": "DSC06745-1",
+   "mime": "image/jpeg",
+   "file": "2025/08/DSC06745-1-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/DSC06745-1-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 1707,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/DSC06745-1.jpg"
+  },
+  {
+   "id": 9190,
+   "title": "Screenshot 2025-08-12 233609",
+   "mime": "image/png",
+   "file": "2025/08/Screenshot-2025-08-12-233609.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Screenshot-2025-08-12-233609.png",
+   "usedBy": [],
+   "width": 566,
+   "height": 117
+  },
+  {
+   "id": 9191,
+   "title": "Screenshot 2025-08-12 233718",
+   "mime": "image/png",
+   "file": "2025/08/Screenshot-2025-08-12-233718.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Screenshot-2025-08-12-233718.png",
+   "usedBy": [],
+   "width": 557,
+   "height": 108
+  },
+  {
+   "id": 9192,
+   "title": "Screenshot_2025-08-13_165028-removebg-preview",
+   "mime": "image/png",
+   "file": "2025/08/Screenshot_2025-08-13_165028-removebg-preview.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Screenshot_2025-08-13_165028-removebg-preview.png",
+   "usedBy": [],
+   "width": 658,
+   "height": 379
+  },
+  {
+   "id": 9198,
+   "title": "TARTEBZZ (2)",
+   "mime": "image/png",
+   "file": "2025/08/TARTEBZZ-2-1.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/TARTEBZZ-2-1.png",
+   "usedBy": [],
+   "width": 221,
+   "height": 309
+  },
+  {
+   "id": 9197,
+   "title": "TARTEBZZ (2)",
+   "mime": "image/png",
+   "file": "2025/08/TARTEBZZ-2.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/TARTEBZZ-2.png",
+   "usedBy": [],
+   "width": 658,
+   "height": 379
+  },
+  {
+   "id": 9193,
+   "title": "TARTEBZZ__1_-removebg-preview",
+   "mime": "image/png",
+   "file": "2025/08/TARTEBZZ__1_-removebg-preview.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/TARTEBZZ__1_-removebg-preview.png",
+   "usedBy": [],
+   "width": 658,
+   "height": 379
+  },
+  {
+   "id": 9194,
+   "title": "TARTEBZZ__2_-removebg-preview",
+   "mime": "image/png",
+   "file": "2025/08/TARTEBZZ__2_-removebg-preview.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/TARTEBZZ__2_-removebg-preview.png",
+   "usedBy": [],
+   "width": 658,
+   "height": 379
+  },
+  {
+   "id": 9196,
+   "title": "TARTEBZZ__3_-removebg-preview",
+   "mime": "image/png",
+   "file": "2025/08/TARTEBZZ__3_-removebg-preview.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/TARTEBZZ__3_-removebg-preview.png",
+   "usedBy": [],
+   "width": 658,
+   "height": 379
+  },
+  {
+   "id": 9195,
+   "title": "TARTEBZZ__4_-removebg-preview",
+   "mime": "image/png",
+   "file": "2025/08/TARTEBZZ__4_-removebg-preview.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/TARTEBZZ__4_-removebg-preview.png",
+   "usedBy": [],
+   "width": 658,
+   "height": 379
+  },
+  {
+   "id": 9188,
+   "title": "Untitled (1200 x 600 px) (800 x 1200 px)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-1200-x-600-px-800-x-1200-px.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-1200-x-600-px-800-x-1200-px.png",
+   "usedBy": [],
+   "width": 800,
+   "height": 1200
+  },
+  {
+   "id": 9315,
+   "title": "Untitled design (13)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-13.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-13.png",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9316,
+   "title": "Untitled-design-13",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-13.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-13.webp",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9313,
+   "title": "Untitled design (14)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-14.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-14.png",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9317,
+   "title": "Untitled-design-14",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-14.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-14.webp",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9312,
+   "title": "Untitled design (15)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-15.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-15.png",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9314,
+   "title": "Untitled-design-15",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-15.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-15.webp",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9320,
+   "title": "Untitled design (17)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-17.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-17.png",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9321,
+   "title": "Untitled-design-17",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-17.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-17.webp",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9325,
+   "title": "Untitled design (18)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-18-1.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-18-1.png",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9327,
+   "title": "Untitled-design-18-1",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-18-1.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-18-1.webp",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9322,
+   "title": "Untitled design (18)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-18.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-18.png",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9323,
+   "title": "Untitled-design-18",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-18.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-18.webp",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9324,
+   "title": "Untitled design (19)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-19.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-19.png",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9326,
+   "title": "Untitled-design-19",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-19.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-19.webp",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9335,
+   "title": "Untitled design (20)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-20.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-20.png",
+   "usedBy": [],
+   "width": 80,
+   "height": 80
+  },
+  {
+   "id": 9336,
+   "title": "Untitled design (21)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-21.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-21.png",
+   "usedBy": [],
+   "width": 80,
+   "height": 80
+  },
+  {
+   "id": 9337,
+   "title": "Untitled design (22)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-22.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-22.png",
+   "usedBy": [],
+   "width": 80,
+   "height": 80
+  },
+  {
+   "id": 9338,
+   "title": "Untitled design (23)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-23.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-23.png",
+   "usedBy": [],
+   "width": 80,
+   "height": 80
+  },
+  {
+   "id": 9362,
+   "title": "Untitled design (24)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-24.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-24.png",
+   "usedBy": [],
+   "width": 2200,
+   "height": 1000
+  },
+  {
+   "id": 9363,
+   "title": "Untitled-design-24",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-24.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-24.webp",
+   "usedBy": [],
+   "width": 2200,
+   "height": 1000
+  },
+  {
+   "id": 9365,
+   "title": "Untitled design (25)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-25.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-25.png",
+   "usedBy": [],
+   "width": 1200,
+   "height": 500
+  },
+  {
+   "id": 9404,
+   "title": "Untitled-design-25",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-25.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-25.webp",
+   "usedBy": [],
+   "width": 1200,
+   "height": 500
+  },
+  {
+   "id": 9373,
+   "title": "Untitled design (28)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-28.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-28.png",
+   "usedBy": [],
+   "width": 1200,
+   "height": 700
+  },
+  {
+   "id": 9382,
+   "title": "Untitled-design-28",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-28.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-28.webp",
+   "usedBy": [],
+   "width": 1200,
+   "height": 700
+  },
+  {
+   "id": 9406,
+   "title": "Untitled design (29)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-29.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-29.png",
+   "usedBy": [],
+   "width": 1200,
+   "height": 700
+  },
+  {
+   "id": 9408,
+   "title": "Untitled-design-29",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-29.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-29.webp",
+   "usedBy": [],
+   "width": 1200,
+   "height": 700
+  },
+  {
+   "id": 9407,
+   "title": "Untitled design (30)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-30.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-30.png",
+   "usedBy": [],
+   "width": 1200,
+   "height": 700
+  },
+  {
+   "id": 9409,
+   "title": "Untitled-design-30",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-30.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-30.webp",
+   "usedBy": [],
+   "width": 1200,
+   "height": 700
+  },
+  {
+   "id": 9413,
+   "title": "Untitled design (31)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-31.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-31.png",
+   "usedBy": [],
+   "width": 543,
+   "height": 715
+  },
+  {
+   "id": 9415,
+   "title": "Untitled-design-31",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-31.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-31.webp",
+   "usedBy": [],
+   "width": 543,
+   "height": 715
+  },
+  {
+   "id": 9414,
+   "title": "Untitled design (32)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-32.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-32.png",
+   "usedBy": [],
+   "width": 500,
+   "height": 300
+  },
+  {
+   "id": 9416,
+   "title": "Untitled-design-32",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-32.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-32.webp",
+   "usedBy": [],
+   "width": 500,
+   "height": 300
+  },
+  {
+   "id": 9418,
+   "title": "Untitled design (33)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-33.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-33.png",
+   "usedBy": [],
+   "width": 500,
+   "height": 300
+  },
+  {
+   "id": 9419,
+   "title": "Untitled-design-33",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-33.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-33.webp",
+   "usedBy": [],
+   "width": 500,
+   "height": 300
+  },
+  {
+   "id": 9417,
+   "title": "Untitled design (34)",
+   "mime": "image/png",
+   "file": "2025/08/Untitled-design-34.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-34.png",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9420,
+   "title": "Untitled-design-34",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled-design-34.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled-design-34.webp",
+   "usedBy": [],
+   "width": 1080,
+   "height": 1080
+  },
+  {
+   "id": 9189,
+   "title": "Untitled__1200_x_600_px___800_x_1200_px_-removebg-preview",
+   "mime": "image/png",
+   "file": "2025/08/Untitled__1200_x_600_px___800_x_1200_px_-removebg-preview.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled__1200_x_600_px___800_x_1200_px_-removebg-preview.png",
+   "usedBy": [],
+   "width": 408,
+   "height": 612
+  },
+  {
+   "id": 9318,
+   "title": "Untitled_design__16_-removebg-preview",
+   "mime": "image/png",
+   "file": "2025/08/Untitled_design__16_-removebg-preview.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled_design__16_-removebg-preview.png",
+   "usedBy": [],
+   "width": 500,
+   "height": 500
+  },
+  {
+   "id": 9319,
+   "title": "Untitled_design__16_-removebg-preview",
+   "mime": "image/webp",
+   "file": "2025/08/Untitled_design__16_-removebg-preview.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/Untitled_design__16_-removebg-preview.webp",
+   "usedBy": [],
+   "width": 500,
+   "height": 500
+  },
+  {
+   "id": 9331,
+   "title": "berrry p - Copy",
+   "mime": "image/png",
+   "file": "2025/08/berrry-p-Copy.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/berrry-p-Copy.png",
+   "usedBy": [],
+   "width": 546,
+   "height": 247
+  },
+  {
+   "id": 9332,
+   "title": "berrry-p-Copy",
+   "mime": "image/webp",
+   "file": "2025/08/berrry-p-Copy.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/berrry-p-Copy.webp",
+   "usedBy": [],
+   "width": 546,
+   "height": 247
+  },
+  {
+   "id": 9328,
+   "title": "berrry p",
+   "mime": "image/png",
+   "file": "2025/08/berrry-p.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/berrry-p.png",
+   "usedBy": [],
+   "width": 546,
+   "height": 247
+  },
+  {
+   "id": 9330,
+   "title": "berrry-p",
+   "mime": "image/webp",
+   "file": "2025/08/berrry-p.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/berrry-p.webp",
+   "usedBy": [],
+   "width": 546,
+   "height": 247
+  },
+  {
+   "id": 9308,
+   "title": "download (1)",
+   "mime": "image/jpeg",
+   "file": "2025/08/download-1.jpeg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/download-1.jpeg",
+   "usedBy": [],
+   "width": 355,
+   "height": 142
+  },
+  {
+   "id": 9309,
+   "title": "download",
+   "mime": "image/jpeg",
+   "file": "2025/08/download.jpeg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/download.jpeg",
+   "usedBy": [],
+   "width": 285,
+   "height": 177
+  },
+  {
+   "id": 9269,
+   "title": "image00002",
+   "mime": "image/jpeg",
+   "file": "2025/08/image00002-1-scaled.jpeg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/image00002-1-scaled.jpeg",
+   "usedBy": [],
+   "width": 1935,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/image00002-1.jpeg"
+  },
+  {
+   "id": 9265,
+   "title": "image00002",
+   "mime": "image/jpeg",
+   "file": "2025/08/image00002-scaled.jpeg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/image00002-scaled.jpeg",
+   "usedBy": [],
+   "width": 1440,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/image00002.jpeg"
+  },
+  {
+   "id": 9266,
+   "title": "image00011",
+   "mime": "image/jpeg",
+   "file": "2025/08/image00011-scaled.jpeg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/image00011-scaled.jpeg",
+   "usedBy": [],
+   "width": 1920,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/image00011.jpeg"
+  },
+  {
+   "id": 9267,
+   "title": "image00032",
+   "mime": "image/jpeg",
+   "file": "2025/08/image00032.jpeg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/image00032.jpeg",
+   "usedBy": [],
+   "width": 1242,
+   "height": 2208
+  },
+  {
+   "id": 9268,
+   "title": "image00034",
+   "mime": "image/jpeg",
+   "file": "2025/08/image00034-scaled.jpeg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/image00034-scaled.jpeg",
+   "usedBy": [],
+   "width": 1920,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/08/image00034.jpeg"
+  },
+  {
+   "id": 9310,
+   "title": "istockphoto-1389128157-612x612",
+   "mime": "image/jpeg",
+   "file": "2025/08/istockphoto-1389128157-612x612-1.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/istockphoto-1389128157-612x612-1.jpg",
+   "usedBy": [],
+   "width": 612,
+   "height": 449
+  },
+  {
+   "id": 9329,
+   "title": "lemon p",
+   "mime": "image/png",
+   "file": "2025/08/lemon-p.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/lemon-p.png",
+   "usedBy": [],
+   "width": 516,
+   "height": 282
+  },
+  {
+   "id": 9333,
+   "title": "lemon-p",
+   "mime": "image/webp",
+   "file": "2025/08/lemon-p.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/lemon-p.webp",
+   "usedBy": [],
+   "width": 516,
+   "height": 282
+  },
+  {
+   "id": 9187,
+   "title": "pkg8",
+   "mime": "image/jpeg",
+   "file": "2025/08/pkg8.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/pkg8.jpg",
+   "usedBy": [],
+   "width": 800,
+   "height": 800
+  },
+  {
+   "id": 9354,
+   "title": "products slide",
+   "mime": "image/png",
+   "file": "2025/08/products-slide.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/products-slide.png",
+   "usedBy": [],
+   "width": 1080,
+   "height": 812
+  },
+  {
+   "id": 9356,
+   "title": "products-slide",
+   "mime": "image/webp",
+   "file": "2025/08/products-slide.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/products-slide.webp",
+   "usedBy": [],
+   "width": 1080,
+   "height": 812
+  },
+  {
+   "id": 9355,
+   "title": "ps-2",
+   "mime": "image/png",
+   "file": "2025/08/ps-2.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/ps-2.png",
+   "usedBy": [],
+   "width": 549,
+   "height": 810
+  },
+  {
+   "id": 9357,
+   "title": "ps-2",
+   "mime": "image/webp",
+   "file": "2025/08/ps-2.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/ps-2.webp",
+   "usedBy": [],
+   "width": 549,
+   "height": 810
+  },
+  {
+   "id": 9311,
+   "title": "rashberry",
+   "mime": "image/png",
+   "file": "2025/08/rashberry.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/rashberry.png",
+   "usedBy": [],
+   "width": 363,
+   "height": 241
+  },
+  {
+   "id": 9370,
+   "title": "sliddddddddddddd",
+   "mime": "image/png",
+   "file": "2025/08/sliddddddddddddd.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/sliddddddddddddd.png",
+   "usedBy": [],
+   "width": 1200,
+   "height": 474
+  },
+  {
+   "id": 9410,
+   "title": "sliddddddddddddd",
+   "mime": "image/webp",
+   "file": "2025/08/sliddddddddddddd.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/sliddddddddddddd.webp",
+   "usedBy": [],
+   "width": 1200,
+   "height": 474
+  },
+  {
+   "id": 9367,
+   "title": "slider.aa (2)",
+   "mime": "image/png",
+   "file": "2025/08/slider.aa-2-e1755762981353.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/slider.aa-2-e1755762981353.png",
+   "usedBy": [],
+   "width": 701,
+   "height": 180
+  },
+  {
+   "id": 9372,
+   "title": "slider.aa-2",
+   "mime": "image/webp",
+   "file": "2025/08/slider.aa-2.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/slider.aa-2.webp",
+   "usedBy": [],
+   "width": 701,
+   "height": 246
+  },
+  {
+   "id": 9368,
+   "title": "slider.aa (3)",
+   "mime": "image/png",
+   "file": "2025/08/slider.aa-3-e1755762969657.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/slider.aa-3-e1755762969657.png",
+   "usedBy": [],
+   "width": 559,
+   "height": 144
+  },
+  {
+   "id": 9371,
+   "title": "slider.aa-3",
+   "mime": "image/webp",
+   "file": "2025/08/slider.aa-3.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/slider.aa-3.webp",
+   "usedBy": [],
+   "width": 559,
+   "height": 246
+  },
+  {
+   "id": 9369,
+   "title": "slider.aa (4)",
+   "mime": "image/png",
+   "file": "2025/08/slider.aa-4.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/slider.aa-4.png",
+   "usedBy": [],
+   "width": 1200,
+   "height": 500
+  },
+  {
+   "id": 9405,
+   "title": "slider.aa-4",
+   "mime": "image/webp",
+   "file": "2025/08/slider.aa-4.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/slider.aa-4.webp",
+   "usedBy": [],
+   "width": 1200,
+   "height": 500
+  },
+  {
+   "id": 9366,
+   "title": "slider.aa",
+   "mime": "image/png",
+   "file": "2025/08/slider.aa_.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/slider.aa_.png",
+   "usedBy": [],
+   "width": 1200,
+   "height": 500
+  },
+  {
+   "id": 9377,
+   "title": "slider.aa_",
+   "mime": "image/webp",
+   "file": "2025/08/slider.aa_.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/slider.aa_.webp",
+   "usedBy": [],
+   "width": 1200,
+   "height": 500
+  },
+  {
+   "id": 9334,
+   "title": "t fruits",
+   "mime": "image/png",
+   "file": "2025/08/t-fruits.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/t-fruits.png",
+   "usedBy": [],
+   "width": 265,
+   "height": 362
+  },
+  {
+   "id": 9339,
+   "title": "tar orange",
+   "mime": "image/png",
+   "file": "2025/08/tar-orange-.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/tar-orange-.png",
+   "usedBy": [],
+   "width": 412,
+   "height": 174
+  },
+  {
+   "id": 9340,
+   "title": "tar-orange-",
+   "mime": "image/webp",
+   "file": "2025/08/tar-orange-.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/tar-orange-.webp",
+   "usedBy": [],
+   "width": 412,
+   "height": 174
+  },
+  {
+   "id": 9343,
+   "title": "بو 8",
+   "mime": "image/png",
+   "file": "2025/08/بو-8.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/بو-8.png",
+   "usedBy": [],
+   "width": 702,
+   "height": 728
+  },
+  {
+   "id": 9344,
+   "title": "بو-8",
+   "mime": "image/webp",
+   "file": "2025/08/بو-8.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/بو-8.webp",
+   "usedBy": [],
+   "width": 702,
+   "height": 728
+  },
+  {
+   "id": 9345,
+   "title": "ح8",
+   "mime": "image/png",
+   "file": "2025/08/ح8.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/ح8.png",
+   "usedBy": [],
+   "width": 822,
+   "height": 621
+  },
+  {
+   "id": 9346,
+   "title": "ح8",
+   "mime": "image/webp",
+   "file": "2025/08/ح8.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/08/ح8.webp",
+   "usedBy": [],
+   "width": 822,
+   "height": 621
+  },
+  {
+   "id": 9523,
+   "title": "Capture",
+   "mime": "image/webp",
+   "file": "2025/09/Capture-e1757533184236.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/09/Capture-e1757533184236.webp",
+   "usedBy": [],
+   "width": 559,
+   "height": 518
+  },
+  {
+   "id": 9519,
+   "title": "DSC05636",
+   "mime": "image/webp",
+   "file": "2025/09/DSC05636-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/09/DSC05636-scaled.webp",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1920,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/09/DSC05636.jpg"
+  },
+  {
+   "id": 9520,
+   "title": "DSC05637",
+   "mime": "image/webp",
+   "file": "2025/09/DSC05637-scaled.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/09/DSC05637-scaled.webp",
+   "usedBy": [],
+   "width": 1920,
+   "height": 1920,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/09/DSC05637.jpg"
+  },
+  {
+   "id": 9524,
+   "title": "cropped-Capture.png",
+   "mime": "image/webp",
+   "file": "2025/09/cropped-Capture.webp",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/09/cropped-Capture.webp",
+   "usedBy": [],
+   "width": 628,
+   "height": 560
+  },
+  {
+   "id": 10207,
+   "title": "DSC05620",
+   "mime": "image/jpeg",
+   "file": "2025/12/DSC05620-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/12/DSC05620-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/12/DSC05620.jpg"
+  },
+  {
+   "id": 10208,
+   "title": "DSC05624",
+   "mime": "image/jpeg",
+   "file": "2025/12/DSC05624-scaled.jpg",
+   "url": "https://tartebz.shop/wp-content/uploads/2025/12/DSC05624-scaled.jpg",
+   "usedBy": [],
+   "width": 2560,
+   "height": 2560,
+   "original": "https://tartebz.shop/wp-content/uploads/2025/12/DSC05624.jpg"
+  },
+  {
+   "id": 10383,
+   "title": "Untitled design (69)",
+   "mime": "image/png",
+   "file": "2026/04/Untitled-design-69.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2026/04/Untitled-design-69.png",
+   "usedBy": [],
+   "width": 80,
+   "height": 80
+  },
+  {
+   "id": 10526,
+   "title": "ChatGPT Image Jun 17, 2026, 09_28_04 PM",
+   "mime": "image/png",
+   "file": "2026/06/ChatGPT-Image-Jun-17-2026-09_28_04-PM.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2026/06/ChatGPT-Image-Jun-17-2026-09_28_04-PM.png",
+   "usedBy": [],
+   "width": 1024,
+   "height": 1024
+  },
+  {
+   "id": 10617,
+   "title": "ChatGPT Image Jun 25, 2026, 11_38_29 PM",
+   "mime": "image/png",
+   "file": "2026/06/ChatGPT-Image-Jun-25-2026-11_38_29-PM.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2026/06/ChatGPT-Image-Jun-25-2026-11_38_29-PM.png",
+   "usedBy": [],
+   "width": 1122,
+   "height": 1402
+  },
+  {
+   "id": 10616,
+   "title": "ChatGPT Image Jun 25, 2026, 11_40_14 PM",
+   "mime": "image/png",
+   "file": "2026/06/ChatGPT-Image-Jun-25-2026-11_40_14-PM.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2026/06/ChatGPT-Image-Jun-25-2026-11_40_14-PM.png",
+   "usedBy": [],
+   "width": 1254,
+   "height": 1254
+  },
+  {
+   "id": 10619,
+   "title": "ChatGPT Image Jun 26, 2026, 12_40_45 AM",
+   "mime": "image/png",
+   "file": "2026/06/ChatGPT-Image-Jun-26-2026-12_40_45-AM.png",
+   "url": "https://tartebz.shop/wp-content/uploads/2026/06/ChatGPT-Image-Jun-26-2026-12_40_45-AM.png",
+   "usedBy": [],
+   "width": 1357,
+   "height": 1159
+  },
+  {
+   "id": 8819,
+   "title": "woocommerce-placeholder",
+   "mime": "image/png",
+   "file": "woocommerce-placeholder.png",
+   "url": "https://tartebz.shop/wp-content/uploads/woocommerce-placeholder.png",
+   "usedBy": [],
+   "width": 1200,
+   "height": 1200
+  }
+ ]
+}
