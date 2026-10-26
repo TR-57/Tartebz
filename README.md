@@ -53,7 +53,7 @@ The storefront pages are still front end only: checkout validates the form and h
 ## Admin panel and backend (custom build, in phases)
 
 ```
-backend/   Laravel 11 API (/api/*) – see backend/README.md
+backend/   Laravel 12 API (/api/*) – see backend/README.md
 admin/     Admin panel (vanilla JS, English + Arabic) served at /admin/
 i18n/      Generated translation catalogue (node tools/i18n-build.mjs)
 tools/     Dev server, translation build

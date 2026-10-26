@@ -1,4 +1,4 @@
-# Tartebz backend (Laravel 11 · PHP 8.3 · MariaDB)
+# Tartebz backend (Laravel 12 · PHP 8.3 · MariaDB)
 
 The JSON API under `/api/*` that the storefront and the admin panel (`/admin/`) talk to.
 Custom-built – no WordPress or WooCommerce.
