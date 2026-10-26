@@ -54,9 +54,20 @@ return [
         'minPointsToRedeem' => 500,
     ],
 
+    // Prices are kept in the base currency (BHD). Each other currency has a rate = how many of its units the customer
+    // pays for 1 BHD (the old shop charged 10 SAR/AED/QAR, 0.82 KWD and 1.1 OMR per 1 BHD).
+    // Orders save the currency, the rate used and the BHD amounts, so admin totals and reports are always in BHD.
     'currencies' => [
-        'BHD' => 1, 'USD' => 2.6596, 'AED' => 9.7674, 'SAR' => 9.9735,
-        'QAR' => 9.6810, 'OMR' => 1.0226, 'KWD' => 0.8157,
+        'base' => 'BHD',
+        'list' => [
+            ['code' => 'BHD', 'rate' => 1, 'decimals' => 3, 'symbol' => 'BHD', 'symbol_ar' => 'د.ب', 'countries' => ['BH'], 'enabled' => true],
+            ['code' => 'SAR', 'rate' => 10, 'decimals' => 2, 'symbol' => 'SAR', 'symbol_ar' => 'ر.س', 'countries' => ['SA'], 'enabled' => true],
+            ['code' => 'AED', 'rate' => 10, 'decimals' => 2, 'symbol' => 'AED', 'symbol_ar' => 'د.إ', 'countries' => ['AE'], 'enabled' => true],
+            ['code' => 'QAR', 'rate' => 10, 'decimals' => 2, 'symbol' => 'QAR', 'symbol_ar' => 'ر.ق', 'countries' => ['QA'], 'enabled' => true],
+            ['code' => 'KWD', 'rate' => 0.82, 'decimals' => 3, 'symbol' => 'KWD', 'symbol_ar' => 'د.ك', 'countries' => ['KW'], 'enabled' => true],
+            ['code' => 'OMR', 'rate' => 1.1, 'decimals' => 3, 'symbol' => 'OMR', 'symbol_ar' => 'ر.ع', 'countries' => ['OM'], 'enabled' => true],
+            ['code' => 'USD', 'rate' => 2.66, 'decimals' => 2, 'symbol' => 'USD', 'symbol_ar' => 'دولار', 'countries' => [], 'enabled' => false],
+        ],
     ],
 
     'mail' => [

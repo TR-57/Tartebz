@@ -21,6 +21,7 @@ sed -i 's/^APP_DEBUG=.*/APP_DEBUG=false/' .env
 composer install --no-dev --optimize-autoloader --no-interaction
 "$PHP" artisan down --retry=30 || true
 "$PHP" artisan migrate --force
+"$PHP" artisan store:import-old-site --if-empty   # first deploy only: old shop photos, logo, categories, products
 "$PHP" artisan up
 "$PHP" artisan config:cache
 "$PHP" artisan route:cache

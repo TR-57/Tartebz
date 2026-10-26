@@ -196,7 +196,10 @@
         '<div class="pd-grid">' +
         '<div class="pd-gallery" data-id="' + p.id + '"><div class="pd-stage">' + TZ.badges(p) +
         '<div class="pd-blob"></div><div class="pd-ring"></div>' + TZ.productArt(p, 'pd-art') +
-        '<span class="pd-spark s1">' + TZ.icon('sparkle') + '</span><span class="pd-spark s2">' + TZ.icon('sparkle') + '</span><span class="pd-spark s3">' + TZ.icon('star') + '</span></div></div>' +
+        '<span class="pd-spark s1">' + TZ.icon('sparkle') + '</span><span class="pd-spark s2">' + TZ.icon('sparkle') + '</span><span class="pd-spark s3">' + TZ.icon('star') + '</span></div>' +
+        (p.images && p.images.length > 1 ? '<div class="pd-thumbs" role="group" aria-label="' + e(name) + '">' + p.images.map(function (im, i) {
+          return '<button type="button" class="pd-thumb" data-photo="' + i + '" aria-pressed="' + (i === 0) + '"><img src="' + e(im.small) + '" alt="" loading="lazy"></button>';
+        }).join('') + '</div>' : '') + '</div>' +
         '<div class="pd-info">' +
         '<div class="pd-cats">' + p.cats.map(function (k) { var cc = TZ.cat(k); return cc ? '<a class="tag" href="' + TZ.url('shop.html?cat=' + k) + '">' + e(TZ.L(cc.name)) + '</a>' : ''; }).join('') + '</div>' +
         '<h1 class="pd-title">' + e(name) + '</h1>' +
@@ -245,6 +248,15 @@
           }
           var tab = ev.target.closest('[role="tab"]');
           if (tab) selectTab(tab);
+          var ph = ev.target.closest('[data-photo]');
+          if (ph) {
+            var prod = TZ.find(root.querySelector('.pd-gallery').getAttribute('data-id'));
+            var cur = root.querySelector('.pd-art');
+            if (prod && cur) {
+              cur.outerHTML = TZ.photo(prod, +ph.getAttribute('data-photo'), 'pd-art');
+              root.querySelectorAll('[data-photo]').forEach(function (b) { b.setAttribute('aria-pressed', String(b === ph)); });
+            }
+          }
         });
         root.addEventListener('keydown', function (ev) {
           var tab = ev.target.closest('[role="tab"]');

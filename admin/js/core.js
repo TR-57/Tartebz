@@ -46,6 +46,28 @@ export async function api(path, { method = 'GET', body, query } = {}) {
   return data;
 }
 
+/** Sends files as multipart/form-data. `files` is a File or a list of Files, sent under `field`. */
+export async function upload(path, files, { field = 'file', query } = {}) {
+  let url = '/api/admin/' + path.replace(/^\//, '');
+  if (query) url += '?' + new URLSearchParams(query);
+  const fd = new FormData();
+  [].concat(files).forEach((f) => fd.append(field, f));
+  let res;
+  try { res = await fetch(url, { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json' }, body: fd }); } catch (e) {
+    throw new ApiError(0, { error: { message: 'Could not reach the server. Check your connection and try again.' } });
+  }
+  let data = null;
+  try { data = await res.json(); } catch (e) { /* not json */ }
+  if (res.status === 413) throw new ApiError(413, { error: { message: 'That file is over 8 MB.' } });
+  if (!res.ok || !data || data.ok === false) {
+    const err = new ApiError(res.status, data);
+    err.data = data;
+    if (res.status === 401) document.dispatchEvent(new CustomEvent('admin:signedout'));
+    throw err;
+  }
+  return data;
+}
+
 /* ---------- escaping & small builders ---------- */
 export function esc(v) {
   return String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -218,6 +240,15 @@ const P = {
   key: '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/>',
   chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
   box: '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 17l-5-5-9 8"/>',
+  tag: '<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/>',
+  coins: '<ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M9 15v2c0 1.7 2.7 3 6 3s6-1.3 6-3v-5c0-1.7-2.7-3-6-3"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  upload: '<path d="M12 16V4M7 9l5-5 5 5M4 20h16"/>',
+  eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  up: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+  down: '<path d="M12 5v14M6 13l6 6 6-6"/>',
+  copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/>',
 };
 export function icon(name, cls = '') {
   return `<svg class="ico ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[name] || ''}</svg>`;

@@ -112,7 +112,7 @@ function homeKey() {
 function renderShell() {
   document.body.setAttribute('data-signed-in', '');
   const a = state.admin;
-  const groups = [['store', 'Store'], ['marketing', 'Marketing']];
+  const groups = [['store', 'Store'], ['catalogue', 'Catalogue'], ['marketing', 'Marketing'], ['settings', 'Settings']];
   const vis = visibleSections();
   const nav = groups.map(([g, label]) => {
     const items = vis.filter((s) => (s.group || 'store') === g && !s.noNav);

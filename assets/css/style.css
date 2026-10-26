@@ -908,3 +908,16 @@ body.has-iab .site-header { top: var(--iab-h); }
   .reveal { opacity: 1; transform: none; }
   .marquee-track { animation: none; }
 }
+
+/* ---------- real product photos (from the media library) ---------- */
+.art-photo { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 22px; background: #fff; box-shadow: 0 18px 40px -18px rgba(0, 0, 0, .35); }
+.pcard-art.art-photo { width: 84%; border-radius: 20px; }
+.pd-art.art-photo { width: 82%; border-radius: 28px; filter: none; box-shadow: 0 30px 60px -24px rgba(0, 0, 0, .45); }
+.cl-thumb .art-photo, .co-thumb .art-photo, .buybar-art.art-photo { border-radius: 10px; box-shadow: none; }
+.cat-art .art-photo { border-radius: 16px; }
+.pd-thumbs { display: flex; gap: 10px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+.pd-thumb { width: 64px; height: 64px; padding: 0; border: 2px solid transparent; border-radius: 14px; overflow: hidden; background: #fff; cursor: pointer; transition: border-color .2s, transform .2s; }
+.pd-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.pd-thumb:hover { transform: translateY(-2px); }
+.pd-thumb[aria-pressed="true"] { border-color: var(--yellow, #FFD700); }
+.logo-img { object-fit: contain; }

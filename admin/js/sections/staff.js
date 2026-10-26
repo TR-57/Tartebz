@@ -9,7 +9,7 @@ const ROLE_HELP = {
 };
 
 export default {
-  key: 'staff', label: 'Staff', icon: 'users', role: 'owner',
+  key: 'staff', label: 'Staff', icon: 'users', role: 'owner', group: 'settings',
   async view(main, route, alive) {
     const r = await api('staff');
     if (!alive()) return;

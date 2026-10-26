@@ -15,12 +15,17 @@ use Illuminate\Support\Facades\DB;
  */
 class ImportOldSite extends Command
 {
-    protected $signature = 'store:import-old-site {--file= : Seed file (default database/seed/old-site.json)} {--photos= : Folder with the photos (default media-seed/)}';
+    protected $signature = 'store:import-old-site {--file= : Seed file (default database/seed/old-site.json)} {--photos= : Folder with the photos (default media-seed/)} {--if-empty : Only when the shop has no products yet (used by deploy.sh)}';
 
     protected $description = 'Import the old shop: photos, logo, categories and products';
 
     public function handle(): int
     {
+        if ($this->option('if-empty') && DB::table('products')->exists()) {
+            $this->line('The shop already has products – nothing imported.');
+
+            return self::SUCCESS;
+        }
         $file = $this->option('file') ?: database_path('seed/old-site.json');
         $photos = rtrim($this->option('photos') ?: config('store.root').'/media-seed', '/');
         $seed = json_decode((string) @file_get_contents($file), true);

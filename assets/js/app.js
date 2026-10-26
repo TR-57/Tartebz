@@ -465,10 +465,16 @@
 
   /* ---------- boot ---------- */
   function boot() {
-    buildCartShell();
-    TZ.rerender();
-    inAppBanner();
-    doc.body.classList.add('is-ready');
+    var start = function () {
+      if (TZ.booted) return;
+      TZ.booted = true;
+      buildCartShell();
+      TZ.rerender();
+      inAppBanner();
+      doc.body.classList.add('is-ready');
+    };
+    /* Wait for the live shop data (see live.js); fall back to the built-in data if it never comes. */
+    if (TZ.live && TZ.live.ready) TZ.live.ready.then(start, start); else start();
   }
   /* Deferred scripts run before DOMContentLoaded, so waiting for it guarantees pages.js is loaded. */
   if (doc.readyState === 'complete') boot(); else doc.addEventListener('DOMContentLoaded', boot);

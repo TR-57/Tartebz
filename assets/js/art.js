@@ -64,7 +64,11 @@
 
   /* ---------- logo ---------- */
   TZ.logoSVG = function (cls) {
-    if (TZ.store.logo) return '<img class="' + (cls || '') + '" src="' + TZ.store.logo + '" alt="' + esc(TZ.L(TZ.store.name)) + '">';
+    if (TZ.store.logo) {
+      return '<img class="logo-img ' + (cls || '') + '" src="' + esc(TZ.store.logo) + '"' +
+        (TZ.store.logoLarge ? ' srcset="' + esc(TZ.store.logo) + ' 200w, ' + esc(TZ.store.logoLarge) + ' 400w" sizes="(min-width: 700px) 220px, 120px"' : '') +
+        ' alt="' + esc(TZ.L(TZ.store.name)) + '" decoding="async">';
+    }
     var g = id('lg');
     return '<svg class="logo-svg ' + (cls || '') + '" viewBox="0 0 200 200" role="img" aria-label="' + esc(TZ.L(TZ.store.name)) + '">' +
       '<defs><radialGradient id="' + g + '" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FF2A35"/><stop offset=".55" stop-color="#E30613"/><stop offset="1" stop-color="#9E0010"/></radialGradient></defs>' +
@@ -179,10 +183,18 @@
       label(236, flavor, false);
   }
 
+  /* A product photo (resized copies from /img/<width>/…; the browser picks the size it needs). */
+  TZ.photo = function (p, i, cls) {
+    var im = (p.images && p.images[i || 0]) || { src: p.image };
+    var set = im.small ? ' srcset="' + esc(im.small) + ' 400w, ' + esc(im.src) + ' 800w' + (im.large ? ', ' + esc(im.large) + ' 1600w' : '') + '"' +
+      ' sizes="(max-width: 600px) 90vw, (max-width: 1000px) 45vw, 520px"' : '';
+    return '<img class="art art-photo ' + (cls || '') + '" src="' + esc(im.src) + '"' + set + ' alt="' + esc(TZ.L(p.name)) + '" loading="lazy" decoding="async">';
+  };
+
   /* Returns the product visual: a real photo if one is set, otherwise the drawn pack. */
   TZ.productArt = function (p, cls) {
     var name = TZ.L(p.name);
-    if (p.image) return '<img class="art ' + (cls || '') + '" src="' + p.image + '" alt="' + esc(name) + '" loading="lazy">';
+    if (p.image) return TZ.photo(p, 0, cls);
     var a = p.art, g = id('g'), sh = id('s'), clip = id('c');
     var flavor = TZ.L(p.flavor);
     var draw = { box: box, strips: strips, cup: cup, bag: bag }[a.type] || box;

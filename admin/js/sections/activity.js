@@ -1,7 +1,7 @@
 import { api, esc, d, fmtDate } from '../core.js';
 
 export default {
-  key: 'activity', label: 'Activity log', icon: 'log', role: 'owner',
+  key: 'activity', label: 'Activity log', icon: 'log', role: 'owner', group: 'settings',
   async view(main, route, alive) {
     const r = await api('activity');
     if (!alive()) return;

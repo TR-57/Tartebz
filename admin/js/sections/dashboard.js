@@ -19,7 +19,7 @@ export default {
         ${tile('To ship', c.toShip, '', '#/orders?status=open')}
         ${tile('Awaiting payment', c.awaitingPayment, 'card, transfer or freight quote', '#/orders?status=awaiting_payment')}
         ${tile('New enquiries', c.enquiries, '', '#/enquiries?status=new', true)}
-        ${tile('Low stock', c.lowStock, '', '#/products?status=low', true)}
+        ${tile('Low stock', c.lowStock, '', '#/products?tab=low', true)}
         ${c.mailFailed ? tile('Emails failed', c.mailFailed, 'check SMTP settings', '#/emails/sent?status=failed', true) : ''}
       </div>
       <div class="grid-2">

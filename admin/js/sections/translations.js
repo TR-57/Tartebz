@@ -3,7 +3,7 @@ import { api, esc, d, can, toast, toastErr, setQuery, debounce, confirmBox, nf }
 const FILTERS = [['missing', 'Missing Arabic'], ['all', 'All text'], ['changed', 'Changed here'], ['keep', 'No translation needed']];
 
 export default {
-  key: 'translations', label: 'Translations', icon: 'lang', role: 'manager',
+  key: 'translations', label: 'Translations', icon: 'lang', role: 'manager', group: 'settings',
   async view(main, route, alive) {
     const q = route.query;
     const scope = q.scope === 'admin' ? 'admin' : 'site';

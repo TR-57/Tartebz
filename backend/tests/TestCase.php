@@ -21,6 +21,19 @@ abstract class TestCase extends BaseTestCase
         // Every state-changing API call must come from our own origin.
         $this->withHeaders(['Origin' => 'http://localhost', 'Accept' => 'application/json']);
         $this->withCredentials(); // JSON test requests send cookies only with this
+        // Uploaded files and resized copies go to a throw-away folder, never the real uploads/.
+        $this->filesDir = sys_get_temp_dir().'/tz-test-'.getmypid().'-'.bin2hex(random_bytes(3));
+        config(['store.upload_dir' => $this->filesDir.'/uploads', 'store.thumb_dir' => $this->filesDir.'/img']);
+    }
+
+    protected string $filesDir = '';
+
+    protected function tearDown(): void
+    {
+        if ($this->filesDir && is_dir($this->filesDir)) {
+            exec('rm -rf '.escapeshellarg($this->filesDir));
+        }
+        parent::tearDown();
     }
 
     protected function makeAdmin(string $role = 'owner', array $over = []): object
