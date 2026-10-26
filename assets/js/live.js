@@ -1,17 +1,29 @@
 /* Tartebz — live shop data.
-   Reads /api/storefront (shop details, logo, currency rates, categories, products with photos) and puts it in
-   place of the built-in data in data.js. The last answer is kept in the browser, so the next page opens
-   instantly; the built-in data is only used when the server cannot be reached.
+   Reads /api/storefront (shop details, logo, currency rates, website settings, categories, products with photos).
+   The last answer is kept in the browser, so the next page opens instantly. Only when the server cannot be reached
+   and nothing is kept does the page load the built-in list (fallback.js).
    Prices always arrive in BHD; TZ.money() converts them with the rates set in the admin. */
 (function () {
   var TZ = window.TZ;
   var KEY = 'tz_catalog_v1';
-  var WAIT_MS = 2500; // first visit: how long the page waits for the server before showing the built-in data
+  var WAIT_MS = 2500; // first visit: how long the page waits for the server before using the built-in list
 
-  var builtinArt = {}, builtinSold = {};
-  TZ.products.forEach(function (p) { builtinArt[p.id] = p.art; builtinSold[p.id] = p.sold || 0; });
-  var bestCat = TZ.categories.filter(function (c) { return c.id === 'best-sellers'; })[0];
-  var DEFAULT_ART = { type: 'box', colors: ['#E30613', '#9E0010'], pieces: ['#FFD700', '#FF8A00', '#FFFFFF'] };
+  /* Website settings (Admin › Settings › Website); these defaults apply until the server answers. */
+  TZ.shop = {
+    whatsappOrders: true, whatsapp: TZ.store.phoneRaw, backInStock: true,
+    paymentLogos: ['benefit', 'visa', 'mastercard'],
+    delivery: [{ country: 'BH', min: 1, max: 1 }]
+  };
+
+  var DEFAULT_PACK = ['box', ['#E30613', '#9E0010'], ['#FFD700', '#FF8A00', '#FFFFFF'], 0];
+  function dress(p) {
+    var k = TZ.packs[p.id] || DEFAULT_PACK;
+    p.art = p.art || { type: k[0], colors: k[1], pieces: k[2] };
+    p.sold = p.sold || k[3] || 0; // sales on the old shop, until orders are counted here
+    p.image = p.images && p.images[0] ? p.images[0].src : (p.image || '');
+    p.images = p.images || [];
+    return p;
+  }
 
   function apply(d) {
     if (!d || !d.ok || !d.products) return false;
@@ -29,6 +41,10 @@
     }
     TZ.store.logo = s.logo ? s.logo.small : '';
     TZ.store.logoLarge = s.logo ? s.logo.medium : '';
+    if (d.shop) {
+      TZ.shop = d.shop;
+      TZ.shop.whatsapp = String(d.shop.whatsapp || TZ.store.phoneRaw).replace(/\D/g, '');
+    }
 
     /* Each country pays in the currency the admin linked it to; a country with none pays in BHD. */
     var cur = d.currencies || [];
@@ -38,18 +54,31 @@
       if (m) { c.cur = m.code; c.rate = m.rate; c.dec = m.dec; c.sym = m.sym; }
     });
 
-    var products = d.products.map(function (p) {
-      p.art = builtinArt[p.id] || DEFAULT_ART;
-      p.image = p.images && p.images[0] ? p.images[0].src : '';
-      p.sold = builtinSold[p.id] || 0; // sales on the old shop, until orders are counted here
-      return p;
-    });
+    var products = d.products.map(dress);
     var cats = d.categories.slice();
-    if (bestCat && products.some(function (p) { return p.bestSeller; })) cats.unshift(bestCat);
+    if (products.some(function (p) { return p.bestSeller; })) cats.unshift(TZ.bestCat);
     TZ.products = products;
     TZ.categories = cats;
     TZ.isLive = true;
     return true;
+  }
+
+  /* The built-in list, loaded only when needed. */
+  function useFallback() {
+    return new Promise(function (resolve) {
+      if (TZ.products.length) { resolve(); return; }
+      var done = function () {
+        if (TZ.fallback && !TZ.products.length) {
+          TZ.products = TZ.fallback.products.map(dress);
+          TZ.categories = TZ.fallback.categories.slice();
+        }
+        resolve();
+      };
+      var sc = document.createElement('script');
+      sc.src = '/assets/js/fallback.js';
+      sc.onload = done; sc.onerror = done;
+      document.head.appendChild(sc);
+    });
   }
 
   function read() { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; } }
@@ -66,8 +95,8 @@
   TZ.live = {
     /* Resolves when the page may draw: at once with a kept copy, else when the server answers (or gives up). */
     ready: hadCache ? Promise.resolve() : Promise.race([
-      fetched.then(function (d) { if (apply(d)) { keep(d); stamp = JSON.stringify(d); } }),
-      new Promise(function (res) { setTimeout(res, WAIT_MS); })
+      fetched.then(function (d) { if (apply(d)) { keep(d); stamp = JSON.stringify(d); return; } return useFallback(); }),
+      new Promise(function (res) { setTimeout(res, WAIT_MS); }).then(useFallback)
     ])
   };
 

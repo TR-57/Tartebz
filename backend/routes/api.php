@@ -8,8 +8,11 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\ProductsController;
 use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\StockAlertsController;
+use App\Http\Controllers\Admin\WebsiteController;
 use App\Http\Controllers\Admin\TranslationsController;
 use App\Http\Controllers\Api\I18nController;
+use App\Http\Controllers\Api\StockAlertController;
 use App\Http\Controllers\Api\StorefrontController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +25,7 @@ Route::get('health', fn () => response()->json(['ok' => true, 'time' => now()->t
 
 // ---- Storefront (public) ----
 Route::get('storefront', [StorefrontController::class, 'index']);
+Route::post('stock-alerts', [StockAlertController::class, 'store']);
 Route::post('i18n/missing', [I18nController::class, 'missing']);
 Route::get('i18n/overrides', [I18nController::class, 'overrides']);
 
@@ -54,6 +58,7 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::get('products', [ProductsController::class, 'index']);
         Route::get('products/{id}', [ProductsController::class, 'show'])->whereNumber('id');
         Route::get('categories', [CategoriesController::class, 'index']);
+        Route::get('products/{id}/stock-alerts', [StockAlertsController::class, 'index'])->whereNumber('id');
     });
 
     Route::middleware('role:manager')->group(function () {
@@ -75,6 +80,10 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::put('categories/{id}', [CategoriesController::class, 'update'])->whereNumber('id');
         Route::post('categories/order', [CategoriesController::class, 'order']);
         Route::delete('categories/{id}', [CategoriesController::class, 'destroy'])->whereNumber('id');
+        Route::post('stock-alerts/{id}/done', [StockAlertsController::class, 'done'])->whereNumber('id');
+        Route::delete('stock-alerts/{id}', [StockAlertsController::class, 'destroy'])->whereNumber('id');
+        Route::get('website', [WebsiteController::class, 'index']);
+        Route::put('website', [WebsiteController::class, 'save']);
     });
 
     Route::middleware('role:owner')->group(function () {

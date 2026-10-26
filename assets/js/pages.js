@@ -9,6 +9,64 @@
   function byOrder(a, b) { return a.order - b.order; }
   function inCat(p, cat) { return !cat || cat === 'all' || p.cats.indexOf(cat) > -1; }
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function store(k, v) {
+    try {
+      if (arguments.length > 1) { localStorage.setItem('tz_' + k, JSON.stringify(v)); return v; }
+      return JSON.parse(localStorage.getItem('tz_' + k) || 'null');
+    } catch (err) { return null; }
+  }
+
+  /* "Tell me when it's back" – email or WhatsApp number, saved on the server (Admin › Products shows who is waiting). */
+  function notifyForm(p, asked) {
+    if (asked) {
+      return '<div class="notify is-done" id="notify">' + TZ.icon('bell') + '<div><b>' + e(t('notify_title')) + '</b><p>' + e(t('notify_done')) + '</p></div></div>';
+    }
+    return '<form class="notify" id="notify" novalidate data-id="' + p.id + '">' +
+      '<h3>' + TZ.icon('bell') + e(t('notify_title')) + '</h3><p>' + e(t('notify_text')) + '</p>' +
+      '<div class="notify-kind" role="radiogroup" aria-label="' + e(t('notify_title')) + '">' +
+      '<label><input type="radio" name="kind" value="phone" checked><span>' + TZ.brandIcon('whatsapp') + e(t('notify_phone')) + '</span></label>' +
+      '<label><input type="radio" name="kind" value="email"><span>' + TZ.icon('mail2') + e(t('notify_email')) + '</span></label></div>' +
+      '<div class="notify-row"><label class="sr-only" for="notify-input">' + e(t('notify_phone')) + '</label>' +
+      '<input id="notify-input" name="contact" type="tel" inputmode="tel" autocomplete="tel" dir="ltr" placeholder="' + e(t('notify_ph_phone')) + '">' +
+      '<button class="btn btn-primary" type="submit">' + e(t('notify_btn')) + '</button></div>' +
+      '<p class="notify-msg" role="status" aria-live="polite"></p></form>';
+  }
+  function bindNotify(root, p) {
+    var f = root.querySelector('form.notify');
+    if (!f) return;
+    var input = f.querySelector('#notify-input'), msg = f.querySelector('.notify-msg');
+    f.addEventListener('change', function (ev) {
+      if (ev.target.name !== 'kind') return;
+      var mail = ev.target.value === 'email';
+      input.type = mail ? 'email' : 'tel'; input.inputMode = mail ? 'email' : 'tel'; input.autocomplete = mail ? 'email' : 'tel';
+      input.placeholder = t(mail ? 'notify_ph_email' : 'notify_ph_phone');
+      f.querySelector('label[for="notify-input"]').textContent = t(mail ? 'notify_email' : 'notify_phone');
+      input.focus();
+    });
+    f.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var mail = f.elements.kind.value === 'email', v = input.value.trim();
+      var ok = mail ? /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) : v.replace(/\D/g, '').length >= 8;
+      if (!ok) { msg.className = 'notify-msg err'; msg.textContent = t('notify_err'); input.setAttribute('aria-invalid', 'true'); input.focus(); return; }
+      input.removeAttribute('aria-invalid');
+      var btn = f.querySelector('button[type=submit]'); btn.disabled = true;
+      var body = { product: p.id, lang: TZ.lang(), country: TZ.country().code };
+      body[mail ? 'email' : 'phone'] = v;
+      fetch('/api/stock-alerts', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) })
+        .then(function (r) { return r.json().then(function (d) { return { status: r.status, d: d }; }); })
+        .then(function (res) {
+          btn.disabled = false;
+          if (res.d && res.d.ok) {
+            store('notify_' + p.id, 1);
+            f.outerHTML = notifyForm(p, true);
+            return;
+          }
+          msg.className = 'notify-msg err';
+          msg.textContent = t(res.status === 409 ? 'notify_instock' : res.status === 429 ? 'notify_wait' : 'notify_err');
+        })
+        .catch(function () { btn.disabled = false; msg.className = 'notify-msg err'; msg.textContent = t('notify_offline'); });
+    });
+  }
 
   /* Numbers count up when they scroll into view */
   function countUp(root) {
@@ -40,6 +98,85 @@
   };
   var catArt = { 'best-sellers': 'tartebz-fruits', 'sweet-sour': 'marshmallow-red-berry', 'electric-sour': 'electric-sour-strips', 'mixed': 'tartebz-fruits-mango' };
 
+  /* The moving strip ("🚚 Delivery to all Gulf countries · ⚡ Electric sour · …"). */
+  function marquee() {
+    var items = t('marquee').map(function (m) { return '<span>' + e(m) + '</span>' + TZ.icon('sparkle', 'mq-star'); }).join('');
+    return '<div class="marquee-track"><div class="mq-group">' + items + '</div><div class="mq-group" aria-hidden="true">' + items + '</div></div>';
+  }
+
+  /* Home: slide from sweet to electric – the products and the colours follow. */
+  var SP_COLORS = [['#FFF4B8', '#FFE066'], ['#FFE680', '#FFB347'], ['#FFC266', '#FF6B4A'], ['#FF7A59', '#E30613'], ['#2B2F8F', '#00C2FF']];
+  var SP_EMOJI = ['🍬', '🍭', '🍋', '🔥', '⚡'];
+  function sourPicker() {
+    var box = $('#sp-control'), grid = $('#sp-grid'), sec = $('#sour-pick');
+    if (!box || !grid) return;
+    var level = sec._level || 3;
+    box.innerHTML = '<div class="sp-scale"><span class="sp-end">' + e(t('sweet')) + '</span>' +
+      '<input type="range" id="sp-range" min="1" max="5" step="1" value="' + level + '" aria-label="' + e(t('sour_meter')) + '">' +
+      '<span class="sp-end">' + e(t('electric')) + '</span></div>' +
+      '<div class="sp-level" aria-live="polite"><span class="sp-emoji" aria-hidden="true"></span><b></b><small></small></div>';
+    var range = $('#sp-range'), lvl = box.querySelector('.sp-level');
+    function show(v, animate) {
+      sec._level = v;
+      var col = SP_COLORS[v - 1];
+      sec.style.setProperty('--sp1', col[0]); sec.style.setProperty('--sp2', col[1]);
+      sec.classList.toggle('is-dark', v >= 4);
+      sec.classList.toggle('is-electric', v === 5);
+      range.style.setProperty('--v', (v - 1) / 4);
+      range.setAttribute('aria-valuetext', t('sour_' + v));
+      lvl.querySelector('.sp-emoji').textContent = SP_EMOJI[v - 1];
+      lvl.querySelector('b').textContent = t('sour_' + v);
+      var list = TZ.products.filter(function (p) { return p.sour === v; });
+      var near = false;
+      if (!list.length) {
+        near = true;
+        var best = Math.min.apply(null, TZ.products.filter(function (p) { return p.sour; }).map(function (p) { return Math.abs(p.sour - v); }));
+        list = TZ.products.filter(function (p) { return p.sour && Math.abs(p.sour - v) === best; });
+      }
+      list.sort(function (a, b) { return (b.inStock - a.inStock) || byOrder(a, b); });
+      lvl.querySelector('small').textContent = near ? t('sour_pick_none') : t('results', { n: list.length });
+      grid.innerHTML = list.slice(0, 4).map(TZ.card).join('');
+      if (animate && !reduced) grid.querySelectorAll('.pcard').forEach(function (c, i) { c.classList.add('in', 'sp-pop'); c.style.setProperty('--d', i * 60 + 'ms'); });
+      TZ.reveal(grid);
+      // The slider is on screen: fill the new meters now rather than waiting for a scroll.
+      if (animate) requestAnimationFrame(function () { requestAnimationFrame(function () { grid.querySelectorAll('.sour').forEach(function (m) { m.classList.add('in'); }); }); });
+      if (animate && v === 5 && !reduced) { sec.classList.remove('zap'); void sec.offsetWidth; sec.classList.add('zap'); }
+    }
+    range.addEventListener('input', function () { show(+range.value, true); });
+    show(level, false);
+  }
+
+  /* Home hero: the packs drift and tilt as you scroll, and follow the phone's tilt where the browser allows it. */
+  var tiltBound = false;
+  function heroTilt() {
+    if (reduced || tiltBound) return;
+    tiltBound = true;
+    var tx = 0, ty = 0, raf = 0;
+    function paint() {
+      raf = 0;
+      var hero = $('.hero-visual'); if (!hero) return;
+      var y = Math.min(window.scrollY, 900);
+      hero.style.setProperty('--sy', (y * 0.12).toFixed(1) + 'px');
+      hero.style.setProperty('--sr', (y * 0.02).toFixed(2) + 'deg');
+      hero.style.setProperty('--tx', tx.toFixed(1) + 'px');
+      hero.style.setProperty('--ty', ty.toFixed(1) + 'px');
+    }
+    function ask() { if (!raf) raf = requestAnimationFrame(paint); }
+    window.addEventListener('scroll', ask, { passive: true });
+    window.addEventListener('pointermove', function (ev) {
+      if (ev.pointerType !== 'mouse') return;
+      tx = (ev.clientX / window.innerWidth - 0.5) * 24; ty = (ev.clientY / window.innerHeight - 0.5) * 18; ask();
+    }, { passive: true });
+    // Android browsers give the phone's tilt without asking; iPhones need a permission prompt, so they only get the scroll effect.
+    if ('DeviceOrientationEvent' in window && typeof DeviceOrientationEvent.requestPermission !== 'function') {
+      window.addEventListener('deviceorientation', function (ev) {
+        if (ev.gamma == null) return;
+        tx = Math.max(-1, Math.min(1, ev.gamma / 30)) * 14; ty = Math.max(-1, Math.min(1, (ev.beta - 45) / 30)) * 10; ask();
+      }, { passive: true });
+    }
+    paint();
+  }
+
   TZ.pages = {
     /* ================= HOME ================= */
     home: function () {
@@ -51,11 +188,13 @@
       countUp($('#hero-stats'));
 
       set('#hero-logo', TZ.logoSVG());
-      set('#hero-pack-1', TZ.productArt(TZ.find('tartebz-fruits')));
-      set('#hero-pack-2', TZ.productArt(TZ.find('electric-sour-strips')));
+      var packs = [TZ.find('tartebz-fruits'), TZ.find('electric-sour-strips')].concat(TZ.suggestions(2)).filter(Boolean);
+      set('#hero-pack-1', packs[0] ? TZ.productArt(packs[0]) : '');
+      set('#hero-pack-2', packs[1] && packs[1] !== packs[0] ? TZ.productArt(packs[1]) : (packs[2] ? TZ.productArt(packs[2]) : ''));
 
-      var items = t('marquee').map(function (m) { return '<span>' + e(m) + '</span>' + TZ.icon('sparkle', 'mq-star'); }).join('');
-      set('#marquee', '<div class="marquee-track"><div class="mq-group">' + items + '</div><div class="mq-group" aria-hidden="true">' + items + '</div></div>');
+      set('#marquee', marquee());
+      sourPicker();
+      heroTilt();
 
       set('#cat-grid', TZ.categories.map(function (c, i) {
         var n = TZ.products.filter(function (p) { return inCat(p, c.id); }).length;
@@ -63,7 +202,10 @@
         return '<a class="cat-card reveal" style="--c1:' + col[0] + ';--c2:' + col[1] + ';--d:' + i * 90 + 'ms" href="' + TZ.url('shop.html?cat=' + c.id) + '">' +
           '<span class="cat-ico">' + TZ.icon(c.icon) + '</span>' +
           '<span class="cat-text"><b>' + e(TZ.L(c.name)) + '</b><small>' + e(TZ.L(c.desc)) + '</small><em>' + e(t('cats_count', { n: n })) + '</em></span>' +
-          '<span class="cat-art">' + TZ.productArt(TZ.find(catArt[c.id])) + '</span>' +
+          '<span class="cat-art">' + (function () {
+            var cp = TZ.find(catArt[c.id]) || TZ.products.filter(function (p) { return inCat(p, c.id); })[0];
+            return cp ? TZ.productArt(cp) : '';
+          })() + '</span>' +
           '<span class="cat-go">' + TZ.icon('arrow', 'flip-rtl') + '</span></a>';
       }).join(''));
 
@@ -99,6 +241,7 @@
         '<div class="container page-hero-inner"><nav class="crumbs" aria-label="breadcrumb"><a href="' + TZ.url('index.html') + '">' + e(t('home')) + '</a>' + TZ.icon('chevron', 'flip-rtl') + '<span>' + e(t('shop_title')) + '</span></nav>' +
         '<h1 id="shop-h1">' + e(cat ? TZ.L(cat.name) : t('shop_title')) + '</h1><p id="shop-sub">' + e(cat ? TZ.L(cat.desc) : t('shop_text')) + '</p></div>' +
         '<svg class="hero-wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 Q 360 0 720 30 T 1440 30 V60 H0Z"/></svg></section>' +
+        '<div class="marquee marquee-slim" aria-hidden="true">' + marquee() + '</div>' +
         '<div class="shop-bar"><div class="container">' +
         '<div class="chips" role="group" aria-label="' + e(t('footer_cats')) + '">' + chips + '</div>' +
         '<div class="shop-tools">' +
@@ -107,8 +250,13 @@
         '<label class="sort"><span>' + e(t('sort_label')) + '</span><span class="select-wrap"><select id="shop-sort">' + sorts + '</select>' + TZ.icon('chevron', 'chev') + '</span></label>' +
         '</div></div></div>' +
         '<section class="section shop-section"><div class="container">' +
-        '<div class="shop-meta"><span id="shop-count" aria-live="polite"></span><span class="prices-in">' + TZ.icon('globe') + e(t('prices_in', { cur: TZ.L(TZ.country().sym) })) + '</span></div>' +
-        '<div class="grid products-grid" id="shop-grid"></div></div></section>';
+        '<div class="shop-meta"><span id="shop-count" aria-live="polite"></span>' + TZ.curPicker('cur-pick-sm') + '</div>' +
+        '<div class="grid products-grid" id="shop-grid"></div></div></section>' +
+        (function () {
+          var rv = TZ.recent.list().slice(0, 4);
+          return rv.length ? '<section class="section recent-sec section-cream"><div class="container"><div class="section-head reveal"><span class="kicker">' + TZ.icon('clock') + e(t('recent_kicker')) + '</span><h2>' + e(t('recent_title')) + '</h2></div>' +
+            '<div class="grid products-grid">' + rv.map(TZ.card).join('') + '</div></div></section>' : '';
+        })();
 
       function grid() {
         var term = st.q.trim().toLowerCase();
@@ -161,32 +309,40 @@
     /* ================= PRODUCT ================= */
     product: function () {
       var root = $('#product-root'); if (!root) return;
-      var slug = new URLSearchParams(location.search).get('p');
+      // /product/<slug> (shared links, Google) or the old ?p=<slug>
+      var m = location.pathname.match(/^\/product\/(.+?)\/?$/);
+      var slug = m ? decodeURIComponent(m[1]) : new URLSearchParams(location.search).get('p');
       var p = TZ.find(slug);
       if (!p) {
         root.innerHTML = '<section class="section"><div class="container empty-state"><div class="empty-ico">' + TZ.icon('search') + '</div><h1>' + e(t('not_found')) + '</h1>' +
           '<a class="btn btn-primary" href="' + TZ.url('shop.html') + '">' + e(t('back_to_shop')) + '</a></div></section>';
         return;
       }
+      if (!m) history.replaceState(null, '', TZ.productUrl(p) + location.hash);
       var name = TZ.L(p.name), cat = TZ.mainCat(p), c = TZ.country();
       var qty = root._qty && root._pid === p.id ? root._qty : 1;
+      if (root._pid !== p.id) TZ.recent.add(p.id);
       root._pid = p.id; root._qty = qty;
       doc.title = name + ' | ' + TZ.L(TZ.store.name);
 
       var shipRows = TZ.countries.map(function (cc) {
-        return '<tr' + (cc.code === c.code ? ' class="is-current"' : '') + '><td>' + cc.flag + ' ' + e(TZ.L(cc.name)) + '</td><td>' + e(TZ.money(TZ.shipCost(p.weight, cc), cc)) + '</td></tr>';
+        return '<tr' + (cc.code === c.code ? ' class="is-current"' : '') + '><td>' + cc.flag + ' ' + e(TZ.L(cc.name)) + '</td><td>' + e(TZ.money(TZ.shipCost(p.weight, cc), cc)) + '</td>' +
+          '<td class="muted">' + e(TZ.delivery(cc)) + '</td></tr>';
       }).join('');
       var related = TZ.products.filter(function (x) { return x.id !== p.id && x.cats.some(function (k) { return p.cats.indexOf(k) > -1 && k !== 'best-sellers'; }); })
         .sort(function (a, b) { return (b.inStock - a.inStock) || byOrder(a, b); }).slice(0, 4);
       if (related.length < 4) related = related.concat(TZ.products.filter(function (x) { return x.id !== p.id && related.indexOf(x) === -1; }).sort(byOrder).slice(0, 4 - related.length));
+      var recent = TZ.recent.list(p.id).filter(function (x) { return related.indexOf(x) === -1; }).slice(0, 4);
 
+      var asked = store('notify_' + p.id);
       var buy = p.inStock ?
         '<div class="buy-row"><div class="qty qty-lg" role="group" aria-label="' + e(t('qty')) + '">' +
         '<button type="button" data-pqty="-1" aria-label="' + e(t('decrease')) + '">' + TZ.icon('minus') + '</button>' +
         '<output id="pd-qty" aria-live="polite">' + qty + '</output>' +
         '<button type="button" data-pqty="1" aria-label="' + e(t('increase')) + '">' + TZ.icon('plus') + '</button></div>' +
         '<button class="btn btn-primary btn-lg btn-add-lg" id="pd-add" type="button" data-add="' + p.id + '" data-qty-val="' + qty + '">' + TZ.icon('bag') + e(t('add_to_cart')) + '</button></div>' :
-        '<div class="buy-row"><button class="btn btn-disabled btn-lg btn-block" type="button" disabled>' + e(t('sold_out')) + '</button></div>';
+        (TZ.shop.backInStock ? notifyForm(p, asked) : '<div class="buy-row"><button class="btn btn-disabled btn-lg btn-block" type="button" disabled>' + e(t('sold_out')) + '</button></div>');
+      var tags = p.cats.filter(function (k) { return k !== 'best-sellers'; }).map(function (k) { var cc = TZ.cat(k); return cc ? '<a class="tag" href="' + TZ.url('shop.html?cat=' + k) + '">' + e(TZ.L(cc.name)) + '</a>' : ''; }).join('');
 
       root.innerHTML =
         '<section class="pd" style="--c1:' + p.art.colors[0] + ';--c2:' + p.art.colors[1] + '"><div class="container">' +
@@ -194,40 +350,47 @@
         '<a href="' + TZ.url('shop.html') + '">' + e(t('nav_shop')) + '</a>' + TZ.icon('chevron', 'flip-rtl') +
         (cat ? '<a href="' + TZ.url('shop.html?cat=' + cat.id) + '">' + e(TZ.L(cat.name)) + '</a>' + TZ.icon('chevron', 'flip-rtl') : '') + '<span>' + e(name) + '</span></nav>' +
         '<div class="pd-grid">' +
-        '<div class="pd-gallery" data-id="' + p.id + '"><div class="pd-stage">' + TZ.badges(p) +
+        '<div class="pd-gallery" data-id="' + p.id + '"><div class="pd-stage">' + TZ.badges(p, true) +
         '<div class="pd-blob"></div><div class="pd-ring"></div>' + TZ.productArt(p, 'pd-art') +
         '<span class="pd-spark s1">' + TZ.icon('sparkle') + '</span><span class="pd-spark s2">' + TZ.icon('sparkle') + '</span><span class="pd-spark s3">' + TZ.icon('star') + '</span></div>' +
         (p.images && p.images.length > 1 ? '<div class="pd-thumbs" role="group" aria-label="' + e(name) + '">' + p.images.map(function (im, i) {
           return '<button type="button" class="pd-thumb" data-photo="' + i + '" aria-pressed="' + (i === 0) + '"><img src="' + e(im.small) + '" alt="" loading="lazy"></button>';
         }).join('') + '</div>' : '') + '</div>' +
         '<div class="pd-info">' +
-        '<div class="pd-cats">' + p.cats.map(function (k) { var cc = TZ.cat(k); return cc ? '<a class="tag" href="' + TZ.url('shop.html?cat=' + k) + '">' + e(TZ.L(cc.name)) + '</a>' : ''; }).join('') + '</div>' +
         '<h1 class="pd-title">' + e(name) + '</h1>' +
-        '<p class="pd-flavor">' + e(t('flavor')) + ': <b>' + e(TZ.L(p.flavor)) + '</b></p>' +
+        (p.flavor && TZ.L(p.flavor) ? '<p class="pd-flavor">' + e(t('flavor')) + ': <b>' + e(TZ.L(p.flavor)) + '</b></p>' : '') +
         '<div class="pd-price-row"><span class="pd-price">' + e(TZ.money(p.price)) + '</span>' +
+        (p.regularPrice > p.price ? '<s class="pd-was">' + e(TZ.money(p.regularPrice)) + '</s>' : '') +
         '<span class="badge badge-stock ' + (p.inStock ? 'in' : 'out') + '">' + e(t(p.inStock ? 'in_stock' : 'out_of_stock')) + '</span></div>' +
-        '<p class="pd-cur">' + TZ.icon('globe') + e(t('prices_in', { cur: TZ.L(c.sym) })) + ' · <label class="inline-select"><span class="sr-only">' + e(t('country_label')) + '</span><select data-country>' + TZ.countryOptions() + '</select></label></p>' +
+        '<div class="pd-cur">' + TZ.curPicker() + (p.inStock ? TZ.deliveryChip() : '') + '</div>' +
+        buy +
+        (p.inStock ? '<div class="pd-pay"><span>' + e(t('pay_with')) + '</span>' + TZ.payLogos() + '</div>' : '') +
         TZ.sourMeter(p.sour, true) +
-        '<p class="pd-desc">' + e(TZ.L(p.desc)) + '</p>' + buy +
+        '<p class="pd-desc">' + e(TZ.L(p.desc)) + '</p>' +
         '<div class="pd-ship">' + TZ.icon('truck') + '<div><b>' + e(t('ship_to_label')) + ' ' + c.flag + ' ' + e(TZ.L(c.name)) + ': ' + e(TZ.money(TZ.shipCost(p.weight))) + '</b>' +
         '<small>' + e(c.ship === 'flat' ? t('cart_ship_note_flat') : t('cart_ship_note_ubex', { w: p.weight })) + '</small></div></div>' +
         '<ul class="pd-perks"><li>' + TZ.icon('shield') + e(t('secure_pay')) + '</li><li>' + TZ.icon('truck') + e(t('gcc_delivery')) + '</li><li>' + TZ.icon('leaf') + e(t('natural')) + '</li></ul>' +
+        (tags ? '<div class="pd-cats">' + tags + '</div>' : '') +
         '</div></div>' +
         '<div class="tabs" id="pd-tabs"><div class="tab-list" role="tablist">' +
         '<button role="tab" id="tab-a" aria-controls="panel-a" aria-selected="true" type="button">' + e(t('tab_desc')) + '</button>' +
         '<button role="tab" id="tab-b" aria-controls="panel-b" aria-selected="false" tabindex="-1" type="button">' + e(t('tab_ship')) + '</button></div>' +
         '<div class="tab-panel" role="tabpanel" id="panel-a" aria-labelledby="tab-a"><p>' + e(TZ.L(p.desc)) + '</p>' +
-        '<dl class="spec"><div><dt>' + e(t('flavor')) + '</dt><dd>' + e(TZ.L(p.flavor)) + '</dd></div><div><dt>' + e(t('sour_meter')) + '</dt><dd>' + e(t('sour_' + p.sour)) + ' (' + p.sour + '/5)</dd></div>' +
+        '<dl class="spec">' + (TZ.L(p.flavor) ? '<div><dt>' + e(t('flavor')) + '</dt><dd>' + e(TZ.L(p.flavor)) + '</dd></div>' : '') +
+        (p.sour ? '<div><dt>' + e(t('sour_meter')) + '</dt><dd>' + e(t('sour_' + p.sour)) + ' (' + p.sour + '/5)</dd></div>' : '') +
         '<div><dt>' + e(t('weight')) + '</dt><dd>' + p.weight + ' ' + e(t('kg')) + '</dd></div></dl></div>' +
         '<div class="tab-panel" role="tabpanel" id="panel-b" aria-labelledby="tab-b" hidden><p>' + e(t('ship_tab_text')) + '</p><table class="ship-table"><tbody>' + shipRows + '</tbody></table></div></div>' +
         '</div></section>' +
         '<section class="section section-cream"><div class="container"><div class="section-head reveal"><span class="kicker">' + TZ.icon('sparkle') + e(t('cats_kicker')) + '</span><h2>' + e(t('related')) + '</h2></div>' +
         '<div class="grid products-grid">' + related.map(TZ.card).join('') + '</div></div></section>' +
+        (recent.length ? '<section class="section recent-sec"><div class="container"><div class="section-head reveal"><span class="kicker">' + TZ.icon('clock') + e(t('recent_kicker')) + '</span><h2>' + e(t('recent_title')) + '</h2></div>' +
+          '<div class="grid products-grid">' + recent.map(TZ.card).join('') + '</div></div></section>' : '') +
         (p.inStock ? '<div class="buybar" id="buybar"><div class="buybar-info">' + TZ.productArt(p, 'buybar-art') + '<span><b>' + e(name) + '</b><em>' + e(TZ.money(p.price)) + '</em></span></div>' +
           '<button class="btn btn-primary" type="button" data-add="' + p.id + '" data-qty-val="' + qty + '">' + TZ.icon('bag') + e(t('add_to_cart')) + '</button></div>' : '');
 
       /* Sticky buy bar appears once the main button scrolls away */
       var addBtn = $('#pd-add'), bar = $('#buybar');
+      doc.body.classList.remove('has-buybar');
       if (addBtn && bar && 'IntersectionObserver' in window) {
         if (root._io) root._io.disconnect();
         root._io = new IntersectionObserver(function (en) {
@@ -236,6 +399,8 @@
         });
         root._io.observe(addBtn);
       }
+      bindNotify(root, p);
+      if (location.hash === '#notify') { var nf = $('#notify'); if (nf) { nf.scrollIntoView({ block: 'center' }); var ni = $('#notify-input'); if (ni) ni.focus({ preventScroll: true }); } }
 
       if (!root._bound) {
         root._bound = true;
@@ -291,8 +456,12 @@
       var lines = TZ.cart.lines(), c = TZ.country();
 
       if (!lines.length) {
+        var sug = TZ.suggestions(4);
         root.innerHTML = '<div class="empty-state co-empty">' + TZ.icon('bag') + '<h2>' + e(t('cart_empty_title')) + '</h2><p>' + e(t('co_empty')) + '</p>' +
-          '<a class="btn btn-primary" href="' + TZ.url('shop.html') + '">' + e(t('order_now')) + '</a></div>';
+          '<a class="btn btn-primary" href="' + TZ.url('shop.html') + '">' + e(t('order_now')) + '</a></div>' +
+          (sug.length ? '<div class="co-sugg"><div class="section-head"><span class="kicker">' + TZ.icon('star') + e(t('bs_kicker')) + '</span><h2>' + e(t('cart_suggest')) + '</h2></div>' +
+            '<div class="grid products-grid">' + sug.map(TZ.card).join('') + '</div></div>' : '');
+        TZ.reveal(root);
         return;
       }
       function field(name, label, opts) {
@@ -317,13 +486,14 @@
         '</div></div>' +
         '<div class="co-card"><h2>' + TZ.icon('card') + e(t('co_payment')) + '</h2>' +
         '<label class="pay-option is-selected"><input type="radio" name="pay" value="gatee" checked><span class="pay-dot"></span><span><b>' + e(t('pay_gatee')) + '</b><small>' + e(t('pay_note')) + '</small></span>' +
-        '<span class="pay-logos"><span class="pay-chip">BenefitPay</span><span class="pay-chip">VISA</span><span class="pay-chip">MC</span></span></label></div></form>' +
+        TZ.payLogos() + '</label></div></form>' +
         '<aside class="co-summary"><div class="co-card sticky"><h2>' + TZ.icon('bag') + e(t('co_summary')) + '</h2><ul class="co-lines">' +
         lines.map(function (l) {
           return '<li><span class="co-thumb">' + TZ.productArt(l.p) + '<i>' + l.qty + '</i></span><span class="co-name">' + e(TZ.L(l.p.name)) + '</span><b>' + e(TZ.money(l.p.price * l.qty)) + '</b></li>';
         }).join('') + '</ul>' +
         '<dl class="totals"><div><dt>' + e(t('cart_subtotal')) + '</dt><dd>' + e(TZ.money(TZ.cart.subtotal())) + '</dd></div>' +
-        '<div><dt>' + e(t('cart_shipping')) + '<small>' + c.flag + ' ' + e(c.ship === 'flat' ? t('cart_ship_note_flat') : t('cart_ship_note_ubex', { w: w })) + '</small></dt><dd>' + e(TZ.money(TZ.cart.shipping())) + '</dd></div>' +
+        '<div><dt>' + e(t('cart_shipping')) + '<small>' + c.flag + ' ' + e(c.ship === 'flat' ? t('cart_ship_note_flat') : t('cart_ship_note_ubex', { w: w })) + '</small>' +
+        (TZ.delivery(c) ? '<small class="co-eta">' + e(TZ.delivery(c)) + '</small>' : '') + '</dt><dd>' + e(TZ.money(TZ.cart.shipping())) + '</dd></div>' +
         '<div class="grand"><dt>' + e(t('cart_total')) + '</dt><dd>' + e(TZ.money(TZ.cart.total())) + '</dd></div></dl>' +
         '<button class="btn btn-primary btn-block btn-lg" type="submit" form="co-form" id="place-order">' + TZ.icon('shield') + e(t('place_order')) + '</button>' +
         '<p class="co-secure">' + TZ.icon('shield') + e(t('pay_note')) + '</p></div></aside>';

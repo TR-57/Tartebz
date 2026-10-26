@@ -10,6 +10,27 @@
 $root = dirname(__DIR__);
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/');
 
+$laravel = function () use ($root) {
+    $_SERVER['SCRIPT_FILENAME'] = $root.'/backend/public/index.php';
+    $_SERVER['SCRIPT_NAME'] = '/index.php';
+    chdir($root.'/backend/public');
+    require $root.'/backend/public/index.php';
+    return true;
+};
+// Server-built pages: product pages (link previews, Google), sitemap, robots.
+if (preg_match('#^/product/.+#', $path) || $path === '/sitemap.xml' || $path === '/robots.txt') {
+    return $laravel();
+}
+// Link-preview pictures (1200×630 JPEG).
+if (preg_match('#^/img/og/((?:uploads|assets)/.+)$#', $path, $m)) {
+    $copy = $root.'/img/og/'.$m[1].'.jpg';
+    if (is_file($copy)) {
+        header('Content-Type: image/jpeg');
+        readfile($copy);
+        return true;
+    }
+    return $laravel();
+}
 if (str_starts_with($path, '/api/') || $path === '/api') {
     $_SERVER['SCRIPT_FILENAME'] = $root.'/backend/public/index.php';
     $_SERVER['SCRIPT_NAME'] = '/index.php';
@@ -58,5 +79,9 @@ $types = ['html' => 'text/html; charset=utf-8', 'js' => 'application/javascript;
 $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 header('Content-Type: '.($types[$ext] ?? 'application/octet-stream'));
 header('Cache-Control: no-cache');
+if ($ext === 'html') {
+    echo str_replace('__SITE__', 'http://'.($_SERVER['HTTP_HOST'] ?? 'localhost:8800'), file_get_contents($file));
+    return true;
+}
 readfile($file);
 return true;

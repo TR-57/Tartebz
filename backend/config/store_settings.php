@@ -41,6 +41,23 @@ return [
         'mapsUrl' => '',
     ],
 
+    // Storefront extras the manager switches in Admin › Settings › Website.
+    'storefront' => [
+        'whatsappOrders' => true,   // "Order on WhatsApp" button in the cart
+        'whatsappNumber' => '',     // digits with country code; empty = the business WhatsApp/phone
+        'backInStock' => true,      // "Tell me when it's back" on sold-out products
+        'paymentLogos' => ['benefit', 'visa', 'mastercard'], // shown near prices, in the cart and the footer – only what you really accept
+        // Delivery time per country, in days after the order (shown as "Arrives tomorrow" / "Arrives Sun 3 – Wed 6 Nov").
+        'delivery' => [
+            ['country' => 'BH', 'min' => 1, 'max' => 1],
+            ['country' => 'SA', 'min' => 2, 'max' => 4],
+            ['country' => 'AE', 'min' => 2, 'max' => 4],
+            ['country' => 'QA', 'min' => 2, 'max' => 4],
+            ['country' => 'KW', 'min' => 2, 'max' => 4],
+            ['country' => 'OM', 'min' => 3, 'max' => 5],
+        ],
+    ],
+
     'orders' => [
         'holdMinutes' => 60,
         'numberPrefix' => '',

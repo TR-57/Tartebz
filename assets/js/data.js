@@ -34,141 +34,62 @@ TZ.shipping = {
          [5.5,14.9],[6,15.9],[6.5,17],[7,18.1],[7.5,19.1],[8,20.2],[8.5,21.2],[9,22.3],[9.5,23.3],[10,24.4]]
 };
 
-TZ.categories = [
-  { id: 'best-sellers', name: { ar: 'الأكثر مبيعاً', en: 'Best sellers' }, desc: { ar: 'النكهات اللي الكل يرجع لها', en: 'The flavours everyone comes back for' }, icon: 'star' },
-  { id: 'sweet-sour', name: { ar: 'حامض حلو', en: 'Sweet & sour' }, desc: { ar: 'توازن مثالي بين الحلاوة والحموضة', en: 'The perfect balance of sweet and tang' }, icon: 'drop' },
-  { id: 'electric-sour', name: { ar: 'حامض كهرباء', en: 'Electric sour' }, desc: { ar: 'حموضة قصوى لعشّاق التحدي', en: 'Extreme sour for the brave' }, icon: 'bolt' },
-  { id: 'mixed', name: { ar: 'مشكل', en: 'Mixed' }, desc: { ar: 'تشكيلة من كل النكهات في بكج واحد', en: 'Every flavour in one pack' }, icon: 'mix' }
-];
+/* "Best sellers" is a collection, not a category: it lists the products marked best seller. */
+TZ.bestCat = {"id": "best-sellers", "name": {"ar": "الأكثر مبيعاً", "en": "Best sellers"}, "desc": {"ar": "النكهات اللي الكل يرجع لها", "en": "The flavours everyone comes back for"}, "icon": "star"};
 
-/* art.type: box | strips | cup | bag. colors: [main, deep], pieces: candy colours inside the art. */
-TZ.products = [
-  {
-    id: 9448, slug: 'tartebz-fruits', order: 0, price: 6.5, inStock: true, bestSeller: true,
-    cats: ['best-sellers', 'mixed'], sour: 3, weight: 0.3, sold: 871,
-    name: { ar: 'ترتيبز فرووتس', en: 'Tartebz Fruits' },
-    flavor: { ar: 'أناناس · مانجو · توت', en: 'Pineapple · Mango · Berry' },
-    desc: {
-      ar: 'بكج ترتيبز فروتس هو توليفة فريدة من قمر الدين الأصلي ممزوج بنكهات استوائية مختارة بعناية هي الأناناس، المانجو والتوت، ليمنح مذاقًا متوازنًا يجمع بين الحموضة والانتعاش بلمسة عصرية. يتميز البكج بتصميم أنيق وحيوي يعكس هوية العلامة، مما يجعله خيارًا مثاليًا كهدية راقية أو كرفيق ممتع في المناسبات والتجمعات الخاصة.',
-      en: 'The Tartebz Fruits pack is a unique blend of original qamar al-din mixed with hand-picked tropical flavours: pineapple, mango and berry. The taste is a balance of tang and freshness with a modern twist. Its lively, elegant packaging makes it a perfect gift or a fun companion for gatherings and special occasions.'
-    },
-    art: { type: 'box', colors: ['#FF8A00', '#E30613'], pieces: ['#FFD700', '#FF8A00', '#C2185B'] }
-  },
-  {
-    id: 9844, slug: 'electric-sour-strips', order: 1, price: 5, inStock: false, bestSeller: true,
-    cats: ['electric-sour'], sour: 5, weight: 0.2, sold: 481,
-    name: { ar: 'شرايط حامض كهرباء', en: 'Electric Sour Strips' },
-    flavor: { ar: 'حموضة كهرباء ⚡', en: 'Electric sour ⚡' },
-    desc: {
-      ar: 'شرايط ترتيبز بحموضة «كهرباء» قوية تلسع من أول قضمة، مغطاة بسكر حامض لعشّاق التحدي والنكهات الجريئة.',
-      en: 'Tartebz strips with a powerful “electric” sourness that zaps from the very first bite, coated in sour sugar for lovers of bold flavour.'
-    },
-    art: { type: 'strips', colors: ['#2B2F8F', '#141652'], pieces: ['#FFD700', '#00C2FF', '#7CFF4F', '#FF2D87'] }
-  },
-  {
-    id: 9833, slug: 'gharqana-electric-red-berry', order: 2, price: 3, inStock: false, bestSeller: false,
-    cats: ['electric-sour'], sour: 5, weight: 0.5, sold: 77,
-    name: { ar: 'الغرقانة حامض كهرباء توت أحمر', en: 'Gharqana Electric Sour Red Berry' },
-    flavor: { ar: 'توت أحمر', en: 'Red berry' },
-    desc: {
-      ar: 'الغرقانة من ترتيبز: قطع حلوى غارقة بالحموضة بنكهة التوت الأحمر، بدرجة «كهرباء» لمحبي الحموضة القصوى.',
-      en: 'Tartebz Gharqana: candy pieces drenched in red-berry sourness, at “electric” level for extreme-sour fans.'
-    },
-    art: { type: 'cup', colors: ['#E30613', '#8E0010'], pieces: ['#FF4D6D', '#B5001F', '#FFD700'] }
-  },
-  {
-    id: 10024, slug: 'gharqana-sweet-red-berry', order: 3, price: 3, inStock: false, bestSeller: false,
-    cats: ['sweet-sour'], sour: 2, weight: 1, sold: 4,
-    name: { ar: 'الغرقانة حامض حلو توت أحمر', en: 'Gharqana Sweet & Sour Red Berry' },
-    flavor: { ar: 'توت أحمر', en: 'Red berry' },
-    desc: {
-      ar: 'الغرقانة بنكهة التوت الأحمر بتوازن حامض حلو لطيف، تجربة منعشة تناسب الجميع.',
-      en: 'Gharqana in red berry with a gentle sweet-and-sour balance, a refreshing treat for everyone.'
-    },
-    art: { type: 'cup', colors: ['#FF4D6D', '#C2185B'], pieces: ['#FF8FA3', '#E30613', '#FFD1DC'] }
-  },
-  {
-    id: 9849, slug: 'sweet-sour-strips', order: 4, price: 5, inStock: true, bestSeller: true,
-    cats: ['sweet-sour'], sour: 3, weight: 0.2, sold: 281,
-    name: { ar: 'شرايط حامض حلو', en: 'Sweet & Sour Strips' },
-    flavor: { ar: 'فواكه مشكلة', en: 'Mixed fruit' },
-    desc: {
-      ar: 'شرايط طرية بتوازن مثالي بين الحلاوة والحموضة، ألوان مبهجة ونكهة فواكه تخليك تكمّل للآخر.',
-      en: 'Soft strips with the perfect balance of sweet and sour: bright colours and a fruity flavour you won’t want to stop eating.'
-    },
-    art: { type: 'strips', colors: ['#FF4D9D', '#C2185B'], pieces: ['#FFD700', '#FF8A00', '#7CFF4F', '#FFFFFF'] }
-  },
-  {
-    id: 9472, slug: 'tartebz-fruits-mango', order: 5, price: 3, inStock: true, bestSeller: false,
-    cats: ['best-sellers', 'sweet-sour'], sour: 2, weight: 0.5, sold: 56,
-    name: { ar: 'ترتيبز فرووتس مانجو', en: 'Tartebz Fruits Mango' },
-    flavor: { ar: 'مانجو', en: 'Mango' },
-    desc: {
-      ar: 'مانجو ترتيبز فروتس يحمل مزيجًا من الحلاوة الطبيعية واللمسة الحامضة الخفيفة، بطابع غني يعبّر عن الأصالة والطعم الشرقي المميز، ليقدّم تجربة فاخرة ومحببة لدى الجميع.',
-      en: 'Tartebz Fruits Mango carries natural sweetness with a light sour touch: rich and authentic, with a distinctly eastern character everyone loves.'
-    },
-    art: { type: 'box', colors: ['#FFC21A', '#FF8A00'], pieces: ['#FFD700', '#FFB000', '#7BC043'] }
-  },
-  {
-    id: 9470, slug: 'tartebz-fruits-pineapple', order: 6, price: 3, inStock: true, bestSeller: false,
-    cats: ['best-sellers', 'electric-sour'], sour: 4, weight: 0.5, sold: 29,
-    name: { ar: 'ترتيبز فرووتس أناناس', en: 'Tartebz Fruits Pineapple' },
-    flavor: { ar: 'أناناس', en: 'Pineapple' },
-    desc: {
-      ar: 'نكهة الأناناس في ترتيبز فروتس تمنحك انتعاشًا استوائيًا بطابع حامض متوازن، يذكّرك بروح الصيف ولذّة الفواكه الطازجة، لتكون الخيار الأمثل لعشّاق الطعم الجريء والمنعش.',
-      en: 'Tartebz Fruits Pineapple brings tropical freshness with a balanced sour edge, a taste of summer and fresh fruit for lovers of bold, refreshing flavour.'
-    },
-    art: { type: 'box', colors: ['#FFE24A', '#F5B700'], pieces: ['#FFD700', '#7BC043', '#FF8A00'] }
-  },
-  {
-    id: 9467, slug: 'tartebz-fruits-berry', order: 7, price: 3, inStock: true, bestSeller: false,
-    cats: ['best-sellers', 'sweet-sour'], sour: 3, weight: 0.5, sold: 92,
-    name: { ar: 'ترتيبز فرووتس توت', en: 'Tartebz Fruits Berry' },
-    flavor: { ar: 'توت', en: 'Berry' },
-    desc: {
-      ar: 'نكهة التوت في ترتيبز فروتس تجمع بين الحموضة المبهجة والحلاوة الرقيقة، لتمنح إحساسًا فاكهيًا عصريًا يعكس روح الشباب والطاقة، ويُكمل التشكيلة بأناقة لا تقاوم.',
-      en: 'The berry flavour of Tartebz Fruits blends a cheerful tang with gentle sweetness, a modern, fruity bite full of youthful energy.'
-    },
-    art: { type: 'box', colors: ['#C2185B', '#7B1040'], pieces: ['#FF4D6D', '#7B1FA2', '#FFD700'] }
-  },
-  {
-    id: 10022, slug: 'marshmallow-blueberry', order: 8, price: 3, inStock: true, bestSeller: false,
-    cats: ['sweet-sour'], sour: 2, weight: 0.5, sold: 53,
-    name: { ar: 'مارشميلو توت أزرق', en: 'Blueberry Marshmallow' },
-    flavor: { ar: 'توت أزرق', en: 'Blueberry' },
-    desc: {
-      ar: 'مارشميلو هش وطري بنكهة التوت الأزرق مع لمسة حموضة خفيفة تذوب في الفم.',
-      en: 'Light, fluffy marshmallow in blueberry with a gentle sour touch that melts in your mouth.'
-    },
-    art: { type: 'bag', colors: ['#2E86FF', '#1747B8'], pieces: ['#BFE0FF', '#7FB8FF', '#FFFFFF'] }
-  },
-  {
-    id: 8986, slug: 'marshmallow-yellow', order: 9, price: 3, inStock: false, bestSeller: false,
-    cats: ['best-sellers', 'sweet-sour'], sour: 2, weight: 0.5, sold: 39,
-    name: { ar: 'مارشميلو الأصفر', en: 'Yellow Marshmallow' },
-    flavor: { ar: 'فاكهة صفراء', en: 'Sunny fruit' },
-    desc: {
-      ar: 'مارشميلو أصفر طري بنكهة فاكهية مشمسة ولمسة حامضة منعشة.',
-      en: 'Soft yellow marshmallow with a sunny fruit flavour and a refreshing sour touch.'
-    },
-    art: { type: 'bag', colors: ['#FFD700', '#F59E0B'], pieces: ['#FFF3B0', '#FFE066', '#FFFFFF'] }
-  },
-  {
-    id: 9851, slug: 'marshmallow-red-berry', order: 10, price: 3, inStock: true, bestSeller: true,
-    cats: ['sweet-sour'], sour: 2, weight: 0.5, sold: 61,
-    name: { ar: 'مارشميلو توت أحمر', en: 'Red Berry Marshmallow' },
-    flavor: { ar: 'توت أحمر', en: 'Red berry' },
-    desc: {
-      ar: 'مارشميلو بنكهة التوت الأحمر، طري وخفيف ويذوب في الفم مع لمسة حموضة.',
-      en: 'Red berry marshmallow: soft, light and melt-in-your-mouth, with a hint of sour.'
-    },
-    art: { type: 'bag', colors: ['#FF3B5C', '#C8102E'], pieces: ['#FFC2CD', '#FF8FA3', '#FFFFFF'] }
-  }
-];
+/* Filled by live.js from /api/storefront (or from fallback.js when offline). */
+TZ.categories = [];
+TZ.products = [];
+
+/* Drawn-pack colours per product (used when a product has no photo) and sales on the old shop. [type, colours, pieces, sold] */
+TZ.packs = {
+  8986: ["bag", ["#FFD700", "#F59E0B"], ["#FFF3B0", "#FFE066", "#FFFFFF"], 39],
+  9448: ["box", ["#FF8A00", "#E30613"], ["#FFD700", "#FF8A00", "#C2185B"], 871],
+  9467: ["box", ["#C2185B", "#7B1040"], ["#FF4D6D", "#7B1FA2", "#FFD700"], 92],
+  9470: ["box", ["#FFE24A", "#F5B700"], ["#FFD700", "#7BC043", "#FF8A00"], 29],
+  9472: ["box", ["#FFC21A", "#FF8A00"], ["#FFD700", "#FFB000", "#7BC043"], 56],
+  9833: ["cup", ["#E30613", "#8E0010"], ["#FF4D6D", "#B5001F", "#FFD700"], 77],
+  9844: ["strips", ["#2B2F8F", "#141652"], ["#FFD700", "#00C2FF", "#7CFF4F", "#FF2D87"], 481],
+  9849: ["strips", ["#FF4D9D", "#C2185B"], ["#FFD700", "#FF8A00", "#7CFF4F", "#FFFFFF"], 281],
+  9851: ["bag", ["#FF3B5C", "#C8102E"], ["#FFC2CD", "#FF8FA3", "#FFFFFF"], 61],
+  10022: ["bag", ["#2E86FF", "#1747B8"], ["#BFE0FF", "#7FB8FF", "#FFFFFF"], 53],
+  10024: ["cup", ["#FF4D6D", "#C2185B"], ["#FF8FA3", "#E30613", "#FFD1DC"], 4]
+};
+
 
 /* ---------- interface text ---------- */
 TZ.i18n = {
   ar: {
+    wa_order: 'اطلب عبر واتساب',
+    notify_title: 'نبلغك أول ما يتوفر',
+    notify_text: 'اترك رقم واتساب أو بريدك، ونرسل لك أول ما يرجع.',
+    notify_phone: 'واتساب',
+    notify_email: 'البريد الإلكتروني',
+    notify_ph_phone: '‎+973 3xxx xxxx',
+    notify_ph_email: 'name@example.com',
+    notify_btn: 'نبّهني',
+    notify_done: 'تم! بنبلغك أول ما يتوفر 🎉',
+    notify_err: 'أدخل رقم واتساب مع رمز الدولة أو بريدًا إلكترونيًا صحيحًا.',
+    notify_instock: 'خبر حلو: المنتج متوفر الحين! حدّث الصفحة.',
+    notify_wait: 'طلبات كثيرة، جرّب بعد شوي.',
+    notify_offline: 'ما قدرنا نوصل للخادم. تأكد من الاتصال وجرّب مرة ثانية.',
+    notify_card: 'نبّهني',
+    pay_with: 'ادفع بأمان عبر',
+    pay_cod: 'الدفع عند الاستلام',
+    arrives_today: 'يوصلك اليوم',
+    arrives_tomorrow: 'يوصلك بكرة',
+    arrives_on: 'يوصلك {date}',
+    arrives_range: 'يوصلك بين {from} و{to}',
+    recent_kicker: 'رجعت لها؟',
+    recent_title: 'شفتها مؤخرًا',
+    welcome_back: 'هلا بعودتك! سلتك تنتظرك ({n})',
+    cart_suggest: 'الأكثر مبيعًا – جرّبها',
+    sour_pick_kicker: 'اختر حموضتك',
+    sour_pick_title: 'قد إيش تتحمّل الحموضة؟',
+    sour_pick_hint: 'حرّك المؤشر من حلو إلى كهرباء، وتتغير النكهات معك.',
+    sour_pick_none: 'ما عندنا نكهة بهالدرجة حاليًا – هذي الأقرب لك.',
+    sweet: 'حلو',
+    electric: 'كهرباء',
     skip: 'تخطَّ إلى المحتوى',
     nav_home: 'الرئيسية', nav_shop: 'المنتجات', nav_contact: 'تواصل معنا', nav_about: 'من نحن',
     order_now: 'اطلب الآن', menu: 'القائمة', close: 'إغلاق',
@@ -191,7 +112,7 @@ TZ.i18n = {
     hero_cta: 'اطلب الآن', hero_cta2: 'قصتنا',
     stat_sold: 'عبوة وصلت لعملائنا', stat_countries: 'دول خليجية نوصل لها', stat_flavors: 'نكهات استوائية',
     scroll: 'اكتشف',
-    marquee: ['حامض حلو', 'حامض كهرباء', 'مانجو', 'أناناس', 'توت', 'مارشميلو', 'قمر الدين الأصلي', 'صنع في البحرين'],
+    marquee: ['🚚 توصيل لكل دول الخليج', '⚡ حامض كهرباء', '🍍 نكهات استوائية', '🍬 حامض حلو', '🥭 مانجو', '🫐 توت', '☁️ مارشميلو', '🇧🇭 صُنع في البحرين', 'قمر الدين الأصلي'],
 
     cats_kicker: 'اختر حموضتك', cats_title: 'تسوق حسب النكهة', cats_count: '{n} منتجات',
     bs_kicker: 'الأكثر طلباً', bs_title: 'الأكثر مبيعاً', view_all: 'كل المنتجات',
@@ -266,6 +187,36 @@ TZ.i18n = {
   },
 
   en: {
+    wa_order: 'Order on WhatsApp',
+    notify_title: 'Tell me when it’s back',
+    notify_text: 'Leave your WhatsApp number or email and we’ll message you the moment it’s back.',
+    notify_phone: 'WhatsApp',
+    notify_email: 'Email',
+    notify_ph_phone: '+973 3xxx xxxx',
+    notify_ph_email: 'name@example.com',
+    notify_btn: 'Notify me',
+    notify_done: 'Done! We’ll tell you as soon as it’s back 🎉',
+    notify_err: 'Enter a WhatsApp number with the country code, or a valid email.',
+    notify_instock: 'Good news: it’s in stock now! Refresh the page.',
+    notify_wait: 'Too many requests – please try again in a bit.',
+    notify_offline: 'We couldn’t reach the server. Check your connection and try again.',
+    notify_card: 'Notify me',
+    pay_with: 'Pay securely with',
+    pay_cod: 'Cash on delivery',
+    arrives_today: 'Arrives today',
+    arrives_tomorrow: 'Arrives tomorrow',
+    arrives_on: 'Arrives {date}',
+    arrives_range: 'Arrives {from} – {to}',
+    recent_kicker: 'Back for more?',
+    recent_title: 'Recently viewed',
+    welcome_back: 'Welcome back! Your cart is waiting ({n})',
+    cart_suggest: 'Best sellers – try one',
+    sour_pick_kicker: 'Pick your sour',
+    sour_pick_title: 'How sour can you go?',
+    sour_pick_hint: 'Slide from sweet to electric and the flavours change with you.',
+    sour_pick_none: 'Nothing at exactly this level right now – here are the closest.',
+    sweet: 'Sweet',
+    electric: 'Electric',
     skip: 'Skip to content',
     nav_home: 'Home', nav_shop: 'Shop', nav_contact: 'Contact', nav_about: 'About',
     order_now: 'Order now', menu: 'Menu', close: 'Close',
@@ -288,7 +239,7 @@ TZ.i18n = {
     hero_cta: 'Order now', hero_cta2: 'Our story',
     stat_sold: 'packs delivered', stat_countries: 'Gulf countries we deliver to', stat_flavors: 'tropical flavours',
     scroll: 'Explore',
-    marquee: ['Sweet & sour', 'Electric sour', 'Mango', 'Pineapple', 'Berry', 'Marshmallow', 'The original qamar al-din', 'Made in Bahrain'],
+    marquee: ['🚚 Delivery to all Gulf countries', '⚡ Electric sour', '🍍 Tropical flavours', '🍬 Sweet & sour', '🥭 Mango', '🫐 Berry', '☁️ Marshmallow', '🇧🇭 Made in Bahrain', 'The original qamar al-din'],
 
     cats_kicker: 'Pick your sour', cats_title: 'Shop by flavour', cats_count: '{n} products',
     bs_kicker: 'Most loved', bs_title: 'Best sellers', view_all: 'All products',

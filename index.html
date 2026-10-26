@@ -6,14 +6,19 @@
   <title>ترتيبز | قمر الدين الأصلي</title>
   <meta name="description" content="ترتيبز: حلويات قمر الدين الحامض والحلو بنكهات استوائية جريئة، من البحرين إلى كل دول الخليج.">
   <meta name="theme-color" content="#E30613">
-  <meta property="og:title" content="ترتيبز | قمر الدين الأصلي">
-  <meta property="og:description" content="حامض حلو أو حامض كهرباء… اختر حموضتك.">
+  <link rel="canonical" href="__SITE__/">
   <meta property="og:type" content="website">
-  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css">
+  <meta property="og:site_name" content="ترتيبز">
+  <meta property="og:locale" content="ar_BH">
+  <meta property="og:title" content="ترتيبز | قمر الدين الأصلي">
+  <meta property="og:description" content="ترتيبز: حلويات قمر الدين الحامض والحلو بنكهات استوائية جريئة، من البحرين إلى كل دول الخليج.">
+  <meta property="og:url" content="__SITE__/">
+  <meta property="og:image" content="__SITE__/img/og/uploads/wp/2025/08/DSC06765-1-scaled.jpg">
+  <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/assets/fonts/alexandria-arabic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/css/style.css">
   <script>(function(){try{var l=new URLSearchParams(location.search).get('lang')||JSON.parse(localStorage.getItem('tz_lang')||'"ar"');if(l==='en'){document.documentElement.lang='en';document.documentElement.dir='ltr';}}catch(e){}})();</script>
 </head>
 <body data-page="home" class="has-hero">
@@ -33,8 +38,8 @@
           <h1 id="hero-h1" data-i18n-html="hero_title"></h1>
           <p class="hero-text" data-i18n="hero_text"></p>
           <div class="hero-ctas">
-            <a class="btn btn-yellow btn-lg" data-href="shop.html" href="shop.html"><span data-i18n="hero_cta"></span></a>
-            <a class="btn btn-ghost btn-lg" data-href="about.html" href="about.html"><span data-i18n="hero_cta2"></span></a>
+            <a class="btn btn-yellow btn-lg" data-href="/shop" href="/shop"><span data-i18n="hero_cta"></span></a>
+            <a class="btn btn-ghost btn-lg" data-href="/about" href="/about"><span data-i18n="hero_cta2"></span></a>
           </div>
           <ul class="hero-stats" id="hero-stats"></ul>
         </div>
@@ -63,6 +68,19 @@
     </section>
 
     <!-- BEST SELLERS -->
+    <!-- PICK YOUR SOUR -->
+    <section class="section sour-pick" id="sour-pick" aria-labelledby="sp-h">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker"><span data-icon="bolt"></span><span data-i18n="sour_pick_kicker"></span></span>
+          <h2 id="sp-h" data-i18n="sour_pick_title"></h2>
+          <p data-i18n="sour_pick_hint"></p>
+        </div>
+        <div class="sp-control reveal" id="sp-control"></div>
+        <div class="grid products-grid" id="sp-grid"></div>
+      </div>
+    </section>
+
     <section class="section section-cream" aria-labelledby="bs-h">
       <div class="container">
         <div class="section-head reveal">
@@ -70,7 +88,7 @@
           <h2 id="bs-h" data-i18n="bs_title"></h2>
         </div>
         <div class="grid products-grid" id="bs-grid"></div>
-        <div class="section-foot reveal"><a class="btn btn-primary btn-lg" data-href="shop.html" href="shop.html"><span data-i18n="view_all"></span><span class="flip-rtl" data-icon="arrow"></span></a></div>
+        <div class="section-foot reveal"><a class="btn btn-primary btn-lg" data-href="/shop" href="/shop"><span data-i18n="view_all"></span><span class="flip-rtl" data-icon="arrow"></span></a></div>
       </div>
     </section>
 
@@ -113,7 +131,7 @@
           <span class="kicker"><span data-icon="flag"></span><span data-i18n="story_kicker"></span></span>
           <h2 id="story-h" data-i18n="story_title"></h2>
           <p data-i18n="story_text"></p>
-          <a class="btn btn-primary btn-lg" data-href="about.html" href="about.html"><span data-i18n="story_cta"></span><span class="flip-rtl" data-icon="arrow"></span></a>
+          <a class="btn btn-primary btn-lg" data-href="/about" href="/about"><span data-i18n="story_cta"></span><span class="flip-rtl" data-icon="arrow"></span></a>
         </div>
       </div>
     </section>
@@ -149,7 +167,7 @@
         <div class="cta-band reveal">
           <span class="cta-spark" style="top:18%;inset-inline-start:46%" data-icon="sparkle"></span>
           <div><h2 data-i18n="cta_title"></h2><p data-i18n="cta_text"></p></div>
-          <a class="btn btn-yellow btn-lg" data-href="shop.html" href="shop.html"><span data-i18n="cta_btn"></span><span class="flip-rtl" data-icon="arrow"></span></a>
+          <a class="btn btn-yellow btn-lg" data-href="/shop" href="/shop"><span data-i18n="cta_btn"></span><span class="flip-rtl" data-icon="arrow"></span></a>
         </div>
       </div>
     </section>
@@ -157,10 +175,10 @@
 
   <div id="site-footer"></div>
 
-  <script src="assets/js/data.js" defer></script>
-  <script src="assets/js/live.js" defer></script>
-  <script src="assets/js/art.js" defer></script>
-  <script src="assets/js/app.js" defer></script>
-  <script src="assets/js/pages.js" defer></script>
+  <script src="/assets/js/data.js" defer></script>
+  <script src="/assets/js/live.js" defer></script>
+  <script src="/assets/js/art.js" defer></script>
+  <script src="/assets/js/app.js" defer></script>
+  <script src="/assets/js/pages.js" defer></script>
 </body>
 </html>

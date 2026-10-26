@@ -48,6 +48,17 @@ class StorefrontController extends Controller
                 'address' => ['en' => $biz['addressLine1'], 'ar' => $biz['addressLine1_ar'] ?: $biz['addressLine1']],
                 'mapsUrl' => $brand['mapsUrl'], 'social' => ['instagram' => $brand['instagram'], 'tiktok' => $brand['tiktok']],
             ],
+            'shop' => (function () use ($biz) {
+                $sf = Settings::get('storefront');
+
+                return [
+                    'whatsappOrders' => (bool) $sf['whatsappOrders'],
+                    'whatsapp' => $sf['whatsappNumber'] ?: preg_replace('/\D/', '', $biz['whatsapp'] ?: $biz['phone']),
+                    'backInStock' => (bool) $sf['backInStock'],
+                    'paymentLogos' => array_values($sf['paymentLogos']),
+                    'delivery' => array_values($sf['delivery']),
+                ];
+            })(),
             'baseCurrency' => Currency::base(),
             'currencies' => Currency::forStorefront(),
             'categories' => array_values(array_map(fn ($c) => [

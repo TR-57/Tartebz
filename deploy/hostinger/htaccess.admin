@@ -1,0 +1,6 @@
+# public_html/admin/.htaccess – the admin's script files keep the same names between deploys,
+# so browsers and Cloudflare must always check for a newer copy.
+<IfModule mod_headers.c>
+  Header set Cache-Control "no-cache"
+  Header always set X-Robots-Tag "noindex, nofollow"
+</IfModule>

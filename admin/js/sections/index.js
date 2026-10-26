@@ -6,8 +6,9 @@ import categories from './categories.js';
 import media from './media.js';
 import translations from './translations.js';
 import currencies from './currencies.js';
+import website from './website.js';
 import staff from './staff.js';
 import activity from './activity.js';
 import account from './account.js';
 
-export const sections = [dashboard, products, categories, media, translations, currencies, staff, activity, account];
+export const sections = [dashboard, products, categories, media, translations, website, currencies, staff, activity, account];

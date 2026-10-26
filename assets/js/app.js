@@ -53,10 +53,13 @@
     root.querySelectorAll('[data-art]').forEach(function (el) { var p = TZ.find(el.getAttribute('data-art')); if (p) el.innerHTML = TZ.productArt(p); });
   };
 
-  /* Keeps ?lang=en on internal links so shared URLs open in the same language. */
+  /* Internal links: clean, site-absolute addresses ('shop.html?cat=x' -> '/shop?cat=x', 'index.html' -> '/'),
+     keeping ?lang=en so shared links open in the same language. Absolute paths also work on /product/<slug> pages. */
   TZ.url = function (href) {
-    if (lang === 'ar') return href;
-    return href + (href.indexOf('?') > -1 ? '&' : '?') + 'lang=en';
+    if (/^(https?:|mailto:|tel:|#)/.test(href)) return href;
+    var h = '/' + href.replace(/^\/+/, '').replace(/^index\.html/, '').replace(/^([a-z-]+)\.html/, '$1');
+    if (lang === 'ar') return h;
+    return h + (h.indexOf('?') > -1 ? '&' : '?') + 'lang=en';
   };
 
   /* ---------- country & money ---------- */
@@ -82,6 +85,52 @@
     var sym = TZ.L(c.sym);
     return lang === 'ar' ? num + ' ' + sym : sym + ' ' + num;
   };
+  /* "🇧🇭 Bahrain · BHD ▾" – a real <select> laid over a readable face. */
+  TZ.curPicker = function (cls) {
+    var c = TZ.country();
+    return '<label class="cur-pick ' + (cls || '') + '"><span class="sr-only">' + TZ.esc(TZ.t('country_label')) + '</span>' +
+      '<span class="cur-face" aria-hidden="true"><span class="cur-flag">' + c.flag + '</span>' + TZ.esc(TZ.L(c.name)) + ' · ' + TZ.esc(TZ.L(c.sym)) + TZ.icon('chevron', 'chev') + '</span>' +
+      '<select data-country>' + TZ.countryOptions() + '</select></label>';
+  };
+
+  /* Payment marks the shop really accepts (Admin › Settings › Website). */
+  var PAY = {
+    benefit: ['BenefitPay', '<b>Benefit</b><i>Pay</i>'],
+    visa: ['Visa', '<b>VISA</b>'],
+    mastercard: ['Mastercard', '<svg viewBox="0 0 34 21" aria-hidden="true"><circle cx="12.5" cy="10.5" r="8.5" fill="#EB001B"/><circle cx="21.5" cy="10.5" r="8.5" fill="#F79E1B" fill-opacity=".92"/><path d="M17 3.3a8.5 8.5 0 0 1 0 14.4 8.5 8.5 0 0 1 0-14.4z" fill="#FF5F00"/></svg>'],
+    applepay: ['Apple Pay', '<b>Apple Pay</b>'],
+    mada: ['mada', '<b>mada</b>'],
+    knet: ['KNET', '<b>KNET</b>'],
+    tabby: ['tabby', '<b>tabby</b>'],
+    cod: [null, null]
+  };
+  TZ.payLogos = function (cls) {
+    var list = (TZ.shop && TZ.shop.paymentLogos) || [];
+    if (!list.length) return '';
+    return '<span class="pay-logos ' + (cls || '') + '">' + list.map(function (k) {
+      var d = PAY[k]; if (!d) return '';
+      if (k === 'cod') return '<span class="pl pl-cod">' + TZ.icon('cash') + TZ.esc(TZ.t('pay_cod')) + '</span>';
+      return '<span class="pl pl-' + k + '" role="img" aria-label="' + TZ.esc(d[0]) + '" title="' + TZ.esc(d[0]) + '">' + d[1] + '</span>';
+    }).join('') + '</span>';
+  };
+
+  /* "Arrives tomorrow" / "Arrives Sun 3 Nov – Wed 6 Nov", from the delivery days set per country. */
+  TZ.delivery = function (c) {
+    c = c || TZ.country();
+    var row = ((TZ.shop && TZ.shop.delivery) || []).filter(function (d) { return d.country === c.code; })[0];
+    if (!row) return '';
+    var loc = lang === 'ar' ? 'ar-BH-u-nu-latn' : 'en-GB';
+    var day = function (n) { return new Date(Date.now() + n * 864e5).toLocaleDateString(loc, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Bahrain' }); };
+    if (row.max === 0) return TZ.t('arrives_today');
+    if (row.min === 1 && row.max === 1) return TZ.t('arrives_tomorrow');
+    if (row.min === row.max) return TZ.t('arrives_on', { date: day(row.min) });
+    return TZ.t('arrives_range', { from: day(row.min), to: day(row.max) });
+  };
+  TZ.deliveryChip = function (c) {
+    var txt = TZ.delivery(c);
+    return txt ? '<span class="eta">' + TZ.icon('truck') + '<span>' + TZ.esc(txt) + '</span></span>' : '';
+  };
+
   TZ.countryOptions = function () {
     var cur = TZ.country().code;
     return TZ.countries.map(function (c) {
@@ -98,7 +147,31 @@
     var c = p.cats.filter(function (x) { return x !== 'best-sellers'; })[0] || p.cats[0];
     return TZ.cat(c);
   };
-  TZ.productUrl = function (p) { return TZ.url('product.html?p=' + encodeURIComponent(p.slug)); };
+  TZ.productUrl = function (p) { return TZ.url('product/' + encodeURIComponent(p.slug)); };
+  function byOrder(a, b) { return a.order - b.order; }
+  /* Best sellers first, then the rest; only what can be bought now. */
+  TZ.suggestions = function (n, exclude) {
+    var ok = function (p) { return p.inStock && (!exclude || exclude.indexOf(p.id) === -1); };
+    return TZ.products.filter(function (p) { return ok(p) && p.bestSeller; }).sort(byOrder)
+      .concat(TZ.products.filter(function (p) { return ok(p) && !p.bestSeller; }).sort(byOrder)).slice(0, n);
+  };
+
+  /* Recently viewed products (this browser only). */
+  TZ.recent = {
+    add: function (id) { var l = (store.get('recent', []) || []).filter(function (x) { return x !== id; }); l.unshift(id); store.set('recent', l.slice(0, 8)); },
+    list: function (except) { return (store.get('recent', []) || []).filter(function (x) { return x !== except; }).map(TZ.find).filter(Boolean); }
+  };
+
+  /* The cart as a ready WhatsApp message to the shop. */
+  TZ.waCartLink = function () {
+    var c = TZ.country();
+    var msg = [TZ.t('wa_order_intro'), ''].concat(TZ.cart.lines().map(function (l) {
+      return '• ' + TZ.L(l.p.name) + ' × ' + l.qty + ' = ' + TZ.money(l.p.price * l.qty);
+    })).concat(['', TZ.t('cart_subtotal') + ': ' + TZ.money(TZ.cart.subtotal()),
+      TZ.t('cart_shipping') + ' (' + c.flag + ' ' + TZ.L(c.name) + '): ' + TZ.money(TZ.cart.shipping()),
+      TZ.t('cart_total') + ': ' + TZ.money(TZ.cart.total())]).join('\n');
+    return 'https://wa.me/' + ((TZ.shop && TZ.shop.whatsapp) || TZ.store.phoneRaw) + '?text=' + encodeURIComponent(msg);
+  };
 
   /* ---------- shipping ---------- */
   TZ.shipCost = function (weightKg, countryObj) {
@@ -137,9 +210,10 @@
 
   /* ---------- shared components ---------- */
   TZ.sourMeter = function (level, big) {
+    if (!level) return '';
     var segs = '';
     for (var i = 1; i <= 5; i++) {
-      segs += '<span class="seg' + (i <= level ? ' on' : '') + '">' + (level === 5 && i <= level ? TZ.icon('bolt') : '') + '</span>';
+      segs += '<span class="seg' + (i <= level ? ' on' : '') + '" style="--i:' + i + '">' + (level === 5 && i <= level ? TZ.icon('bolt') : '') + '</span>';
     }
     return '<div class="sour' + (big ? ' sour-lg' : '') + (level === 5 ? ' is-electric' : '') + '" role="img" aria-label="' +
       TZ.esc(TZ.t('sour_meter') + ': ' + TZ.t('sour_' + level) + ' (' + level + '/5)') + '">' +
@@ -147,9 +221,9 @@
       '<span class="sour-bar">' + segs + '</span></div>';
   };
 
-  TZ.badges = function (p) {
+  TZ.badges = function (p, noStock) {
     return '<span class="badges">' +
-      '<span class="badge badge-stock ' + (p.inStock ? 'in' : 'out') + '">' + TZ.esc(TZ.t(p.inStock ? 'in_stock' : 'out_of_stock')) + '</span>' +
+      (noStock ? '<span></span>' : '<span class="badge badge-stock ' + (p.inStock ? 'in' : 'out') + '">' + TZ.esc(TZ.t(p.inStock ? 'in_stock' : 'out_of_stock')) + '</span>') +
       (p.bestSeller ? '<span class="badge badge-bs">★ ' + TZ.esc(TZ.t('best_seller')) + '</span>' : '') +
       '</span>';
   };
@@ -167,7 +241,9 @@
       '<div class="pcard-foot"><span class="price">' + TZ.esc(TZ.money(p.price)) + '</span>' +
       (p.inStock
         ? '<button class="btn-add" type="button" data-add="' + p.id + '" aria-label="' + TZ.esc(TZ.t('add_to_cart') + ': ' + TZ.L(p.name)) + '">' + TZ.icon('plus') + '<span>' + TZ.esc(TZ.t('add')) + '</span></button>'
-        : '<span class="sold-out">' + TZ.esc(TZ.t('sold_out')) + '</span>') +
+        : (TZ.shop && TZ.shop.backInStock
+          ? '<a class="btn-notify" href="' + TZ.productUrl(p) + '#notify">' + TZ.icon('bell') + '<span>' + TZ.esc(TZ.t('notify_card')) + '</span></a>'
+          : '<span class="sold-out">' + TZ.esc(TZ.t('sold_out')) + '</span>')) +
       '</div></div></article>';
   };
 
@@ -248,7 +324,7 @@
       '</ul></div></div>' +
       '<div class="container footer-bottom">' +
       '<p>' + TZ.esc(TZ.t('footer_rights', { y: new Date().getFullYear() })) + ' · ' + TZ.esc(TZ.t('footer_cr', { cr: TZ.store.cr })) + '</p>' +
-      '<div class="pay-row"><span>' + TZ.esc(TZ.t('footer_pay')) + '</span><span class="pay-chip">BenefitPay</span><span class="pay-chip">VISA</span><span class="pay-chip">Mastercard</span></div>' +
+      '<div class="pay-row"><span>' + TZ.esc(TZ.t('footer_pay')) + '</span>' + TZ.payLogos() + '</div>' +
       '</div></footer>';
   }
 
@@ -282,7 +358,7 @@
     var body;
     if (!lines.length) {
       body = '<div class="cart-empty">' + emptyArt() + '<h3>' + TZ.esc(TZ.t('cart_empty_title')) + '</h3><p>' + TZ.esc(TZ.t('cart_empty_text')) + '</p>' +
-        '<a class="btn btn-primary" href="' + TZ.url('shop.html') + '">' + TZ.esc(TZ.t('order_now')) + '</a></div>';
+        '<a class="btn btn-primary" href="' + TZ.url('shop.html') + '">' + TZ.esc(TZ.t('order_now')) + '</a></div>' + TZ.miniList(TZ.suggestions(4));
     } else {
       body = '<ul class="cart-lines">' + lines.map(function (l) {
         var p = l.p;
@@ -305,7 +381,10 @@
       '<dl class="totals"><div><dt>' + TZ.esc(TZ.t('cart_subtotal')) + '</dt><dd>' + TZ.esc(TZ.money(TZ.cart.subtotal())) + '</dd></div>' +
       '<div><dt>' + TZ.esc(TZ.t('cart_shipping')) + '<small>' + TZ.esc(c.ship === 'flat' ? TZ.t('cart_ship_note_flat') : TZ.t('cart_ship_note_ubex', { w: w })) + '</small></dt><dd>' + TZ.esc(TZ.money(TZ.cart.shipping())) + '</dd></div>' +
       '<div class="grand"><dt>' + TZ.esc(TZ.t('cart_total')) + '</dt><dd>' + TZ.esc(TZ.money(TZ.cart.total())) + '</dd></div></dl>' +
+      (TZ.delivery(c) ? '<p class="cart-eta">' + TZ.deliveryChip(c) + '</p>' : '') +
       '<a class="btn btn-primary btn-block btn-lg" href="' + TZ.url('checkout.html') + '">' + TZ.esc(TZ.t('cart_checkout')) + TZ.icon('arrow', 'flip-rtl') + '</a>' +
+      (TZ.shop && TZ.shop.whatsappOrders ? '<a class="btn btn-whatsapp btn-block" href="' + TZ.esc(TZ.waCartLink()) + '" target="_blank" rel="noopener">' + TZ.brandIcon('whatsapp') + TZ.esc(TZ.t('wa_order')) + '</a>' : '') +
+      '<div class="cart-pay">' + TZ.payLogos() + '</div>' +
       '<button class="btn-link" type="button" data-close-cart>' + TZ.esc(TZ.t('cart_continue')) + '</button></div>' : '';
 
     drawer.innerHTML =
@@ -314,6 +393,16 @@
       '<div class="cart-body">' + body + '</div>' + foot;
     updateCount();
   }
+
+  /* A short list of products with a quick "+" (empty cart, empty checkout). */
+  TZ.miniList = function (list) {
+    if (!list.length) return '';
+    return '<div class="mini-sugg"><h4>' + TZ.icon('star') + TZ.esc(TZ.t('cart_suggest')) + '</h4><ul>' + list.map(function (p) {
+      return '<li data-id="' + p.id + '"><a class="ms-thumb" href="' + TZ.productUrl(p) + '">' + TZ.productArt(p) + '</a>' +
+        '<span class="ms-info"><a href="' + TZ.productUrl(p) + '">' + TZ.esc(TZ.L(p.name)) + '</a><b>' + TZ.esc(TZ.money(p.price)) + '</b></span>' +
+        '<button class="btn-add btn-add-sm" type="button" data-add="' + p.id + '" aria-label="' + TZ.esc(TZ.t('add_to_cart') + ': ' + TZ.L(p.name)) + '">' + TZ.icon('plus') + '</button></li>';
+    }).join('') + '</ul></div>';
+  };
 
   function emptyArt() {
     return '<svg class="empty-art" viewBox="0 0 160 140" aria-hidden="true"><ellipse cx="80" cy="128" rx="52" ry="7" fill="#000" opacity=".08"/>' +
@@ -354,9 +443,14 @@
     var p = TZ.find(id); if (!p || !p.inStock) return;
     TZ.cart.add(id, qty || 1);
     toast(TZ.t('added', { name: TZ.L(p.name) }));
+    qty = qty || 1;
     var art = fromEl && (fromEl.closest('[data-id]') || doc).querySelector('.art');
-    if (!art || reduced || !fab.offsetParent) { bump(); return; }
-    var r = art.getBoundingClientRect(), t = fab.getBoundingClientRect();
+    var fabShown = fab.offsetParent && !fab.classList.contains('is-away') && !doc.body.classList.contains('has-buybar');
+    if (!art || reduced) { bump(qty); return; }
+    // Fly to whichever cart is on screen: the floating one, or the one in the header.
+    var target = fabShown ? fab : doc.querySelector('.site-header .cart-btn');
+    if (!target) { bump(qty); return; }
+    var r = art.getBoundingClientRect(), t = target.getBoundingClientRect();
     var clone = art.cloneNode(true);
     clone.classList.add('fly');
     clone.style.cssText = 'left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px';
@@ -367,17 +461,25 @@
       { transform: 'translate(' + dx * 0.5 + 'px,' + (dy * 0.5 - 80) + 'px) scale(.55) rotate(-12deg)', opacity: 1, offset: 0.55 },
       { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(.12) rotate(8deg)', opacity: 0.4 }
     ], { duration: 750, easing: 'cubic-bezier(.45,.05,.55,1)' });
-    anim.onfinish = function () { clone.remove(); bump(); };
+    anim.onfinish = function () { clone.remove(); bump(qty); };
   };
-  function bump() {
+  /* The cart icons bounce, their count pops and a little "+1" floats up. */
+  function bump(qty) {
     [fab].concat([].slice.call(doc.querySelectorAll('.cart-btn'))).forEach(function (b) {
-      if (!b) return; b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump');
+      if (!b) return;
+      b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump');
+      if (reduced) return;
+      var plus = doc.createElement('span');
+      plus.className = 'plus-one'; plus.setAttribute('aria-hidden', 'true'); plus.textContent = '+' + (qty || 1);
+      b.appendChild(plus);
+      setTimeout(function () { plus.remove(); }, 900);
     });
+    doc.querySelectorAll('[data-cart-count]').forEach(function (c) { c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); });
   }
 
   var toastTimer;
-  function toast(msg) {
-    toastEl.innerHTML = '<span class="toast-ico">' + TZ.icon('check') + '</span><span class="toast-msg">' + TZ.esc(msg) + '</span>' +
+  function toast(msg, kind) {
+    toastEl.innerHTML = '<span class="toast-ico">' + TZ.icon(kind === 'cart' ? 'bag' : 'check') + '</span><span class="toast-msg">' + TZ.esc(msg) + '</span>' +
       '<button type="button" class="toast-btn" data-open-cart>' + TZ.esc(TZ.t('view_cart')) + '</button>';
     toastEl.classList.add('show');
     clearTimeout(toastTimer);
@@ -390,7 +492,7 @@
     entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
   }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 }) : null;
   TZ.reveal = function (root) {
-    (root || doc).querySelectorAll('.reveal:not(.in)').forEach(function (el) {
+    (root || doc).querySelectorAll('.reveal:not(.in), .sour:not(.in)').forEach(function (el) {
       if (!io || reduced) el.classList.add('in'); else io.observe(el);
     });
   };
@@ -399,6 +501,8 @@
   function onScroll() {
     var h = doc.getElementById('masthead');
     if (h) h.classList.toggle('scrolled', window.scrollY > 24);
+    // The floating cart waits until the page is scrolled (the header cart is right there at the top).
+    if (fab) fab.classList.toggle('is-away', window.scrollY < 320);
   }
 
   /* ---------- in-app browser banner (Instagram/TikTok can't finish Benefit payments) ---------- */
@@ -420,6 +524,20 @@
   }
 
   /* ---------- events ---------- */
+  /* Card -> product page: the tapped card's photo grows into the product photo (browsers that support it). */
+  doc.addEventListener('click', function (e) {
+    var a = e.target.closest('a[href]');
+    if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey) return;
+    var card = a.closest('.pcard, .mini-sugg li');
+    var art = card && a.getAttribute('href').indexOf('/product/') === 0 && card.querySelector('.art');
+    if (!art) return;
+    doc.querySelectorAll('.pd-stage .pd-art').forEach(function (el) { el.style.viewTransitionName = 'none'; }); // one name per page
+    art.style.viewTransitionName = 'pd-photo';
+  }, true);
+  window.addEventListener('pageshow', function () {
+    doc.querySelectorAll('.art[style*="view-transition-name"]').forEach(function (el) { el.style.viewTransitionName = ''; });
+  });
+
   doc.addEventListener('click', function (e) {
     var t = e.target.closest('[data-add],[data-open-cart],[data-close-cart],[data-open-menu],[data-close-menu],[data-lang-toggle],[data-qty],[data-remove]');
     if (!t) return;
@@ -463,6 +581,17 @@
     TZ.reveal(doc);
   };
 
+  /* A returning visitor with things in the cart is reminded of it (once per visit). */
+  function welcomeBack() {
+    var last = store.get('last_seen', 0), now = Date.now();
+    store.set('last_seen', now);
+    var n = TZ.cart.count();
+    if (n && last && now - last > 2 * 3600e3 && doc.body.getAttribute('data-page') !== 'checkout') {
+      setTimeout(function () { toast(TZ.t('welcome_back', { n: n }), 'cart'); }, 1200);
+    }
+  }
+  doc.addEventListener('visibilitychange', function () { if (doc.hidden) store.set('last_seen', Date.now()); });
+
   /* ---------- boot ---------- */
   function boot() {
     var start = function () {
@@ -472,6 +601,8 @@
       TZ.rerender();
       inAppBanner();
       doc.body.classList.add('is-ready');
+      onScroll();
+      welcomeBack();
     };
     /* Wait for the live shop data (see live.js); fall back to the built-in data if it never comes. */
     if (TZ.live && TZ.live.ready) TZ.live.ready.then(start, start); else start();

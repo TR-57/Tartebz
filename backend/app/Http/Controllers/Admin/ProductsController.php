@@ -7,6 +7,7 @@ use App\Support\ApiError;
 use App\Support\Audit;
 use App\Support\Catalog;
 use App\Support\Media;
+use App\Support\StockAlerts;
 use App\Support\Thumbs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,9 @@ use Illuminate\Support\Facades\Schema;
 class ProductsController extends Controller
 {
     private const TABS = ['all', 'active', 'hidden', 'out', 'low', 'missing'];
+
+    /** product id => people waiting for it (filled once per list request). */
+    private ?array $waiting = null;
 
     public function index(Request $r)
     {
@@ -33,6 +37,7 @@ class ProductsController extends Controller
             return ! $cat || (int) $p->category_id === $cat;
         });
 
+        $this->waiting = DB::table('stock_alerts')->whereNull('notified_at')->selectRaw('product_id, COUNT(*) n')->groupBy('product_id')->pluck('n', 'product_id')->all();
         $counts = array_fill_keys(self::TABS, 0);
         $list = [];
         foreach ($rows as $p) {
@@ -81,15 +86,16 @@ class ProductsController extends Controller
         $before = $this->find($id);
         Catalog::save($this->input($r), $id);
         $after = DB::table('products')->find($id);
+        $emailed = StockAlerts::afterChange($id, Catalog::available($before));
         $changed = [];
         foreach (['name', 'name_ar', 'price', 'regular_price', 'status', 'stock_qty', 'category_id', 'images', 'sour_level', 'best_seller'] as $k) {
             if ((string) $before->$k !== (string) $after->$k) {
                 $changed[$k] = [$before->$k, $after->$k];
             }
         }
-        Audit::log($r, 'product_updated', 'product', $id, $changed);
+        Audit::log($r, 'product_updated', 'product', $id, $changed + ($emailed ? ['backInStockEmails' => $emailed] : []));
 
-        return $this->ok(['product' => $this->full($after, Catalog::categoryTree())]);
+        return $this->ok(['product' => $this->full($after, Catalog::categoryTree()), 'backInStockEmails' => $emailed]);
     }
 
     /** Quick stock change from the list: {stock_qty} or {in_stock}. No other rule is checked. */
@@ -110,10 +116,11 @@ class ProductsController extends Controller
             $upd += ['in_stock' => $this->bool($r, 'in_stock'), 'manage_stock' => false];
         }
         DB::table('products')->where('id', $id)->update($upd);
+        $emailed = StockAlerts::afterChange($id, Catalog::available($p));
         Audit::log($r, 'stock_changed', 'product', $id, ['from' => $p->manage_stock ? (int) $p->stock_qty : ($p->in_stock ? 'in stock' : 'out of stock'),
             'to' => $upd['stock_qty'] ?? ($upd['in_stock'] ? 'in stock' : 'out of stock')]);
 
-        return $this->ok(['product' => $this->row(DB::table('products')->find($id), Catalog::categoryTree())]);
+        return $this->ok(['product' => $this->row(DB::table('products')->find($id), Catalog::categoryTree()), 'backInStockEmails' => $emailed]);
     }
 
     /** {ids:[…], action: show|hide|delete|category|best_seller|not_best_seller, category_id?} */
@@ -137,6 +144,7 @@ class ProductsController extends Controller
                         continue;
                     }
                     DB::table('products')->where('id', $p->id)->update(['status' => 'active', 'updated_at' => now()]);
+                    StockAlerts::afterChange($p->id, Catalog::available($p));
                     $done++;
                 }
                 break;
@@ -272,6 +280,8 @@ class ProductsController extends Controller
             'flavor' => $p->flavor, 'flavorAr' => $p->flavor_ar, 'sourLevel' => $p->sour_level,
             'bestSeller' => (bool) $p->best_seller, 'isNew' => (bool) $p->is_new,
             'missing' => self::missing($p, $tree), 'updatedAt' => $p->updated_at,
+            'waiting' => $this->waiting !== null ? (int) ($this->waiting[$p->id] ?? 0)
+                : DB::table('stock_alerts')->where('product_id', $p->id)->whereNull('notified_at')->count(),
         ];
     }
 

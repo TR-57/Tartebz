@@ -1,6 +1,17 @@
 /* =====================================================================
    Tartebz admin – one stylesheet. Logical properties throughout, so Arabic (RTL) mirrors by itself.
    ===================================================================== */
+/* Alexandria (SIL Open Font License), self-hosted: one variable file per script covers every weight 400–900. */
+@font-face { font-family: "Alexandria"; font-style: normal; font-weight: 400 900; font-display: swap;
+  src: url("/assets/fonts/alexandria-arabic.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@font-face { font-family: "Alexandria"; font-style: normal; font-weight: 400 900; font-display: swap;
+  src: url("/assets/fonts/alexandria-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "Alexandria"; font-style: normal; font-weight: 400 900; font-display: swap;
+  src: url("/assets/fonts/alexandria-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
 :root {
   --red: #E30613; --red-dark: #B30000; --red-soft: #FDECEC;
   --yellow: #FFD700; --cream: #FFF8DC;
@@ -313,3 +324,22 @@ table.vt .input { min-width: 90px; padding: 6px 8px; }
   table.t.cards td.thumb::before, table.t.cards td.chk::before { content: none; }
   table.t.cards td.thumb img, table.t.cards td.thumb .noimg { width: 64px; height: 64px; }
 }
+
+/* Website settings / back-in-stock */
+.logo-picks { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-check { position: relative; }
+.chip-check input { position: absolute; opacity: 0; inset: 0; }
+.chip-check span { display: inline-flex; align-items: center; padding: 8px 14px; border-radius: var(--pill); border: 1.5px solid var(--line); background: #fff; font-weight: 700; cursor: pointer; }
+.chip-check input:checked + span { border-color: var(--red); background: var(--red-soft); color: var(--red); }
+.chip-check input:focus-visible + span { box-shadow: var(--ring); }
+.waiting { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 12px; font-weight: 700; color: var(--amber); }
+.waiting .ico { width: 14px; height: 14px; }
+#alerts h2 { display: flex; align-items: center; gap: 6px; }
+#alerts h2 .ico { width: 18px; height: 18px; color: var(--red); }
+.alerts { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.alerts li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.alerts li.done { opacity: .6; }
+.alerts .who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.alerts .who .ico { width: 14px; height: 14px; display: inline; vertical-align: -2px; }
+.alerts .act { display: inline-flex; align-items: center; gap: 6px; }
+.btn-wa { background: #25D366; border-color: #25D366; color: #08361b; }

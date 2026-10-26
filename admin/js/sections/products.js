@@ -1,4 +1,4 @@
-import { api, esc, d, pill, field, toggle, formData, showErrors, clearErrors, busy, toast, toastErr, confirmBox, modal, money, nf, debounce, setQuery, go, can, icon, isAr } from '../core.js';
+import { api, esc, d, ltr, pill, field, toggle, formData, showErrors, clearErrors, busy, toast, toastErr, confirmBox, modal, money, nf, debounce, setQuery, go, can, icon, isAr, fmtDate } from '../core.js';
 import { pickMedia } from './media.js';
 
 const TABS = [['all', 'All'], ['active', 'On the website'], ['hidden', 'Hidden'], ['out', 'Out of stock'], ['low', 'Low stock'], ['missing', 'Missing information']];
@@ -13,6 +13,9 @@ const pname = (p) => (isAr() && p.nameAr ? p.nameAr : p.name);
 const catLabel = (c) => '— '.repeat(c.depth) + (isAr() && c.nameAr ? c.nameAr : c.name);
 
 function stockCell(p, edit) {
+  return stockInner(p, edit) + (p.waiting ? `<div class="waiting">${icon('bell')} <span>${p.waiting === 1 ? '1 person waiting' : `${p.waiting} people waiting`}</span></div>` : '');
+}
+function stockInner(p, edit) {
   if (p.type === 'variable') return `<span class="muted small">By variation</span> ${p.available ? pill('In stock', 'green') : pill('Out of stock', 'red')}`;
   if (p.manageStock) {
     return edit
@@ -177,6 +180,7 @@ async function editor(main, route, alive) {
           <div id="qtywrap">${field('stock_qty', 'In stock', p.stockQty, { type: 'number', step: 1, dir: 'ltr', ...dis })}</div>
           <div id="instockwrap">${edit ? toggle('in_stock', 'Available to buy', p.inStock) : ''}</div>
         </div>
+        ${!isNew ? '<div class="card" id="alerts" hidden></div>' : ''}
         <div class="card"><h2>Delivery</h2>
           ${field('weight_grams', 'Weight with packing (grams)', p.weightGrams || '', { type: 'number', step: 1, min: 0, dir: 'ltr', hint: 'Used for the delivery price outside Bahrain.', ...dis })}
           ${!isNew ? `<p class="muted small">Used for delivery: <b data-noi18n>${nf(p.effectiveWeight)} g</b></p>` : ''}
@@ -273,6 +277,7 @@ async function editor(main, route, alive) {
   });
   form.querySelector('[name=type]').addEventListener('change', drawVars);
   drawVars();
+  if (!isNew) stockAlerts(main.querySelector('#alerts'), p.id, edit);
 
   if (!edit) return;
 
@@ -295,7 +300,7 @@ async function editor(main, route, alive) {
     }
     try {
       const res = await busy(main.querySelector('#save'), () => api(isNew ? 'products' : 'products/' + p.id, { method: isNew ? 'POST' : 'PUT', body }));
-      toast(isNew ? 'Product added' : 'Saved');
+      toast(isNew ? 'Product added' : (res.backInStockEmails ? `Saved – ${res.backInStockEmails} people were emailed that it is back` : 'Saved'));
       if (isNew) go('#/products/' + res.product.id); else editor(main, route, alive);
     } catch (err) {
       showErrors(form, err);
@@ -306,5 +311,35 @@ async function editor(main, route, alive) {
   if (del) del.addEventListener('click', async () => {
     if (!(await confirmBox('Delete this product? This cannot be undone. If it was ever ordered, hide it instead.', { ok: 'Delete', danger: true }))) return;
     try { await api('products/' + p.id, { method: 'DELETE' }); toast('Deleted'); go('#/products'); } catch (err) { toastErr(err); }
+  });
+}
+
+/* People who asked to be told when this product is back. Emails go out by themselves when it is back in stock;
+   WhatsApp numbers get a ready message to send, then "Mark as sent". */
+async function stockAlerts(box, id, edit) {
+  let r;
+  try { r = await api(`products/${id}/stock-alerts`); } catch (e) { return; }
+  if (!r.alerts.length) return;
+  const open = r.alerts.filter((a) => !a.notifiedAt);
+  box.hidden = false;
+  box.innerHTML = `<h2>${icon('bell')} Waiting for stock</h2>
+    <p class="muted small">${open.length ? 'Emails are sent by themselves when the product is back in stock. Send each WhatsApp number its message, then mark it as sent.' : 'Everyone has been told.'}</p>
+    <ul class="alerts">${r.alerts.map((a) => `<li class="${a.notifiedAt ? 'done' : ''}">
+      <span class="who">${a.email ? `${icon('mail')} ${ltr(a.email)}` : `${icon('phone')} ${ltr('+' + a.phone)}`}
+        <small class="muted"><span data-noi18n>${esc(fmtDate(a.createdAt, { time: false }))}${a.country ? ' · ' + esc(a.country) : ''} · ${a.lang === 'en' ? 'EN' : 'AR'}</span></small></span>
+      <span class="act">${a.notifiedAt ? pill(a.notifiedBy === 'email' ? 'Emailed' : 'Messaged', 'green')
+        : (a.whatsapp ? `<a class="btn btn-sm btn-wa" href="${esc(a.whatsapp)}" target="_blank" rel="noopener">WhatsApp</a>${edit ? ` <button type="button" class="btn btn-sm" data-done="${a.id}">Mark as sent</button>` : ''}` : pill('Email when back', 'amber'))}
+        ${edit ? `<button type="button" class="iconbtn" data-del="${a.id}" aria-label="Remove">${icon('close')}</button>` : ''}</span></li>`).join('')}</ul>`;
+  if (box._bound) return;
+  box._bound = true;
+  box.addEventListener('click', async (e) => {
+    const done = e.target.closest('[data-done]');
+    const del = e.target.closest('[data-del]');
+    try {
+      if (done) { await api(`stock-alerts/${done.dataset.done}/done`, { method: 'POST' }); toast('Marked as sent'); }
+      else if (del) { await api(`stock-alerts/${del.dataset.del}`, { method: 'DELETE' }); toast('Removed'); }
+      else return;
+      box.innerHTML = ''; box.hidden = true; stockAlerts(box, id, edit);
+    } catch (err) { toastErr(err); }
   });
 }

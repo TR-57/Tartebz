@@ -129,11 +129,66 @@ class Thumbs
         };
     }
 
+    /** Link-preview picture for WhatsApp / Instagram / Facebook: 1200×630 JPEG (the format every app shows). */
+    public static function ogUrl(string $url): string
+    {
+        $url = explode('?', $url)[0];
+
+        return preg_match('#^/(uploads|assets)/.+\.(jpe?g|png|webp)$#i', $url) ? '/img/og'.$url : $url;
+    }
+
+    public static function ogTarget(string $rel): string
+    {
+        return rtrim(config('store.thumb_dir'), '/').'/og/'.$rel.'.jpg';
+    }
+
+    public static function makeOg(string $rel): ?string
+    {
+        $src = self::source($rel);
+        if (! $src) {
+            return null;
+        }
+        $dst = self::ogTarget($rel);
+        if (is_file($dst) && filemtime($dst) >= filemtime($src)) {
+            return $dst;
+        }
+        if (! is_dir(dirname($dst)) && ! @mkdir(dirname($dst), 0775, true) && ! is_dir(dirname($dst))) {
+            return null;
+        }
+        try {
+            $bytes = file_get_contents($src);
+            $img = @imagecreatefromstring($bytes);
+            if (! $img) {
+                return null;
+            }
+            $img = self::orient($img, $bytes);
+            [$W, $H] = [1200, 630];
+            $out = imagecreatetruecolor($W, $H);
+            imagefill($out, 0, 0, imagecolorallocate($out, 255, 255, 255)); // transparent PNGs on white
+            $ow = imagesx($img);
+            $oh = imagesy($img);
+            // Fit the whole picture (never crop the product), centred on white.
+            $k = min($W / $ow, $H / $oh);
+            $tw = (int) round($ow * $k);
+            $th = (int) round($oh * $k);
+            imagecopyresampled($out, $img, intdiv($W - $tw, 2), intdiv($H - $th, 2), 0, 0, $tw, $th, $ow, $oh);
+            $tmp = $dst.'.tmp'.getmypid();
+            imagejpeg($out, $tmp, 84);
+            rename($tmp, $dst);
+            @chmod($dst, 0664);
+
+            return $dst;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
     /** Deletes every copy of one original (after it was replaced or deleted). */
     public static function forget(string $uploadPath): void
     {
         foreach (config('store.thumb_widths') as $w) {
             @unlink(self::target($w, 'uploads/'.ltrim($uploadPath, '/')));
         }
+        @unlink(self::ogTarget('uploads/'.ltrim($uploadPath, '/')));
     }
 }

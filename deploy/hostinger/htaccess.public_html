@@ -14,6 +14,16 @@ RewriteRule (^|/)\.(?!well-known) - [F]
 # API -> Laravel (lives outside public_html, see api.php)
 RewriteRule ^api(/|$) api.php [END,QSA]
 
+# Product pages (built with link-preview and Google tags), sitemap and robots come from Laravel.
+# Old WordPress product addresses (/product/<arabic-name>/) are redirected there too.
+RewriteRule ^product/.+ api.php [END,QSA]
+RewriteRule ^(sitemap\.xml|robots\.txt)$ api.php [END,QSA]
+
+# Link-preview pictures (1200x630 JPEG): from disk when made, otherwise Laravel makes it once.
+RewriteCond %{DOCUMENT_ROOT}/img/og/$1.jpg -f
+RewriteRule ^img/og/((?:uploads|assets)/.+)$ img/og/$1.jpg [END,T=image/jpeg]
+RewriteRule ^img/og/ api.php [END,QSA]
+
 # Resized image copies: serve from disk when made, otherwise Laravel makes it once.
 RewriteCond %{DOCUMENT_ROOT}/img/$1.webp -f
 RewriteRule ^img/(\d+/(?:uploads|assets)/.+)$ img/$1.webp [END,T=image/webp]
@@ -36,14 +46,17 @@ RewriteRule ^([a-z0-9-]+)/?$ $1.html [END]
   Header always set X-Frame-Options "SAMEORIGIN"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set Strict-Transport-Security "max-age=31536000"
-  Header always set Permissions-Policy "geolocation=(), microphone=(), payment=()"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), payment=(self)"
+  # Pages: always ask the server (Cloudflare and browsers revalidate, so a deploy shows at once).
   <FilesMatch "\.(html)$">
     Header set Cache-Control "no-cache"
   </FilesMatch>
-  <FilesMatch "\.(css|js)$">
-    Header set Cache-Control "public, max-age=3600"
+  # CSS / JS / fonts carry ?v=<deploy> in their links (deploy.sh), so they can be kept for a year.
+  <FilesMatch "\.(css|js|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
-  <FilesMatch "\.(webp|jpe?g|png|gif|svg|ico|woff2?)$">
+  # Pictures: originals keep their address when replaced (?v= changes), resized copies are rebuilt.
+  <FilesMatch "\.(webp|jpe?g|png|gif|svg|ico)$">
     Header set Cache-Control "public, max-age=2592000"
   </FilesMatch>
 </IfModule>

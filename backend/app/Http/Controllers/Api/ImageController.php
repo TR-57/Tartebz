@@ -23,4 +23,15 @@ class ImageController extends Controller
 
         return response()->file($file, ['Content-Type' => 'image/webp', 'Cache-Control' => 'public, max-age=2592000']);
     }
+
+    /** GET /img/og/<uploads|assets>/<path> – 1200×630 JPEG for link previews. */
+    public function og(string $path)
+    {
+        $file = Thumbs::makeOg($path);
+        if (! $file) {
+            return redirect(Thumbs::source($path) ? '/'.ltrim($path, '/') : '/assets/img/favicon.svg', 302);
+        }
+
+        return response()->file($file, ['Content-Type' => 'image/jpeg', 'Cache-Control' => 'public, max-age=2592000']);
+    }
 }

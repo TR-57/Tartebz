@@ -13,7 +13,8 @@ return [
     'cookie_prefix' => 'tz',
     'cookie_domain' => env('COOKIE_DOMAIN') ?: null,
     'cookie_secure' => (bool) env('COOKIE_SECURE', true),
-    'trust_proxy' => (bool) env('TRUST_PROXY', false),
+    // false | true (a proxy on a private address in front of us) | cloudflare (requests through Cloudflare's own addresses)
+    'trust_proxy' => env('TRUST_PROXY', false),
 
     // Sessions
     'admin_session_hours' => 12,     // fixed from sign-in, does not slide
@@ -31,6 +32,8 @@ return [
 
     // Repo root (storefront pages, admin, generated i18n catalogue)
     'root' => realpath(base_path('..')) ?: base_path('..'),
+    // Where the live storefront pages are (Hostinger: public_html, written by deploy.sh). Product pages are built from its product.html.
+    'public_dir' => env('PUBLIC_DIR') ?: (realpath(base_path('..')) ?: base_path('..')),
 
     // Requests from these paths skip the origin check; they are verified by their own means.
     'origin_exempt' => [

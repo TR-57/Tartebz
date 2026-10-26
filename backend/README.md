@@ -35,6 +35,14 @@ Tests: `php artisan test` (uses the `tartebz_test` database from `phpunit.xml`).
 | Files | Originals in `UPLOAD_DIR` are never re-encoded (only GPS is blanked). Pages use `/img/<width>/uploads/…` copies (`Thumbs::url`). |
 | Translations | Built-in text: `i18n/catalog.json` (generated). Admin edits: `translations` table. Arabic storefront reports missing text to `POST /api/i18n/missing`. |
 
+## What exists (shop extras)
+
+- Back-in-stock requests (`POST /api/stock-alerts`): emails go out by themselves when a product is back; WhatsApp numbers are listed on the product with a ready message.
+- Admin › Settings › Website: WhatsApp ordering, back-in-stock on/off, payment marks, delivery days per country (shown as dates on the site).
+- `/product/<slug>` is built on the server with link-preview tags (WhatsApp, Instagram, Facebook), Product structured data for Google and a 1200×630 JPEG preview picture (`/img/og/…`). Old WordPress product addresses redirect there. `/sitemap.xml` and `/robots.txt` come from the live catalogue.
+- `store:build-public <web folder>`: what deploy.sh runs – minified CSS/JS with `?v=<commit>` on every link, so they can be cached for a year (Cloudflare-ready, see `docs/cloudflare.md`, `TRUST_PROXY=cloudflare`).
+- Fonts are self-hosted (`assets/fonts/`, Alexandria, SIL Open Font License).
+
 ## What exists (Phase 2a)
 
 - Media library: upload (JPG, PNG, WebP, GIF, PDF; no SVG), details and alt texts in both languages, where-used, replace with the same link, delete guards, delete unused. Resized WebP copies at 200–2400 px.
