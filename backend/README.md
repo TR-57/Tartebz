@@ -35,6 +35,15 @@ Tests: `php artisan test` (uses the `tartebz_test` database from `phpunit.xml`).
 | Files | Originals in `UPLOAD_DIR` are never re-encoded (only GPS is blanked). Pages use `/img/<width>/uploads/…` copies (`Thumbs::url`). |
 | Translations | Built-in text: `i18n/catalog.json` (generated). Admin edits: `translations` table. Arabic storefront reports missing text to `POST /api/i18n/missing`. |
 
+## What exists (orders, Tap, SMSA)
+
+- Orders priced on the server (`Checkout::quote`): ids and quantities only come from the browser; delivery from Settings › Shipping.
+- Tap (`App\Support\Tap`): hosted payment page (`src_all`), paid only when the charge fetched from Tap reads CAPTURED for the
+  exact amount and currency; webhook `POST /api/payments/tap/webhook` re-fetches; `store:sync-payments` (every 5 min) catches lost notifications.
+- SMSA (`App\Support\Smsa`): eCommerce API (`apikey` header), sandbox/live, `b2c/new` shipment with PDF label, tracking, cancel.
+- Admin: Orders (status, notes, mark paid, cancel with stock back, SMSA shipment/label/tracking), Settings › Payments and › Shipping
+  (keys sealed, connection tests). Step-by-step: `docs/payments-and-shipping.md`.
+
 ## What exists (shop extras)
 
 - Back-in-stock requests (`POST /api/stock-alerts`): emails go out by themselves when a product is back; WhatsApp numbers are listed on the product with a ready message.

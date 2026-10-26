@@ -6,12 +6,17 @@ use App\Http\Controllers\Admin\CategoriesController;
 use App\Http\Controllers\Admin\CurrenciesController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\OrdersController;
+use App\Http\Controllers\Admin\PaymentsController;
+use App\Http\Controllers\Admin\ShippingController;
 use App\Http\Controllers\Admin\ProductsController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StockAlertsController;
 use App\Http\Controllers\Admin\WebsiteController;
 use App\Http\Controllers\Admin\TranslationsController;
+use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\I18nController;
+use App\Http\Controllers\Api\TapWebhookController;
 use App\Http\Controllers\Api\StockAlertController;
 use App\Http\Controllers\Api\StorefrontController;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +31,12 @@ Route::get('health', fn () => response()->json(['ok' => true, 'time' => now()->t
 // ---- Storefront (public) ----
 Route::get('storefront', [StorefrontController::class, 'index']);
 Route::post('stock-alerts', [StockAlertController::class, 'store']);
+Route::post('checkout/quote', [CheckoutController::class, 'quote']);
+Route::post('checkout', [CheckoutController::class, 'place']);
+Route::get('orders/{token}', [CheckoutController::class, 'show'])->where('token', '[a-f0-9]{40}');
+Route::post('orders/{token}/pay', [CheckoutController::class, 'pay'])->where('token', '[a-f0-9]{40}');
+// Tap → us (no Origin header; exempt in config/store.php). The charge is always fetched again from Tap.
+Route::post('payments/tap/webhook', [TapWebhookController::class, 'handle']);
 Route::post('i18n/missing', [I18nController::class, 'missing']);
 Route::get('i18n/overrides', [I18nController::class, 'overrides']);
 
@@ -59,6 +70,15 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::get('products/{id}', [ProductsController::class, 'show'])->whereNumber('id');
         Route::get('categories', [CategoriesController::class, 'index']);
         Route::get('products/{id}/stock-alerts', [StockAlertsController::class, 'index'])->whereNumber('id');
+
+        Route::get('orders', [OrdersController::class, 'index']);
+        Route::get('orders/{id}', [OrdersController::class, 'show'])->whereNumber('id');
+        Route::post('orders/{id}/status', [OrdersController::class, 'status'])->whereNumber('id');
+        Route::post('orders/{id}/note', [OrdersController::class, 'note'])->whereNumber('id');
+        Route::post('orders/{id}/check-payment', [OrdersController::class, 'refreshPayment'])->whereNumber('id');
+        Route::post('orders/{id}/ship', [OrdersController::class, 'ship'])->whereNumber('id');
+        Route::get('orders/{id}/label', [OrdersController::class, 'label'])->whereNumber('id');
+        Route::post('orders/{id}/track', [OrdersController::class, 'track'])->whereNumber('id');
     });
 
     Route::middleware('role:manager')->group(function () {
@@ -82,6 +102,9 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::delete('categories/{id}', [CategoriesController::class, 'destroy'])->whereNumber('id');
         Route::post('stock-alerts/{id}/done', [StockAlertsController::class, 'done'])->whereNumber('id');
         Route::delete('stock-alerts/{id}', [StockAlertsController::class, 'destroy'])->whereNumber('id');
+        Route::post('orders/{id}/paid', [OrdersController::class, 'markPaid'])->whereNumber('id');
+        Route::post('orders/{id}/cancel', [OrdersController::class, 'cancel'])->whereNumber('id');
+        Route::post('orders/{id}/cancel-shipment', [OrdersController::class, 'cancelShipment'])->whereNumber('id');
         Route::get('website', [WebsiteController::class, 'index']);
         Route::put('website', [WebsiteController::class, 'save']);
     });
@@ -93,5 +116,11 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::get('activity', [ActivityController::class, 'index']);
         Route::get('currencies', [CurrenciesController::class, 'index']);
         Route::put('currencies', [CurrenciesController::class, 'save']);
+        Route::get('payments', [PaymentsController::class, 'index']);
+        Route::put('payments', [PaymentsController::class, 'save']);
+        Route::post('payments/test', [PaymentsController::class, 'test']);
+        Route::get('shipping', [ShippingController::class, 'index']);
+        Route::put('shipping', [ShippingController::class, 'save']);
+        Route::post('shipping/test', [ShippingController::class, 'test']);
     });
 });

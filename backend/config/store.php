@@ -42,4 +42,7 @@ return [
     ],
 
     'notify_email' => env('STORE_NOTIFY_EMAIL', ''),
+
+    // Local testing only: a stand-in for Tap's API. Leave unset in production.
+    'tap_base_url' => env('TAP_BASE_URL'),
 ];

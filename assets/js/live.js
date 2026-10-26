@@ -8,6 +8,8 @@
   var KEY = 'tz_catalog_v1';
   var WAIT_MS = 2500; // first visit: how long the page waits for the server before using the built-in list
 
+  TZ.payments = { tap: false, whatsapp: true, testMode: false };
+
   /* Website settings (Admin › Settings › Website); these defaults apply until the server answers. */
   TZ.shop = {
     whatsappOrders: true, whatsapp: TZ.store.phoneRaw, backInStock: true,
@@ -41,6 +43,15 @@
     }
     TZ.store.logo = s.logo ? s.logo.small : '';
     TZ.store.logoLarge = s.logo ? s.logo.medium : '';
+    if (d.shipping) {
+      // The server's delivery prices: what the cart shows is what checkout charges.
+      TZ.shipping.flat = d.shipping.flat || {};
+      TZ.shipping.ubex = d.shipping.table || TZ.shipping.ubex;
+      TZ.shipping.extra = d.shipping.extraPerHalfKg;
+      TZ.shipping.countries = d.shipping.countries || [];
+      TZ.countries.forEach(function (c) { c.ship = TZ.shipping.flat[c.code] != null ? 'flat' : 'ubex'; });
+    }
+    if (d.payments) TZ.payments = d.payments;
     if (d.shop) {
       TZ.shop = d.shop;
       TZ.shop.whatsapp = String(d.shop.whatsapp || TZ.store.phoneRaw).replace(/\D/g, '');

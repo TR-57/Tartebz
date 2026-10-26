@@ -59,6 +59,13 @@ class StorefrontController extends Controller
                     'delivery' => array_values($sf['delivery']),
                 ];
             })(),
+            'shipping' => (function () {
+                $sh = Settings::get('shipping');
+
+                return ['countries' => $sh['countries'], 'flat' => (object) array_column($sh['flat'], 'price', 'country'),
+                    'table' => $sh['table'], 'extraPerHalfKg' => (float) $sh['extraPerHalfKg']];
+            })(),
+            'payments' => \App\Http\Controllers\Api\CheckoutController::methods() + ['testMode' => \App\Support\Tap::enabled() && \App\Support\Tap::mode() === 'test'],
             'baseCurrency' => Currency::base(),
             'currencies' => Currency::forStorefront(),
             'categories' => array_values(array_map(fn ($c) => [

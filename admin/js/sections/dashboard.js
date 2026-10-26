@@ -15,9 +15,9 @@ export default {
       ${r.setup.length ? `<div class="box warn"><b>Before going fully live:</b><ul>${r.setup.map((s) => `<li><b>${esc(s.label)}</b> – ${esc(s.hint)}</li>`).join('')}</ul></div>` : ''}
       <div class="kpis">
         ${sales('Today', r.today)}${sales('Last 7 days', r.week)}${sales('Last 30 days', r.month)}
-        ${tile('To handle', c.unhandled, 'paid orders not yet marked handled', '#/orders?status=unhandled', true)}
-        ${tile('To ship', c.toShip, '', '#/orders?status=open')}
-        ${tile('Awaiting payment', c.awaitingPayment, 'card, transfer or freight quote', '#/orders?status=awaiting_payment')}
+        ${tile('To handle', c.unhandled, 'paid, not yet being prepared', '#/orders?tab=todo', true)}
+        ${tile('To ship', c.toShip, '', '#/orders?tab=todo')}
+        ${tile('Awaiting payment', c.awaitingPayment, 'card or WhatsApp, last 3 days', '#/orders?tab=unpaid')}
         ${tile('New enquiries', c.enquiries, '', '#/enquiries?status=new', true)}
         ${tile('Low stock', c.lowStock, '', '#/products?tab=low', true)}
         ${c.mailFailed ? tile('Emails failed', c.mailFailed, 'check SMTP settings', '#/emails/sent?status=failed', true) : ''}

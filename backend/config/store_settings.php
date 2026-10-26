@@ -58,9 +58,50 @@ return [
         ],
     ],
 
+    // Delivery prices (BHD). A country with a fixed price pays that; the other delivery countries pay by weight.
+    'shipping' => [
+        'countries' => ['BH', 'SA', 'AE', 'QA', 'KW', 'OM'],
+        'flat' => [['country' => 'BH', 'price' => 1.5]],
+        // [up to kg, BHD] – the old shop's rate card; above the last row: + extraPerHalfKg for every started 0.5 kg
+        'table' => [[0.5, 3.8], [1, 4.2], [1.5, 5.1], [2, 6.1], [2.5, 7.3], [3, 8.7], [3.5, 9.6], [4, 12.1], [4.5, 12.2], [5, 13.8],
+            [5.5, 14.9], [6, 15.9], [6.5, 17], [7, 18.1], [7.5, 19.1], [8, 20.2], [8.5, 21.2], [9, 22.3], [9.5, 23.3], [10, 24.4]],
+        'extraPerHalfKg' => 1.05,
+    ],
+
+    // Card payments through Tap (tap.company). Keys are sealed; test keys start sk_test_, live keys sk_live_.
+    'payments' => [
+        'tap' => [
+            'enabled' => false,
+            'mode' => 'test',             // test | live
+            'testSecret' => '', 'testPublishable' => '',
+            'liveSecret' => '', 'livePublishable' => '',
+            'merchantId' => '',
+            'chargeCurrencies' => ['BHD'], // currencies your Tap account can charge in; others are charged in BHD
+        ],
+        'whatsapp' => ['enabled' => true], // "order and pay on WhatsApp" at checkout
+    ],
+
+    // SMSA Express (smsaexpress.com) – shipments, labels and tracking through the eCommerce API.
+    'smsa' => [
+        'enabled' => false,
+        'mode' => 'test',                 // test (sandbox) | live – a live shipment is a real, billable parcel
+        'testKey' => '', 'liveKey' => '', // sealed
+        'testUrl' => 'https://ecomapis-sandbox.azurewebsites.net',
+        'liveUrl' => 'https://ecomapis.smsaexpress.com',
+        'serviceCode' => '',              // empty = your account's default (SMSA gives you this, e.g. EDDL)
+        'retailId' => '',
+        'contentDescription' => 'Sweets / حلويات',
+        'declaredCurrency' => 'BHD',
+        'shipper' => [
+            'name' => 'Tartebz', 'phone' => '', 'country' => 'BH', 'city' => '', 'district' => '',
+            'address1' => '', 'address2' => '', 'postalCode' => '',
+        ],
+    ],
+
     'orders' => [
         'holdMinutes' => 60,
         'numberPrefix' => '',
+        'firstNumber' => 20001,   // order numbers continue after the old shop's
     ],
 
     'loyalty' => [

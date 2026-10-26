@@ -343,3 +343,25 @@ table.vt .input { min-width: 90px; padding: 6px 8px; }
 .alerts .who .ico { width: 14px; height: 14px; display: inline; vertical-align: -2px; }
 .alerts .act { display: inline-flex; align-items: center; gap: 6px; }
 .btn-wa { background: #25D366; border-color: #25D366; color: #08361b; }
+
+/* Orders / payments / shipping */
+.steps ol { margin: 0; padding-inline-start: 20px; display: grid; gap: 6px; }
+.seg label { position: relative; }
+.seg label input { position: absolute; opacity: 0; inset: 0; }
+.seg label span { display: inline-block; padding: 7px 16px; border-radius: var(--pill); font-weight: 700; cursor: pointer; }
+.seg label input:checked + span { background: var(--ink); color: #fff; }
+.seg label input:focus-visible + span { box-shadow: var(--ring); }
+.mini-check { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray); margin-top: 4px; }
+.test-res { font-size: 13px; font-weight: 700; }
+.test-res.ok { color: var(--green); } .test-res.err { color: var(--danger); }
+.rate-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+.rate-row .input { padding: 6px 8px; }
+.services { margin: 0; padding-inline-start: 18px; font-size: 13px; }
+.timeline { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
+.timeline li { border-inline-start: 3px solid var(--line); padding-inline-start: 10px; }
+.timeline li.ev-paid { border-color: var(--green); } .timeline li.ev-payment_failed, .timeline li.ev-payment_mismatch, .timeline li.ev-payment_error { border-color: var(--danger); }
+.timeline li.ev-note { border-color: var(--amber); } .timeline li.ev-shipment { border-color: var(--blue); }
+.note-row { display: flex; gap: 8px; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.ship-form { margin-bottom: 10px; max-width: 360px; }
+.test-res[data-mark]::before { content: attr(data-mark) " "; }

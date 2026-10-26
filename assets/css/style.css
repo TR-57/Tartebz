@@ -1129,3 +1129,39 @@ body.has-iab .site-header { top: var(--iab-h); }
 @media (min-width: 821px) {
   .sour-pick #sp-grid { grid-template-columns: repeat(auto-fit, minmax(0, 290px)); justify-content: center; }
 }
+
+/* ---------- checkout: payment choice, test ribbon, result page ---------- */
+.test-ribbon { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: var(--radius-sm); background: #FFF3D6; color: #8A5300; border: 1.5px dashed #F1A900; font-weight: 800; font-size: .9rem; margin-bottom: 4px; }
+.test-ribbon .ico { width: 18px; height: 18px; }
+.pay-option + .pay-option { margin-top: 10px; }
+.pay-option .pay-logos { margin-inline-start: auto; }
+.pay-wa { margin-inline-start: auto; color: #25D366; display: inline-flex; }
+.pay-wa svg { width: 30px; height: 30px; }
+.co-charge { margin: 4px 0 10px; padding: 8px 12px; border-radius: 10px; background: var(--cream); font-size: .85rem; font-weight: 700; }
+.co-msg { margin: 0 0 10px; padding: 10px 14px; border-radius: 10px; background: #FDECEC; color: var(--out); font-weight: 700; font-size: .9rem; }
+#place-order.is-busy { opacity: .7; pointer-events: none; }
+#place-order.is-busy::after { content: ""; width: 16px; height: 16px; margin-inline-start: 8px; border: 2.5px solid rgba(255, 255, 255, .5); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
+.co-result { grid-column: 1 / -1; max-width: 560px; width: 100%; margin: 0 auto; text-align: center; padding: clamp(24px, 4vw, 40px); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow-card); animation: zoomIn .5s var(--spring) both; }
+.co-result h2 { font-size: clamp(1.4rem, 1.1rem + 1.4vw, 2rem); margin-bottom: .3em; }
+.co-result > p { color: var(--gray); }
+.co-result-ico { width: 76px; height: 76px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; }
+.co-result-ico .ico, .co-result-ico svg { width: 38px; height: 38px; }
+.co-result.is-ok .co-result-ico { background: #E9F7EE; color: var(--green); animation: pop .5s var(--spring) .1s both; }
+.co-result.is-fail .co-result-ico { background: #FDECEC; color: var(--out); }
+.co-result.is-wait .co-result-ico { background: var(--cream); }
+.co-result.is-wa .co-result-ico { background: #E7FBEF; color: #25D366; }
+.co-result .btn { margin-top: 14px; }
+.co-result .btn-link { display: inline-block; margin-top: 12px; }
+.co-result-lines { text-align: start; margin-top: 16px; }
+.co-result .totals { text-align: start; }
+.co-ship { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; font-weight: 800; color: var(--ink); }
+.co-ship .ico { width: 20px; height: 20px; color: var(--red); }
+.spinner { width: 34px; height: 34px; border: 4px solid #F1E3A8; border-top-color: var(--red); border-radius: 50%; animation: spin .9s linear infinite; }
+/* Only the chosen way to pay looks selected. */
+.pay-option { position: relative; border-color: var(--line); background: #fff; transition: border-color .2s, background .2s; }
+.pay-option .pay-dot { border-color: #C9CBD1; }
+.pay-option .pay-dot::after { transform: scale(0); transition: transform .25s var(--spring); }
+.pay-option.is-selected { border-color: var(--red); background: var(--cream); }
+.pay-option.is-selected .pay-dot { border-color: var(--red); }
+.pay-option.is-selected .pay-dot::after { transform: scale(1); }
+.pay-option:focus-within { box-shadow: var(--ring); }

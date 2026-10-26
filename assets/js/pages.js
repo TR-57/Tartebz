@@ -177,6 +177,82 @@
     paint();
   }
 
+
+  /* ---------- checkout helpers ---------- */
+  function api(url, body) {
+    return fetch(url, { method: body ? 'POST' : 'GET', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: body ? JSON.stringify(body) : undefined })
+      .then(function (r) { return r.json().then(function (d) { return { status: r.status, d: d }; }, function () { return { status: r.status, d: {} }; }); })
+      .catch(function () { return { status: 0, d: { ok: false, error: { code: 'offline' } } }; });
+  }
+  function cartItems() { return TZ.cart.lines().map(function (l) { return { id: l.p.id, qty: l.qty }; }); }
+  /* The server's view of the cart wins: sold-out lines leave, quantities are capped at the stock left. */
+  function syncCart(q) {
+    var keep = {};
+    q.lines.forEach(function (l) { keep[l.id] = l.qty; });
+    TZ.cart.lines().forEach(function (l) {
+      if (keep[l.p.id] == null) TZ.cart.remove(l.p.id); else if (keep[l.p.id] !== l.qty) TZ.cart.set(l.p.id, keep[l.p.id]);
+    });
+  }
+  function chargeText(o) {
+    var dec = ['BHD', 'KWD', 'OMR'].indexOf(o.chargeCurrency) > -1 ? 3 : 2;
+    return o.chargeCurrency + ' ' + o.chargeAmount.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  }
+  function resultCard(icon, cls, title, text, extra) {
+    return '<div class="co-result ' + cls + '"><div class="co-result-ico">' + icon + '</div><h2>' + e(title) + '</h2><p>' + e(text) + '</p>' + (extra || '') + '</div>';
+  }
+  function orderLines(o) {
+    return '<ul class="co-lines co-result-lines">' + o.items.map(function (i) {
+      return '<li><span class="co-name">' + e(TZ.lang() === 'ar' && i.nameAr ? i.nameAr : i.name) + ' × ' + i.qty + '</span></li>';
+    }).join('') + '</ul><dl class="totals"><div class="grand"><dt>' + e(t('co_total_paid')) + '</dt><dd dir="ltr">' + e(chargeText(o)) + '</dd></div></dl>';
+  }
+  function showWhatsapp(root, o, link) {
+    root.innerHTML = resultCard(TZ.brandIcon('whatsapp'), 'is-wa', t('co_wa_title', { number: o.number }), t('co_wa_text'),
+      orderLines(o) + '<a class="btn btn-whatsapp btn-lg btn-block" href="' + e(link) + '" target="_blank" rel="noopener">' + TZ.brandIcon('whatsapp') + e(t('co_go_wa')) + '</a>' +
+      '<a class="btn-link" href="' + TZ.url('shop.html') + '">' + e(t('co_continue')) + '</a>');
+  }
+  /* Back from Tap (?order=…&tap_id=…): the server checks with Tap and says what happened. */
+  function orderResult(root, token) {
+    var tries = 0;
+    root.innerHTML = resultCard('<span class="spinner"></span>', 'is-wait', t('co_pending_title'), t('co_pending_text'));
+    (function poll() {
+      api('/api/orders/' + token).then(function (res) {
+        var o = res.d && res.d.order;
+        if (!o) { root.innerHTML = resultCard(TZ.icon('search'), 'is-fail', t('co_not_found'), '', '<a class="btn btn-primary" href="' + TZ.url('shop.html') + '">' + e(t('back_to_shop')) + '</a>'); return; }
+        var ribbon = o.testMode ? '<div class="test-ribbon" role="note">' + TZ.icon('bolt') + e(t('test_mode')) + '</div>' : '';
+        if (o.paymentStatus === 'paid') {
+          TZ.cart.clear();
+          var ship = o.awb ? '<p class="co-ship">' + TZ.icon('truck') + e(t('co_shipped', { awb: o.awb })) + ' <a class="btn-link" href="' + e(o.trackingUrl) + '" target="_blank" rel="noopener">' + e(t('co_track')) + '</a></p>' : '';
+          var done = o.status === 'delivered' ? '<p>' + e(t('co_delivered')) + '</p>' : '';
+          root.innerHTML = ribbon + resultCard(TZ.icon('check'), 'is-ok', t('co_paid_title', { name: o.firstName }), t('co_paid_text', { number: o.number }),
+            ship + done + orderLines(o) + '<a class="btn btn-primary" href="' + TZ.url('shop.html') + '">' + e(t('co_continue')) + '</a>') +
+            (reduced ? '' : '<div class="confetti" aria-hidden="true">' + new Array(18).join('<i></i>') + '</div>');
+          return;
+        }
+        if (o.status === 'awaiting_whatsapp') { showWhatsapp(root, o, 'https://wa.me/' + ((TZ.shop && TZ.shop.whatsapp) || TZ.store.phoneRaw) + '?text=' + encodeURIComponent(t('wa_order_intro') + ' #' + o.number)); return; }
+        if (o.status === 'cancelled' || o.status === 'refunded') { root.innerHTML = resultCard(TZ.icon('close'), 'is-fail', t('co_cancelled'), ''); return; }
+        if (o.status === 'payment_failed') {
+          root.innerHTML = ribbon + resultCard(TZ.icon('close'), 'is-fail', t('co_failed_title'), t('co_failed_text', { number: o.number }),
+            orderLines(o) + (o.canRetry ? '<button class="btn btn-primary btn-lg btn-block" type="button" id="co-retry">' + TZ.icon('shield') + e(t('co_retry')) + '</button>' : '') +
+            '<a class="btn btn-whatsapp btn-block" target="_blank" rel="noopener" href="https://wa.me/' + ((TZ.shop && TZ.shop.whatsapp) || TZ.store.phoneRaw) + '?text=' + encodeURIComponent(t('wa_order_intro') + ' #' + o.number) + '">' + TZ.brandIcon('whatsapp') + e(t('co_go_wa')) + '</a>' +
+            '<p class="co-msg" id="co-msg" role="alert" hidden></p>');
+          var rb = $('#co-retry');
+          if (rb) rb.addEventListener('click', function () {
+            rb.disabled = true;
+            api('/api/orders/' + token + '/pay', {}).then(function (r2) {
+              if (r2.d && r2.d.redirect) { location.href = r2.d.redirect; return; }
+              rb.disabled = false; var m = $('#co-msg'); m.hidden = false; m.textContent = r2.status === 502 ? t('co_unavailable') : t('co_err');
+            });
+          });
+          return;
+        }
+        // Still waiting for Tap: ask again for about a minute.
+        tries++;
+        if (tries < 20) { setTimeout(poll, 3000); return; }
+        root.innerHTML = ribbon + resultCard('<span class="spinner"></span>', 'is-wait', t('co_pending_title'), t('co_pending_slow'), orderLines(o));
+      });
+    })();
+  }
+
   TZ.pages = {
     /* ================= HOME ================= */
     home: function () {
@@ -451,8 +527,11 @@
     /* ================= CHECKOUT ================= */
     checkout: function () {
       var root = $('#checkout-root'); if (!root) return;
+      var token = new URLSearchParams(location.search).get('order');
+      if (token && /^[a-f0-9]{40}$/.test(token)) { orderResult(root, token); return; }
       var memo = {};
-      root.querySelectorAll('input, textarea').forEach(function (f) { if (f.name) memo[f.name] = f.value; });
+      root.querySelectorAll('input, textarea').forEach(function (f) { if (f.name && f.type !== 'radio') memo[f.name] = f.value; });
+      var chosen = (root.querySelector('input[name=pay]:checked') || {}).value;
       var lines = TZ.cart.lines(), c = TZ.country();
 
       if (!lines.length) {
@@ -473,20 +552,31 @@
             (opts.ph ? ' placeholder="' + e(opts.ph) + '"' : '') + (opts.dir ? ' dir="' + opts.dir + '"' : '') + '>') +
           '<span class="field-err" id="err-' + name + '"></span></div>';
       }
+      var P = TZ.payments || {};
+      var methods = [];
+      if (P.tap) methods.push('tap');
+      if (P.whatsapp || !methods.length) methods.push('whatsapp');
+      if (methods.indexOf(chosen) === -1) chosen = methods[0];
+      // What the card will be charged in: the customer's currency if the shop's Tap account takes it, else BHD.
       var w = Math.round(TZ.cart.weight() * 10) / 10;
+      var payOpt = function (m) {
+        var tap = m === 'tap';
+        return '<label class="pay-option' + (chosen === m ? ' is-selected' : '') + '"><input type="radio" name="pay" value="' + m + '"' + (chosen === m ? ' checked' : '') + '><span class="pay-dot"></span>' +
+          '<span><b>' + e(t(tap ? 'pay_tap_title' : 'pay_wa_title')) + '</b><small>' + e(tap ? t('pay_gatee') + ' · ' + t('pay_note') : t('pay_wa_note')) + '</small></span>' +
+          (tap ? TZ.payLogos() : '<span class="pay-wa">' + TZ.brandIcon('whatsapp') + '</span>') + '</label>';
+      };
       root.innerHTML =
+        (P.testMode ? '<div class="test-ribbon" role="note">' + TZ.icon('bolt') + e(t('test_mode')) + '</div>' : '') +
         '<form class="co-form" id="co-form" novalidate><div class="co-card"><h2>' + TZ.icon('pin') + e(t('co_billing')) + '</h2><div class="fields">' +
         field('first', t('f_first'), { half: true, ac: 'given-name' }) + field('last', t('f_last'), { half: true, ac: 'family-name' }) +
         '<div class="field"><label for="f-country">' + e(t('f_country')) + ' <abbr>*</abbr></label><span class="select-wrap"><select id="f-country" data-country>' + TZ.countryOptions() + '</select>' + TZ.icon('chevron', 'chev') + '</span></div>' +
         field('addr1', t('f_addr1'), { ph: t('f_addr1_ph'), ac: 'address-line1' }) +
         field('addr2', t('f_addr2'), { ph: t('f_addr2_ph'), optional: true, ac: 'address-line2' }) +
-        field('city', t('f_city'), { half: true, ac: 'address-level2' }) + field('state', t('f_state'), { half: true, ac: 'address-level1' }) +
+        field('city', t('f_city'), { half: true, ac: 'address-level2' }) + field('state', t('f_state'), { half: true, ac: 'address-level1', optional: true }) +
         field('phone', t('f_phone'), { half: true, type: 'tel', ac: 'tel', dir: 'ltr' }) + field('email', t('f_email'), { half: true, type: 'email', ac: 'email', dir: 'ltr' }) +
         field('notes', t('f_notes'), { optional: true, textarea: true }) +
         '</div></div>' +
-        '<div class="co-card"><h2>' + TZ.icon('card') + e(t('co_payment')) + '</h2>' +
-        '<label class="pay-option is-selected"><input type="radio" name="pay" value="gatee" checked><span class="pay-dot"></span><span><b>' + e(t('pay_gatee')) + '</b><small>' + e(t('pay_note')) + '</small></span>' +
-        TZ.payLogos() + '</label></div></form>' +
+        '<div class="co-card"><h2>' + TZ.icon('card') + e(t('co_payment')) + '</h2>' + methods.map(payOpt).join('') + '</div></form>' +
         '<aside class="co-summary"><div class="co-card sticky"><h2>' + TZ.icon('bag') + e(t('co_summary')) + '</h2><ul class="co-lines">' +
         lines.map(function (l) {
           return '<li><span class="co-thumb">' + TZ.productArt(l.p) + '<i>' + l.qty + '</i></span><span class="co-name">' + e(TZ.L(l.p.name)) + '</span><b>' + e(TZ.money(l.p.price * l.qty)) + '</b></li>';
@@ -495,55 +585,82 @@
         '<div><dt>' + e(t('cart_shipping')) + '<small>' + c.flag + ' ' + e(c.ship === 'flat' ? t('cart_ship_note_flat') : t('cart_ship_note_ubex', { w: w })) + '</small>' +
         (TZ.delivery(c) ? '<small class="co-eta">' + e(TZ.delivery(c)) + '</small>' : '') + '</dt><dd>' + e(TZ.money(TZ.cart.shipping())) + '</dd></div>' +
         '<div class="grand"><dt>' + e(t('cart_total')) + '</dt><dd>' + e(TZ.money(TZ.cart.total())) + '</dd></div></dl>' +
-        '<button class="btn btn-primary btn-block btn-lg" type="submit" form="co-form" id="place-order">' + TZ.icon('shield') + e(t('place_order')) + '</button>' +
-        '<p class="co-secure">' + TZ.icon('shield') + e(t('pay_note')) + '</p></div></aside>';
+        '<p class="co-charge" id="co-charge" hidden></p>' +
+        '<div class="co-msg" id="co-msg" role="alert" hidden></div>' +
+        '<button class="btn btn-primary btn-block btn-lg" type="submit" form="co-form" id="place-order">' + TZ.icon(chosen === 'tap' ? 'shield' : 'arrow') + e(t(chosen === 'tap' ? 'co_go_pay' : 'co_go_wa')) + '</button>' +
+        '<p class="co-secure">' + TZ.icon('shield') + e(chosen === 'tap' ? t('pay_note') : t('pay_wa_note')) + '</p></div></aside>';
 
       Object.keys(memo).forEach(function (k) { var f = root.querySelector('[name="' + k + '"]'); if (f) f.value = memo[k]; });
 
       var form = $('#co-form');
-      form.addEventListener('submit', function (ev) {
-        ev.preventDefault();
-        var ok = true, first;
-        ['first', 'last', 'addr1', 'city', 'state', 'phone', 'email'].forEach(function (n) {
-          var f = form.elements[n], v = f.value.trim(), msg = '';
-          if (!v) msg = t('err_required');
-          else if (n === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) msg = t('err_email');
-          else if (n === 'phone' && v.replace(/\D/g, '').length < 7) msg = t('err_phone');
-          $('#err-' + n).textContent = msg;
-          f.setAttribute('aria-invalid', msg ? 'true' : 'false');
-          if (msg) f.setAttribute('aria-describedby', 'err-' + n); else f.removeAttribute('aria-describedby');
-          if (msg && ok) { ok = false; first = f; }
-        });
-        if (!ok) { first.focus(); first.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); return; }
-        done(form);
-      });
+      form.addEventListener('change', function (ev) { if (ev.target.name === 'pay') TZ.pages.checkout(); });
+      form.addEventListener('submit', submit);
+      $('#place-order').addEventListener('click', function (ev) { ev.preventDefault(); submit(ev); });
       form.addEventListener('input', function (ev) {
         if (ev.target.getAttribute('aria-invalid') === 'true') { ev.target.setAttribute('aria-invalid', 'false'); var er = $('#err-' + ev.target.name); if (er) er.textContent = ''; }
       });
 
-      /* Front-end only: no payment gateway yet, so the order is handed off to WhatsApp. */
-      function done(f) {
-        var v = function (n) { return f.elements[n].value.trim(); };
-        var msg = [t('wa_order_intro'), ''].concat(TZ.cart.lines().map(function (l) { return '• ' + TZ.L(l.p.name) + ' × ' + l.qty + ' = ' + TZ.money(l.p.price * l.qty); }))
-          .concat(['', t('cart_shipping') + ': ' + TZ.money(TZ.cart.shipping()), t('cart_total') + ': ' + TZ.money(TZ.cart.total()), '',
-            v('first') + ' ' + v('last'), v('phone') + ' · ' + v('email'),
-            [TZ.L(TZ.country().name), v('state'), v('city'), v('addr1'), v('addr2')].filter(Boolean).join('، '), v('notes')]).filter(function (x, i, a) { return x !== '' || a[i - 1] !== ''; }).join('\n');
-        var modal = doc.createElement('div');
-        modal.className = 'modal-wrap';
-        modal.innerHTML = '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="done-h"><div class="confetti" aria-hidden="true">' + new Array(18).join('<i></i>') + '</div>' +
-          '<div class="modal-ico">' + TZ.icon('check') + '</div><h2 id="done-h">' + e(t('co_done_title')) + '</h2><p>' + e(t('co_done_text')) + '</p>' +
-          '<a class="btn btn-whatsapp btn-lg btn-block" target="_blank" rel="noopener" href="https://wa.me/' + TZ.store.phoneRaw + '?text=' + encodeURIComponent(msg) + '">' + TZ.brandIcon('whatsapp') + e(t('co_whatsapp')) + '</a>' +
-          '<button class="btn-link" type="button" data-close-modal>' + e(t('co_back')) + '</button></div>';
-        doc.body.appendChild(modal);
-        requestAnimationFrame(function () { modal.classList.add('open'); });
-        modal.querySelector('.btn-whatsapp').focus();
-        function closeModal() { modal.remove(); doc.removeEventListener('keydown', onKey); var b = $('#place-order'); if (b) b.focus(); }
-        function onKey(ev) { if (ev.key === 'Escape') closeModal(); }
-        doc.addEventListener('keydown', onKey);
-        modal.addEventListener('click', function (ev) {
-          if (ev.target === modal || ev.target.closest('[data-close-modal]')) closeModal();
+      // Tell the customer up front when the card is charged in BHD instead of their own currency.
+      if (chosen === 'tap' && c.cur && c.cur !== 'BHD') {
+        api('/api/checkout/quote', { items: cartItems(), country: c.code }).then(function (res) {
+          var q = res.d && res.d.quote; var box = $('#co-charge');
+          if (q && box && q.chargeCurrency !== q.currency) {
+            box.hidden = false;
+            box.textContent = t('co_charged_in', { cur: q.chargeCurrency, amount: q.chargeCurrency + ' ' + q.chargeAmount.toFixed(3) });
+          }
         });
       }
+
+      var sending = false;
+      function submit(ev) {
+        if (ev && ev.preventDefault) ev.preventDefault();
+        if (sending) return;
+        var ok = true, first;
+        ['first', 'last', 'addr1', 'city', 'phone', 'email'].forEach(function (n) {
+          var f = form.elements[n], v = f.value.trim(), msg = '';
+          if (!v) msg = t('err_required');
+          else if (n === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) msg = t('err_email');
+          else if (n === 'phone' && v.replace(/\D/g, '').length < 8) msg = t('err_phone');
+          showErr(n, msg);
+          if (msg && ok) { ok = false; first = f; }
+        });
+        if (!ok) { first.focus(); first.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); return; }
+        var v = function (n) { return form.elements[n].value.trim(); };
+        var btn = $('#place-order'); btn.disabled = true; btn.classList.add('is-busy'); sending = true;
+        hideMsg();
+        api('/api/checkout', {
+          items: cartItems(), country: TZ.country().code, method: chosen, lang: TZ.lang(), expected_total: Math.round(TZ.cart.total() * 1000) / 1000,
+          first_name: v('first'), last_name: v('last'), email: v('email'), phone: v('phone'),
+          address1: v('addr1'), address2: v('addr2'), city: v('city'), state: v('state'), notes: v('notes')
+        }).then(function (res) {
+          sending = false; btn.disabled = false; btn.classList.remove('is-busy');
+          var d = res.d || {};
+          if (d.ok && d.redirect) { btn.disabled = true; location.href = d.redirect; return; }
+          if (d.ok && d.whatsapp) {
+            TZ.cart.clear();
+            history.replaceState(null, '', TZ.url('checkout.html?order=' + d.order.token));
+            showWhatsapp(root, d.order, d.whatsapp);
+            return;
+          }
+          var err = d.error || {};
+          if (err.code === 'changed' && d.quote) { syncCart(d.quote); showMsg(t('co_changed')); TZ.pages.checkout(); showMsg(t('co_changed')); return; }
+          if (err.fields) {
+            var map = { first_name: 'first', last_name: 'last', address1: 'addr1', address2: 'addr2' };
+            Object.keys(err.fields).forEach(function (k) { showErr(map[k] || k, err.fields[k]); });
+            return;
+          }
+          showMsg(res.status === 502 ? t('co_unavailable') : (err.message && TZ.lang() === 'en' ? err.message : t('co_err')));
+        });
+      }
+      function showErr(n, msg) {
+        var f = form.elements[n], el = $('#err-' + n);
+        if (!f || !el) return;
+        el.textContent = msg;
+        f.setAttribute('aria-invalid', msg ? 'true' : 'false');
+        if (msg) f.setAttribute('aria-describedby', 'err-' + n); else f.removeAttribute('aria-describedby');
+      }
+      function showMsg(m) { var b = $('#co-msg'); if (b) { b.hidden = false; b.textContent = m; } }
+      function hideMsg() { var b = $('#co-msg'); if (b) b.hidden = true; }
     },
 
     /* ================= CONTACT ================= */
@@ -569,5 +686,7 @@
     about: function () { countUp(doc); }
   };
 
-  doc.addEventListener('tz:cart', function () { if (doc.body.getAttribute('data-page') === 'checkout') TZ.pages.checkout(); });
+  doc.addEventListener('tz:cart', function () {
+    if (doc.body.getAttribute('data-page') === 'checkout' && !new URLSearchParams(location.search).get('order')) TZ.pages.checkout();
+  });
 })();

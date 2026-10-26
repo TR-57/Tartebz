@@ -162,8 +162,8 @@
     "where": "assets/js/app.js, assets/js/pages.js"
    },
    "cart_ship_note_ubex": {
-    "en": "Estimated by weight ({w} kg) via UBEX",
-    "ar": "تقديري حسب الوزن ({w} كجم) عبر UBEX",
+    "en": "By weight ({w} kg), shipped with SMSA Express",
+    "ar": "حسب الوزن ({w} كجم)، الشحن عبر سمسا إكسبريس",
     "where": "assets/js/app.js, assets/js/pages.js"
    },
    "cart_shipping": {
@@ -234,31 +234,126 @@
    "co_back": {
     "en": "Edit order",
     "ar": "تعديل الطلب",
-    "where": "assets/js/pages.js"
+    "where": ""
    },
    "co_billing": {
     "en": "Delivery details",
     "ar": "بيانات التوصيل",
     "where": "assets/js/pages.js"
    },
+   "co_cancelled": {
+    "en": "This order was cancelled.",
+    "ar": "تم إلغاء هذا الطلب.",
+    "where": "assets/js/pages.js"
+   },
+   "co_changed": {
+    "en": "Your cart changed (price or stock). Check the new total, then confirm again.",
+    "ar": "تغيّرت سلتك (السعر أو الكمية المتوفرة). راجع المجموع الجديد ثم أكد مرة ثانية.",
+    "where": "assets/js/pages.js"
+   },
+   "co_charged_in": {
+    "en": "You will pay in {cur}: {amount}",
+    "ar": "سيتم الدفع بـ{cur}: {amount}",
+    "where": "assets/js/pages.js"
+   },
+   "co_continue": {
+    "en": "Continue shopping",
+    "ar": "كمّل التسوق",
+    "where": "assets/js/pages.js"
+   },
+   "co_delivered": {
+    "en": "Your order was delivered. Enjoy! 🍬",
+    "ar": "تم توصيل طلبك. بالعافية! 🍬",
+    "where": "assets/js/pages.js"
+   },
    "co_done_text": {
     "en": "This is a front-end preview, so no payment was taken. Send your order to us on WhatsApp and we’ll complete it with you.",
     "ar": "هذه نسخة تجريبية من الواجهة ولم يتم أي دفع بعد. أرسل طلبك لنا عبر واتساب ونكمل معك.",
-    "where": "assets/js/pages.js"
+    "where": ""
    },
    "co_done_title": {
     "en": "Your order is ready! 🎉",
     "ar": "تم تجهيز طلبك! 🎉",
-    "where": "assets/js/pages.js"
+    "where": ""
    },
    "co_empty": {
     "en": "Your cart is empty, add some products first.",
     "ar": "سلتك فاضية، أضف منتجات أولاً.",
     "where": "assets/js/pages.js"
    },
+   "co_err": {
+    "en": "Something went wrong. Please try again.",
+    "ar": "صار خطأ، جرّب مرة ثانية.",
+    "where": "assets/js/pages.js"
+   },
+   "co_failed_text": {
+    "en": "The payment for order {number} did not go through, and nothing was charged. You can try again.",
+    "ar": "ما اكتمل الدفع لطلبك رقم {number}، ولم يتم خصم أي مبلغ. تقدر تحاول مرة ثانية.",
+    "where": "assets/js/pages.js"
+   },
+   "co_failed_title": {
+    "en": "Payment not completed",
+    "ar": "ما تم الدفع",
+    "where": "assets/js/pages.js"
+   },
+   "co_go_pay": {
+    "en": "Continue to payment",
+    "ar": "متابعة للدفع",
+    "where": ""
+   },
+   "co_go_wa": {
+    "en": "Send order on WhatsApp",
+    "ar": "أرسل الطلب عبر واتساب",
+    "where": "assets/js/pages.js"
+   },
+   "co_not_found": {
+    "en": "We couldn’t find this order.",
+    "ar": "ما لقينا هذا الطلب.",
+    "where": "assets/js/pages.js"
+   },
+   "co_order_no": {
+    "en": "Order number",
+    "ar": "رقم الطلب",
+    "where": ""
+   },
+   "co_paid_text": {
+    "en": "We’ve got your order {number}. We emailed you the details and will send the tracking number as soon as it ships.",
+    "ar": "طلبك رقم {number} وصلنا. أرسلنا التفاصيل إلى بريدك، وبنرسل لك رقم الشحنة أول ما يطلع.",
+    "where": "assets/js/pages.js"
+   },
+   "co_paid_title": {
+    "en": "Paid – thank you, {name}! 🎉",
+    "ar": "تم الدفع، شكرًا {name}! 🎉",
+    "where": "assets/js/pages.js"
+   },
    "co_payment": {
     "en": "Payment method",
     "ar": "طريقة الدفع",
+    "where": "assets/js/pages.js"
+   },
+   "co_pending_slow": {
+    "en": "This is taking longer than usual. If you were charged, your order is safe and we’ll contact you.",
+    "ar": "يأخذ التأكيد وقتًا أطول من العادة. إذا تم خصم المبلغ فطلبك محفوظ وبنتواصل معك.",
+    "where": "assets/js/pages.js"
+   },
+   "co_pending_text": {
+    "en": "One moment – waiting for Tap’s confirmation. Please keep this page open.",
+    "ar": "لحظات، ننتظر تأكيد Tap. لا تغلق الصفحة.",
+    "where": "assets/js/pages.js"
+   },
+   "co_pending_title": {
+    "en": "Confirming your payment…",
+    "ar": "نتأكد من الدفع…",
+    "where": "assets/js/pages.js"
+   },
+   "co_retry": {
+    "en": "Try paying again",
+    "ar": "حاول الدفع مرة ثانية",
+    "where": "assets/js/pages.js"
+   },
+   "co_shipped": {
+    "en": "Your order shipped with SMSA: {awb}",
+    "ar": "تم شحن طلبك مع سمسا: {awb}",
     "where": "assets/js/pages.js"
    },
    "co_summary": {
@@ -276,10 +371,35 @@
     "ar": "إتمام الطلب",
     "where": "checkout.html, assets/js/app.js"
    },
+   "co_total_paid": {
+    "en": "Amount",
+    "ar": "المبلغ",
+    "where": "assets/js/pages.js"
+   },
+   "co_track": {
+    "en": "Track the parcel",
+    "ar": "تتبّع الشحنة",
+    "where": "assets/js/pages.js"
+   },
+   "co_unavailable": {
+    "en": "Sorry, the payment page is not available right now. Try again shortly, or order on WhatsApp.",
+    "ar": "نعتذر، صفحة الدفع غير متاحة الحين. جرّب بعد قليل أو اطلب عبر واتساب.",
+    "where": "assets/js/pages.js"
+   },
+   "co_wa_text": {
+    "en": "Send it to us on WhatsApp – we’ll send you how to pay and confirm the delivery.",
+    "ar": "أرسل الطلب لنا على واتساب ونرسل لك طريقة الدفع ونأكد التوصيل.",
+    "where": "assets/js/pages.js"
+   },
+   "co_wa_title": {
+    "en": "Your order {number} is saved",
+    "ar": "طلبك رقم {number} محفوظ",
+    "where": "assets/js/pages.js"
+   },
    "co_whatsapp": {
     "en": "Send order on WhatsApp",
     "ar": "أرسل الطلب عبر واتساب",
-    "where": "assets/js/pages.js"
+    "where": ""
    },
    "contact_text": {
     "en": "Got a question or a special order for an occasion? We’re here.",
@@ -757,14 +877,29 @@
     "where": "assets/js/app.js"
    },
    "pay_gatee": {
-    "en": "Debit / credit card or BenefitPay",
-    "ar": "بطاقة بنكية / بنفت بي",
+    "en": "Card, Apple Pay or Benefit",
+    "ar": "بطاقة، Apple Pay أو بنفت",
     "where": "assets/js/pages.js"
    },
    "pay_note": {
-    "en": "Payments are processed securely through Gate-E.",
-    "ar": "تتم معالجة الدفع بأمان عبر بوابة Gate-E.",
+    "en": "You pay on Tap’s secure page; your card details never pass through our site.",
+    "ar": "تدفع في صفحة Tap الآمنة؛ بيانات بطاقتك لا تمر عبر موقعنا.",
     "where": "assets/js/pages.js"
+   },
+   "pay_tap_title": {
+    "en": "Pay now",
+    "ar": "ادفع الآن",
+    "where": ""
+   },
+   "pay_wa_note": {
+    "en": "We send you the payment details (Benefit or transfer) on WhatsApp and confirm your order.",
+    "ar": "نرسل لك تفاصيل الدفع (بنفت أو تحويل) على واتساب ونأكد الطلب.",
+    "where": "assets/js/pages.js"
+   },
+   "pay_wa_title": {
+    "en": "Order on WhatsApp",
+    "ar": "اطلب عبر واتساب",
+    "where": ""
    },
    "pay_with": {
     "en": "Pay securely with",
@@ -774,7 +909,7 @@
    "place_order": {
     "en": "Place order",
     "ar": "تأكيد الطلب",
-    "where": "assets/js/pages.js"
+    "where": ""
    },
    "press_1": {
     "en": "Al Watan newspaper",
@@ -867,8 +1002,8 @@
     "where": "index.html"
    },
    "ship_tab_text": {
-    "en": "Flat rate inside Bahrain; the rest of the Gulf ships with UBEX based on order weight. Delivery for this item on its own:",
-    "ar": "داخل البحرين بسعر ثابت، ولباقي دول الخليج عبر شركة UBEX حسب وزن الطلب. أسعار التوصيل لهذا المنتج وحده:",
+    "en": "Flat rate inside Bahrain; the rest of the Gulf ships with SMSA Express based on order weight. Delivery for this item on its own:",
+    "ar": "داخل البحرين بسعر ثابت، ولباقي دول الخليج عبر سمسا إكسبريس حسب وزن الطلب. أسعار التوصيل لهذا المنتج وحده:",
     "where": "assets/js/pages.js"
    },
    "ship_text": {
@@ -1034,6 +1169,11 @@
    "tab_ship": {
     "en": "Shipping & delivery",
     "ar": "الشحن والتوصيل",
+    "where": "assets/js/pages.js"
+   },
+   "test_mode": {
+    "en": "Test mode: payments are tests, no money is taken.",
+    "ar": "وضع تجريبي: الدفع تجريبي ولا يتم خصم أي مبلغ.",
     "where": "assets/js/pages.js"
    },
    "val_1": {
@@ -1644,7 +1784,219 @@
    "Enter the WhatsApp number with the country code, e.g. +973 3753 3757.": "أدخل رقم واتساب مع رمز الدولة، مثل ‎+973 3753 3757.",
    "A country is a 2-letter code, like SA.": "الدولة رمز من حرفين، مثل SA.",
    "Enter the days as “from” and “to”, with “to” not smaller than “from”.": "أدخل الأيام «من» و«إلى»، بحيث لا تكون «إلى» أصغر من «من».",
-   "That request is not there any more.": "هذا الطلب لم يعد موجودًا."
+   "That request is not there any more.": "هذا الطلب لم يعد موجودًا.",
+   "Orders": "الطلبات",
+   "Payments": "الدفع",
+   "Shipping": "الشحن",
+   "To prepare": "للتجهيز",
+   "Not paid": "غير مدفوعة",
+   "Shipped": "تم الشحن",
+   "Delivered": "تم التوصيل",
+   "Cancelled": "ملغاة",
+   "Test": "تجريبي",
+   "Card (Tap)": "بطاقة (Tap)",
+   "{0} item": "منتج واحد",
+   "{0} items": "{0} منتجات",
+   "No order matches your search.": "لا يوجد طلب يطابق بحثك.",
+   "No orders here yet.": "لا توجد طلبات هنا بعد.",
+   "Preparing": "قيد التجهيز",
+   "Test payment – no real money": "دفع تجريبي – بدون مبالغ حقيقية",
+   "Paid": "مدفوع",
+   "Not completed": "لم يكتمل",
+   "WhatsApp order": "طلب واتساب",
+   "Card through Tap": "بطاقة عبر Tap",
+   "Payment failed": "فشل الدفع",
+   "Refunded": "مسترجع",
+   "Note added": "تمت إضافة الملاحظة",
+   "Checked with Tap": "تم التحقق مع Tap",
+   "Mark as paid": "تعليم كمدفوع",
+   "Marked as paid": "تم التعليم كمدفوع",
+   "Cancel this order? The stock goes back on sale.": "إلغاء هذا الطلب؟ يعود المخزون للبيع.",
+   "Cancel order": "إلغاء الطلب",
+   "Order cancelled": "تم إلغاء الطلب",
+   "Sandbox": "تجريبي (Sandbox)",
+   "Live: this books a real, billable SMSA parcel.": "وضع مباشر: هذا يحجز شحنة حقيقية مدفوعة مع سمسا.",
+   "Sandbox: a test waybill, no courier comes.": "وضع تجريبي: بوليصة تجريبية، ولا يأتي مندوب.",
+   "Book a real SMSA shipment for this order?": "حجز شحنة حقيقية مع سمسا لهذا الطلب؟",
+   "Book shipment": "حجز الشحنة",
+   "Shipment booked": "تم حجز الشحنة",
+   "Tracking updated": "تم تحديث التتبع",
+   "Cancel this SMSA shipment? The waybill can no longer be used.": "إلغاء شحنة سمسا هذه؟ لن يمكن استخدام البوليصة بعدها.",
+   "Cancel shipment": "إلغاء الشحنة",
+   "Shipment cancelled": "تم إلغاء الشحنة",
+   "Amounts are in BHD; what the customer paid in their own currency is shown next to it.": "المبالغ بالدينار البحريني، ويظهر بجانبها ما دفعه العميل بعملته.",
+   "Search by order number, name, phone, email or waybill": "ابحث برقم الطلب أو الاسم أو الهاتف أو البريد أو رقم البوليصة",
+   "Search orders": "البحث في الطلبات",
+   "Order": "الطلب",
+   "Customer": "العميل",
+   "Total": "الإجمالي",
+   "Date": "التاريخ",
+   "Subtotal": "المجموع الفرعي",
+   "Charged:": "المبلغ المدفوع:",
+   "Delivery – SMSA Express": "التوصيل – سمسا إكسبريس",
+   "History": "السجل",
+   "Add a note for the team (not shown to the customer)": "أضف ملاحظة للفريق (لا تظهر للعميل)",
+   "Add a note": "إضافة ملاحظة",
+   "Add note": "إضافة ملاحظة",
+   "Address": "العنوان",
+   "Customer’s note": "ملاحظة العميل",
+   "Language:": "اللغة:",
+   "Payment": "الدفع",
+   "Mark as paid…": "تعليم كمدفوع…",
+   "Customer’s order page:": "صفحة الطلب للعميل:",
+   "open": "فتح",
+   "Tap charge:": "عملية Tap:",
+   "Check payment with Tap": "تحقق من الدفع مع Tap",
+   "Gives the stock back. A card payment is refunded in the Tap dashboard.": "يعيد المخزون. يُسترجع الدفع بالبطاقة من لوحة Tap.",
+   "How was it paid?": "كيف تم الدفع؟",
+   "e.g. BenefitPay transfer, cash": "مثل: تحويل بنفت، نقدًا",
+   "Only when the money is really in. This takes the stock and emails the customer.": "فقط عند استلام المبلغ فعلًا. هذا يخصم المخزون ويرسل بريدًا للعميل.",
+   "Print label (PDF)": "طباعة الملصق (PDF)",
+   "Update tracking": "تحديث التتبع",
+   "SMSA tracking page": "صفحة التتبع في سمسا",
+   "The shipment can be booked once the order is paid.": "يمكن حجز الشحنة بعد دفع الطلب.",
+   "SMSA is not switched on. Settings › Shipping: paste the API key, test, switch on.": "سمسا غير مفعّلة. الإعدادات › الشحن: الصق مفتاح API، اختبر، ثم فعّل.",
+   "Boxes": "عدد الصناديق",
+   "Weight (kg)": "الوزن (كجم)",
+   "Book SMSA shipment and get the label": "احجز شحنة سمسا واحصل على الملصق",
+   "{0} (saved – type to replace)": "{0} (محفوظ – اكتب لاستبداله)",
+   "Live – real payments": "مباشر – دفع حقيقي",
+   "Test mode – no real money": "وضع تجريبي – بدون مبالغ حقيقية",
+   "Off": "متوقف",
+   "Card payments on at checkout": "تفعيل الدفع بالبطاقة عند إتمام الطلب",
+   "Secret key (sk_test_…)": "المفتاح السري (sk_test_…)",
+   "Publishable key (pk_test_…)": "المفتاح العام (pk_test_…)",
+   "Secret key (sk_live_…)": "المفتاح السري (sk_live_…)",
+   "Publishable key (pk_live_…)": "المفتاح العام (pk_live_…)",
+   "Offer “Order on WhatsApp” at checkout": "إتاحة «اطلب عبر واتساب» عند إتمام الطلب",
+   "The order is saved; you confirm the payment by hand in Orders (Mark as paid).": "يُحفظ الطلب، وتؤكد الدفع يدويًا من الطلبات (تعليم كمدفوع).",
+   "Switch to LIVE? Customers will be charged real money.": "التحويل إلى الوضع المباشر؟ سيتم خصم مبالغ حقيقية من العملاء.",
+   "Go live": "تفعيل المباشر",
+   "Remove the saved key": "حذف المفتاح المحفوظ",
+   "Card payments through Tap. Customers pay on Tap’s secure page (cards, Apple Pay, Benefit, mada, KNET – whatever your Tap account has switched on). Card numbers never reach this website.": "الدفع بالبطاقة عبر Tap. يدفع العملاء في صفحة Tap الآمنة (بطاقات، Apple Pay، بنفت، مدى، KNET – حسب ما هو مفعّل في حسابك). أرقام البطاقات لا تصل إلى هذا الموقع.",
+   "Going live in 4 steps": "التشغيل المباشر في 4 خطوات",
+   "In your Tap dashboard (goSell › API keys), copy the test secret key and test publishable key. Paste them below, keep Test mode, switch card payments on and save.": "من لوحة Tap ‏(goSell › API keys) انسخ المفتاح السري التجريبي والمفتاح العام التجريبي، والصقهما بالأسفل، وأبقِ الوضع تجريبيًا، وفعّل الدفع بالبطاقة ثم احفظ.",
+   "Press “Test connection”. Then place an order on the website and pay with a Tap test card. Check the order shows as paid in Orders.": "اضغط «اختبار الاتصال». ثم اطلب من الموقع وادفع ببطاقة Tap تجريبية، وتأكد أن الطلب يظهر مدفوعًا في الطلبات.",
+   "Paste the live secret key and live publishable key, save, and test the live connection.": "الصق المفتاح السري والمفتاح العام للوضع المباشر، احفظ، ثم اختبر الاتصال المباشر.",
+   "Choose Live and save. From then on, payments are real.": "اختر «مباشر» واحفظ. من بعدها يصبح الدفع حقيقيًا.",
+   "Mode": "الوضع",
+   "Live": "مباشر",
+   "Test mode uses the test keys: Tap test cards only, no real money.": "الوضع التجريبي يستخدم المفاتيح التجريبية: بطاقات Tap التجريبية فقط، بدون مبالغ حقيقية.",
+   "Merchant ID (optional)": "رقم التاجر (اختياري)",
+   "Only if Tap gave you one for this shop.": "فقط إذا أعطتك Tap رقمًا لهذا المتجر.",
+   "Charge in these currencies": "الدفع بهذه العملات",
+   "Tick only currencies your Tap account can accept. Customers from other countries are charged in BHD (the same price, converted).": "اختر فقط العملات التي يقبلها حسابك في Tap. العملاء من الدول الأخرى يدفعون بالدينار البحريني (نفس السعر محوّلًا).",
+   "Keys": "المفاتيح",
+   "Keys are stored encrypted and never shown again. Save before testing a new key.": "تُحفظ المفاتيح مشفرة ولا تظهر مرة أخرى. احفظ قبل اختبار مفتاح جديد.",
+   "Test connection (test keys)": "اختبار الاتصال (المفاتيح التجريبية)",
+   "Test connection (live keys)": "اختبار الاتصال (المفاتيح المباشرة)",
+   "WhatsApp orders": "طلبات واتساب",
+   "For your Tap dashboard": "للوحة Tap",
+   "Tap sends payment updates here (the website also sets it on every payment, so usually nothing to do):": "ترسل Tap تحديثات الدفع إلى هذا العنوان (الموقع يحدده تلقائيًا مع كل عملية، فغالبًا لا تحتاج لفعل شيء):",
+   "Test cards: see Tap’s developer docs (“Testing cards”). In test mode, Benefit/KNET/mada pages also have a test flow.": "البطاقات التجريبية: راجع وثائق Tap للمطورين («Testing cards»). وفي الوضع التجريبي، صفحات بنفت/KNET/مدى لها مسار تجريبي أيضًا.",
+   "Live – real shipments": "مباشر – شحنات حقيقية",
+   "Sandbox – test waybills": "تجريبي – بوالص تجريبية",
+   "Book shipments with SMSA from the order page": "حجز الشحنات مع سمسا من صفحة الطلب",
+   "Sandbox API key": "مفتاح API التجريبي",
+   "Live API key": "مفتاح API المباشر",
+   "Test connection (sandbox)": "اختبار الاتصال (تجريبي)",
+   "Test connection (live)": "اختبار الاتصال (مباشر)",
+   "Service code": "رمز الخدمة",
+   "From SMSA (e.g. EDDL). Empty = your account’s default.": "من سمسا (مثل EDDL). فارغ = الخدمة الافتراضية لحسابك.",
+   "SMSA retail ID (optional)": "رقم فرع سمسا (اختياري)",
+   "Contents (on the waybill)": "المحتويات (على البوليصة)",
+   "Declared value currency": "عملة القيمة المصرّح بها",
+   "Sandbox address": "عنوان الخادم التجريبي",
+   "Live address": "عنوان الخادم المباشر",
+   "Server addresses (only change if SMSA tells you to)": "عناوين الخوادم (غيّرها فقط إذا طلبت سمسا ذلك)",
+   "Sender (on every waybill)": "المرسل (على كل بوليصة)",
+   "Name (at least 5 letters)": "الاسم (5 أحرف على الأقل)",
+   "Phone": "الهاتف",
+   "Country code": "رمز الدولة",
+   "City": "المدينة",
+   "Area / district": "المنطقة / الحي",
+   "Address (at least 10 characters)": "العنوان (10 أحرف على الأقل)",
+   "Address line 2": "سطر العنوان 2",
+   "Postal code": "الرمز البريدي",
+   "Delivery prices (BHD)": "أسعار التوصيل (د.ب)",
+   "What the customer pays at checkout. Fixed price per country first; other countries pay by parcel weight.": "ما يدفعه العميل عند إتمام الطلب. أولًا السعر الثابت لكل دولة، والدول الأخرى تدفع حسب وزن الشحنة.",
+   "We deliver to (country codes)": "نوصّل إلى (رموز الدول)",
+   "e.g. BH, SA, AE, QA, KW, OM": "مثل: BH، SA، AE، QA، KW، OM",
+   "Fixed price": "سعر ثابت",
+   "By weight": "حسب الوزن",
+   "up to": "حتى",
+   "kg": "كجم",
+   "Add a row": "إضافة صف",
+   "Above the last row: extra for every 0.5 kg": "بعد آخر صف: إضافة لكل 0.5 كجم",
+   "Your SMSA services:": "خدماتك في سمسا:",
+   "Switch SMSA to LIVE? Every shipment you book will be a real, billable parcel.": "تحويل سمسا إلى الوضع المباشر؟ كل شحنة تحجزها ستكون شحنة حقيقية مدفوعة.",
+   "Delivery prices at checkout, and SMSA Express for waybills, labels and tracking.": "أسعار التوصيل عند إتمام الطلب، وسمسا إكسبريس للبوالص والملصقات والتتبع.",
+   "Going live with SMSA in 4 steps": "تشغيل سمسا المباشر في 4 خطوات",
+   "Ask your SMSA account manager for the eCommerce API keys: one for the sandbox and one for live, and your service code (for example EDDL).": "اطلب من مدير حسابك في سمسا مفاتيح eCommerce API: مفتاح للبيئة التجريبية ومفتاح للمباشر، ورمز الخدمة (مثل EDDL).",
+   "Paste the sandbox key, fill in the sender address, keep Sandbox, switch SMSA on, save, and press “Test connection”.": "الصق المفتاح التجريبي، واملأ عنوان المرسل، وأبقِ الوضع تجريبيًا، وفعّل سمسا ثم احفظ واضغط «اختبار الاتصال».",
+   "Open a paid order (a Tap test order is fine) and book a shipment. You get a test waybill and its label PDF.": "افتح طلبًا مدفوعًا (طلب Tap تجريبي يكفي) واحجز شحنة. ستحصل على بوليصة تجريبية وملصقها PDF.",
+   "Paste the live key, test it, choose Live and save. Every shipment after that is a real, billable parcel.": "الصق المفتاح المباشر واختبره، ثم اختر «مباشر» واحفظ. كل شحنة بعدها حقيقية ومدفوعة.",
+   "paid, not yet being prepared": "مدفوعة، لم يبدأ تجهيزها",
+   "card or WhatsApp, last 3 days": "بطاقة أو واتساب، آخر 3 أيام",
+   "Card payments (Tap)": "الدفع بالبطاقة (Tap)",
+   "Tap is in TEST mode – no real money is taken": "Tap في الوضع التجريبي – لا تُخصم مبالغ حقيقية",
+   "SMSA shipping": "الشحن مع سمسا",
+   "Settings > Payments – paste the Tap keys, test, then switch to live.": "الإعدادات > الدفع – الصق مفاتيح Tap، اختبر، ثم فعّل المباشر.",
+   "Settings > Payments – switch to live when your test order worked.": "الإعدادات > الدفع – فعّل المباشر بعد نجاح الطلب التجريبي.",
+   "Settings > Shipping – paste the SMSA key, fill in the sender address, test.": "الإعدادات > الشحن – الصق مفتاح سمسا، واملأ عنوان المرسل، ثم اختبر.",
+   "A country code (e.g. BH) and a price of 0 or more.": "رمز دولة (مثل BH) وسعر 0 أو أكثر.",
+   "Choose a status.": "اختر حالة.",
+   "Connected to Tap – the key is accepted.": "تم الاتصال بـ Tap – المفتاح مقبول.",
+   "Connected to Tap.": "تم الاتصال بـ Tap.",
+   "Connected to SMSA (sandbox).": "تم الاتصال بسمسا (تجريبي).",
+   "Connected to SMSA (live).": "تم الاتصال بسمسا (مباشر).",
+   "Could not reach SMSA. Try again in a moment.": "تعذّر الوصول إلى سمسا. حاول بعد قليل.",
+   "Could not reach Tap. Try again in a moment.": "تعذّر الوصول إلى Tap. حاول بعد قليل.",
+   "Deliver to at least one country.": "اختر دولة توصيل واحدة على الأقل.",
+   "Delivered (SMSA tracking).": "تم التوصيل (حسب تتبع سمسا).",
+   "Keep at least one weight row.": "أبقِ صف وزن واحدًا على الأقل.",
+   "No label saved for this order.": "لا يوجد ملصق محفوظ لهذا الطلب.",
+   "Order placed – to be confirmed on WhatsApp.": "تم الطلب – بانتظار التأكيد عبر واتساب.",
+   "Order placed – waiting for the card payment.": "تم الطلب – بانتظار الدفع بالبطاقة.",
+   "SMSA did not return a waybill number.": "لم ترجع سمسا رقم بوليصة.",
+   "SMSA is not switched on: Settings › Shipping – save the API key and switch it on.": "سمسا غير مفعّلة: الإعدادات › الشحن – احفظ مفتاح API ثم فعّلها.",
+   "SMSA refused the API key (wrong key, or a live key on the sandbox / sandbox key on live).": "رفضت سمسا مفتاح API (مفتاح خاطئ، أو مفتاح مباشر في التجريبي / مفتاح تجريبي في المباشر).",
+   "Say how it was paid (e.g. BenefitPay transfer, cash).": "اذكر طريقة الدفع (مثل تحويل بنفت، نقدًا).",
+   "Ship paid orders only.": "اشحن الطلبات المدفوعة فقط.",
+   "Shipped (SMSA picked it up).": "تم الشحن (استلمتها سمسا).",
+   "Shipping › SMSA: enter the sender city.": "الشحن › سمسا: أدخل مدينة المرسل.",
+   "Shipping › SMSA: enter the sender phone number.": "الشحن › سمسا: أدخل هاتف المرسل.",
+   "Shipping › SMSA: the sender address must be at least 10 characters.": "الشحن › سمسا: عنوان المرسل يجب أن يكون 10 أحرف على الأقل.",
+   "Shipping › SMSA: the sender name must be at least 5 letters.": "الشحن › سمسا: اسم المرسل يجب أن يكون 5 أحرف على الأقل.",
+   "Tap refused the key (wrong key, or a test key in live mode / live key in test mode).": "رفضت Tap المفتاح (مفتاح خاطئ، أو مفتاح تجريبي في الوضع المباشر / مفتاح مباشر في التجريبي).",
+   "Tap says paid, but the amount or currency is not the order’s. Check it in the Tap dashboard before shipping.": "تقول Tap إن الدفع تم، لكن المبلغ أو العملة لا يطابقان الطلب. تحقق من لوحة Tap قبل الشحن.",
+   "That is not a Tap charge id.": "هذا ليس رقم عملية Tap.",
+   "That order does not exist.": "هذا الطلب غير موجود.",
+   "The address must be at least 10 characters for SMSA.": "العنوان يجب أن يكون 10 أحرف على الأقل لسمسا.",
+   "The city must be at least 3 letters for SMSA.": "المدينة يجب أن تكون 3 أحرف على الأقل لسمسا.",
+   "The customer’s full name must be at least 5 letters for SMSA.": "اسم العميل الكامل يجب أن يكون 5 أحرف على الأقل لسمسا.",
+   "This order has no SMSA shipment.": "هذا الطلب ليس له شحنة سمسا.",
+   "This order has no card payment to check.": "هذا الطلب ليس له دفع بالبطاقة للتحقق منه.",
+   "This order has shipped. Cancel the SMSA shipment first, or handle it as a return.": "تم شحن هذا الطلب. ألغِ شحنة سمسا أولًا، أو تعامل معه كمرتجع.",
+   "This order is already cancelled.": "هذا الطلب ملغى بالفعل.",
+   "This order is already paid.": "هذا الطلب مدفوع بالفعل.",
+   "This order is cancelled.": "هذا الطلب ملغى.",
+   "This order is not paid yet. Mark it as paid first (WhatsApp / bank transfer), or wait for the card payment.": "هذا الطلب غير مدفوع بعد. علّمه كمدفوع أولًا (واتساب / تحويل)، أو انتظر الدفع بالبطاقة.",
+   "Weights must go up row by row, and prices be 0 or more.": "يجب أن تزيد الأوزان صفًا بعد صف، وأن تكون الأسعار 0 أو أكثر.",
+   "Write the note first.": "اكتب الملاحظة أولًا.",
+   "Sent to the Tap payment page (test mode).": "أُرسل العميل إلى صفحة الدفع في Tap (وضع تجريبي).",
+   "Sent to the Tap payment page (live mode).": "أُرسل العميل إلى صفحة الدفع في Tap (وضع مباشر).",
+   "Cancelled.": "تم الإلغاء.",
+   "A Tap notification arrived with a signature that does not match – the charge was checked with Tap directly.": "وصل إشعار من Tap بتوقيع غير مطابق – تم التحقق من العملية مع Tap مباشرة.",
+   "Sender": "المرسل",
+   "Customer’s order page": "صفحة الطلب للعميل",
+   "Tap": "Tap",
+   "SMSA Express": "سمسا إكسبريس",
+   "pk_test_…": "pk_test_…",
+   "sk_test_…": "sk_test_…",
+   "sk_live_…": "sk_live_…",
+   "pk_live_…": "pk_live_…",
+   "API key": "مفتاح API"
   }
  }
 }

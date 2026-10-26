@@ -177,11 +177,13 @@
   TZ.shipCost = function (weightKg, countryObj) {
     var c = countryObj || TZ.country();
     if (weightKg <= 0) return 0;
+    var flat = TZ.shipping.flat && TZ.shipping.flat[c.code];
+    if (flat != null) return flat;
     if (c.ship === 'flat') return TZ.shipping.flatBH;
     var t = TZ.shipping.ubex;
     for (var i = 0; i < t.length; i++) { if (weightKg <= t[i][0] + 1e-9) return t[i][1]; }
     var last = t[t.length - 1];
-    return last[1] + Math.ceil((weightKg - last[0]) / 0.5) * 1.05;
+    return Math.round((last[1] + Math.ceil((weightKg - last[0]) / 0.5) * (TZ.shipping.extra != null ? TZ.shipping.extra : 1.05)) * 1000) / 1000;
   };
 
   /* ---------- cart ---------- */
