@@ -135,9 +135,9 @@
   {
    "path": "wp/2025/08/DSC06742-1-scaled.jpg",
    "use": "product",
-   "title": "Electric Sour Strips",
-   "alt_en": "Electric Sour Strips",
-   "alt_ar": "شرايط حامض كهرباء"
+   "title": "Sweet & Sour Strips",
+   "alt_en": "Sweet & Sour Strips",
+   "alt_ar": "شرايط حامض حلو"
   },
   {
    "path": "wp/2025/10/DSC06692-1-scaled.webp",
@@ -156,9 +156,9 @@
   {
    "path": "wp/2025/08/DSC06745-1-scaled.jpg",
    "use": "product",
-   "title": "Sweet & Sour Strips",
-   "alt_en": "Sweet & Sour Strips",
-   "alt_ar": "شرايط حامض حلو"
+   "title": "Electric Sour Strips",
+   "alt_en": "Electric Sour Strips",
+   "alt_ar": "شرايط حامض كهرباء"
   },
   {
    "path": "wp/2025/08/DSC06702-1-scaled.jpg",
@@ -217,7 +217,7 @@
    "stock_qty": -2,
    "status": "active",
    "images": [
-    "wp/2025/08/DSC06742-1-scaled.jpg"
+    "wp/2025/08/DSC06745-1-scaled.jpg"
    ],
    "old_url": "/product/شرايط-حامض-كهرباء/"
   },
@@ -283,7 +283,7 @@
    "stock_qty": 130,
    "status": "active",
    "images": [
-    "wp/2025/08/DSC06745-1-scaled.jpg"
+    "wp/2025/08/DSC06742-1-scaled.jpg"
    ],
    "old_url": "/product/شرايط-حامض-حلو/"
   },
