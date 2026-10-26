@@ -1,0 +1,7 @@
+<?php
+/*
+ | public_html/api.php – hands /api/* (and first-time image copies) to the Laravel app,
+ | which lives OUTSIDE public_html so its code and .env can never be downloaded.
+ | deploy.sh writes this file with the real path.
+ */
+require '__APP_DIR__/backend/public/index.php';

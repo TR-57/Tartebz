@@ -1,0 +1,443 @@
+{
+ "note": "The old WordPress shop, as imported by `php artisan store:import-old-site`. Photos are in media-seed/.",
+ "business": {
+  "legalName": "Tartebz",
+  "cr": "5-58506",
+  "phone": "+973 3753 3757",
+  "whatsapp": "+973 3753 3757",
+  "email": "tartebzz@gmail.com",
+  "addressLine1": "Al-Ajeera Street, West Riffa, Bahrain",
+  "addressLine1_ar": "البحرين، الرفاع الغربي - شارع العجيرة",
+  "area": "West Riffa"
+ },
+ "brand": {
+  "name": "Tartebz",
+  "name_ar": "ترتيبز",
+  "logo": "wp/2026/06/cropped-ChatGPT-Image-Jun-17-2026-09_28_04-PM.png",
+  "instagram": "https://www.instagram.com/tartebz",
+  "tiktok": "https://www.tiktok.com/@tartebz",
+  "mapsUrl": "https://www.google.com/maps/search/?api=1&query=West+Riffa+Bahrain"
+ },
+ "categories": [
+  {
+   "slug": "sweet-sour",
+   "name": "Sweet & sour",
+   "name_ar": "حامض حلو",
+   "blurb": "The perfect balance of sweet and tang",
+   "blurb_ar": "توازن مثالي بين الحلاوة والحموضة",
+   "icon": "drop",
+   "sort": 1
+  },
+  {
+   "slug": "electric-sour",
+   "name": "Electric sour",
+   "name_ar": "حامض كهرباء",
+   "blurb": "Extreme sour for the brave",
+   "blurb_ar": "حموضة قصوى لعشّاق التحدي",
+   "icon": "bolt",
+   "sort": 2
+  },
+  {
+   "slug": "mixed",
+   "name": "Mixed",
+   "name_ar": "مشكل",
+   "blurb": "Every flavour in one pack",
+   "blurb_ar": "تشكيلة من كل النكهات في بكج واحد",
+   "icon": "mix",
+   "sort": 3
+  }
+ ],
+ "media": [
+  {
+   "path": "wp/2026/06/cropped-ChatGPT-Image-Jun-17-2026-09_28_04-PM.png",
+   "use": "logo",
+   "title": "Tartebz logo",
+   "alt_en": "Tartebz",
+   "alt_ar": "ترتيبز"
+  },
+  {
+   "path": "wp/2026/06/ChatGPT-Image-Jun-17-2026-09_28_04-PM.png",
+   "use": "logo",
+   "title": "Tartebz logo (original, 1024 px)",
+   "alt_en": "Tartebz",
+   "alt_ar": "ترتيبز"
+  },
+  {
+   "path": "wp/2025/06/IMG-20250612-WA0001-2.jpg",
+   "use": "content",
+   "title": "Tartebz 0001-2",
+   "alt_en": "Tartebz sweets",
+   "alt_ar": "حلويات ترتيبز"
+  },
+  {
+   "path": "wp/2025/06/IMG-20250612-WA0003-4.jpg",
+   "use": "content",
+   "title": "Tartebz 0003-4",
+   "alt_en": "Tartebz sweets",
+   "alt_ar": "حلويات ترتيبز"
+  },
+  {
+   "path": "wp/2025/06/IMG-20250612-WA0004-2.jpg",
+   "use": "content",
+   "title": "Tartebz 0004-2",
+   "alt_en": "Tartebz sweets",
+   "alt_ar": "حلويات ترتيبز"
+  },
+  {
+   "path": "wp/2025/06/IMG-20250612-WA0005-2.jpg",
+   "use": "content",
+   "title": "Tartebz 0005-2",
+   "alt_en": "Tartebz sweets",
+   "alt_ar": "حلويات ترتيبز"
+  },
+  {
+   "path": "wp/2025/06/IMG-20250612-WA0006-4.jpg",
+   "use": "content",
+   "title": "Tartebz 0006-4",
+   "alt_en": "Tartebz sweets",
+   "alt_ar": "حلويات ترتيبز"
+  },
+  {
+   "path": "wp/2025/06/IMG-20250612-WA0007-1.jpg",
+   "use": "content",
+   "title": "Tartebz 0007-1",
+   "alt_en": "Tartebz sweets",
+   "alt_ar": "حلويات ترتيبز"
+  },
+  {
+   "path": "wp/2025/08/slider.aa-2.webp",
+   "use": "content",
+   "title": "Payment methods",
+   "alt_en": "Payment methods",
+   "alt_ar": "طرق الدفع"
+  },
+  {
+   "path": "wp/2025/08/slider.aa-3.webp",
+   "use": "content",
+   "title": "Fast delivery",
+   "alt_en": "Fast delivery",
+   "alt_ar": "توصيل سريع"
+  },
+  {
+   "path": "wp/2025/08/DSC06765-1-scaled.jpg",
+   "use": "product",
+   "title": "Tartebz Fruits",
+   "alt_en": "Tartebz Fruits",
+   "alt_ar": "ترتيبز فرووتس"
+  },
+  {
+   "path": "wp/2025/08/DSC05622-scaled-scaled.webp",
+   "use": "product",
+   "title": "Tartebz Fruits Mango",
+   "alt_en": "Tartebz Fruits Mango",
+   "alt_ar": "ترتيبز فرووتس مانجو"
+  },
+  {
+   "path": "wp/2025/08/DSC06742-1-scaled.jpg",
+   "use": "product",
+   "title": "Electric Sour Strips",
+   "alt_en": "Electric Sour Strips",
+   "alt_ar": "شرايط حامض كهرباء"
+  },
+  {
+   "path": "wp/2025/10/DSC06692-1-scaled.webp",
+   "use": "product",
+   "title": "Gharqana Electric Sour Red Berry",
+   "alt_en": "Gharqana Electric Sour Red Berry",
+   "alt_ar": "الغرقانة حامض كهرباء توت أحمر"
+  },
+  {
+   "path": "wp/2025/10/DSC06689-1-scaled.webp",
+   "use": "product",
+   "title": "Gharqana Sweet & Sour Red Berry",
+   "alt_en": "Gharqana Sweet & Sour Red Berry",
+   "alt_ar": "الغرقانة حامض حلو توت أحمر"
+  },
+  {
+   "path": "wp/2025/08/DSC06745-1-scaled.jpg",
+   "use": "product",
+   "title": "Sweet & Sour Strips",
+   "alt_en": "Sweet & Sour Strips",
+   "alt_ar": "شرايط حامض حلو"
+  },
+  {
+   "path": "wp/2025/08/DSC06702-1-scaled.jpg",
+   "use": "product",
+   "title": "Blueberry Marshmallow",
+   "alt_en": "Blueberry Marshmallow",
+   "alt_ar": "مارشميلو توت أزرق"
+  },
+  {
+   "path": "wp/2025/08/DSC06708-1-scaled.jpg",
+   "use": "product",
+   "title": "Red Berry Marshmallow",
+   "alt_en": "Red Berry Marshmallow",
+   "alt_ar": "مارشميلو توت أحمر"
+  }
+ ],
+ "products": [
+  {
+   "id": 9448,
+   "slug": "tartebz-fruits",
+   "name": "Tartebz Fruits",
+   "name_ar": "ترتيبز فرووتس",
+   "flavor": "Pineapple · Mango · Berry",
+   "flavor_ar": "أناناس · مانجو · توت",
+   "description": "The Tartebz Fruits pack is a unique blend of original qamar al-din mixed with hand-picked tropical flavours: pineapple, mango and berry. The taste is a balance of tang and freshness with a modern twist. Its lively, elegant packaging makes it a perfect gift or a fun companion for gatherings and special occasions.",
+   "description_ar": "بكج ترتيبز فروتس هو توليفة فريدة من قمر الدين الأصلي ممزوج بنكهات استوائية مختارة بعناية هي الأناناس، المانجو والتوت، ليمنح مذاقًا متوازنًا يجمع بين الحموضة والانتعاش بلمسة عصرية. يتميز البكج بتصميم أنيق وحيوي يعكس هوية العلامة، مما يجعله خيارًا مثاليًا كهدية راقية أو كرفيق ممتع في المناسبات والتجمعات الخاصة.",
+   "price": 6.5,
+   "sour_level": 3,
+   "weight_grams": 300,
+   "category": "mixed",
+   "best_seller": true,
+   "sort_rank": 0,
+   "stock_qty": 3,
+   "status": "active",
+   "images": [
+    "wp/2025/08/DSC06765-1-scaled.jpg",
+    "wp/2025/08/DSC05622-scaled-scaled.webp"
+   ],
+   "old_url": "/product/ترتيبز-فرووتس/"
+  },
+  {
+   "id": 9844,
+   "slug": "electric-sour-strips",
+   "name": "Electric Sour Strips",
+   "name_ar": "شرايط حامض كهرباء",
+   "flavor": "Electric sour ⚡",
+   "flavor_ar": "حموضة كهرباء ⚡",
+   "description": "Tartebz strips with a powerful “electric” sourness that zaps from the very first bite, coated in sour sugar for lovers of bold flavour.",
+   "description_ar": "شرايط ترتيبز بحموضة «كهرباء» قوية تلسع من أول قضمة، مغطاة بسكر حامض لعشّاق التحدي والنكهات الجريئة.",
+   "price": 5,
+   "sour_level": 5,
+   "weight_grams": 200,
+   "category": "electric-sour",
+   "best_seller": true,
+   "sort_rank": 1,
+   "stock_qty": -2,
+   "status": "active",
+   "images": [
+    "wp/2025/08/DSC06742-1-scaled.jpg"
+   ],
+   "old_url": "/product/شرايط-حامض-كهرباء/"
+  },
+  {
+   "id": 9833,
+   "slug": "gharqana-electric-red-berry",
+   "name": "Gharqana Electric Sour Red Berry",
+   "name_ar": "الغرقانة حامض كهرباء توت أحمر",
+   "flavor": "Red berry",
+   "flavor_ar": "توت أحمر",
+   "description": "Tartebz Gharqana: candy pieces drenched in red-berry sourness, at “electric” level for extreme-sour fans.",
+   "description_ar": "الغرقانة من ترتيبز: قطع حلوى غارقة بالحموضة بنكهة التوت الأحمر، بدرجة «كهرباء» لمحبي الحموضة القصوى.",
+   "price": 3,
+   "sour_level": 5,
+   "weight_grams": 500,
+   "category": "electric-sour",
+   "best_seller": false,
+   "sort_rank": 2,
+   "stock_qty": 0,
+   "status": "active",
+   "images": [
+    "wp/2025/10/DSC06692-1-scaled.webp"
+   ],
+   "old_url": "/product/الغرقانة-حامض-كهرباء-توت-احمر/"
+  },
+  {
+   "id": 10024,
+   "slug": "gharqana-sweet-red-berry",
+   "name": "Gharqana Sweet & Sour Red Berry",
+   "name_ar": "الغرقانة حامض حلو توت أحمر",
+   "flavor": "Red berry",
+   "flavor_ar": "توت أحمر",
+   "description": "Gharqana in red berry with a gentle sweet-and-sour balance, a refreshing treat for everyone.",
+   "description_ar": "الغرقانة بنكهة التوت الأحمر بتوازن حامض حلو لطيف، تجربة منعشة تناسب الجميع.",
+   "price": 3,
+   "sour_level": 2,
+   "weight_grams": 1000,
+   "category": "sweet-sour",
+   "best_seller": false,
+   "sort_rank": 3,
+   "stock_qty": 0,
+   "status": "active",
+   "images": [
+    "wp/2025/10/DSC06689-1-scaled.webp"
+   ],
+   "old_url": "/product/الغرقانه-حامض-حلو-توت-احمر/"
+  },
+  {
+   "id": 9849,
+   "slug": "sweet-sour-strips",
+   "name": "Sweet & Sour Strips",
+   "name_ar": "شرايط حامض حلو",
+   "flavor": "Mixed fruit",
+   "flavor_ar": "فواكه مشكلة",
+   "description": "Soft strips with the perfect balance of sweet and sour: bright colours and a fruity flavour you won’t want to stop eating.",
+   "description_ar": "شرايط طرية بتوازن مثالي بين الحلاوة والحموضة، ألوان مبهجة ونكهة فواكه تخليك تكمّل للآخر.",
+   "price": 5,
+   "sour_level": 3,
+   "weight_grams": 200,
+   "category": "sweet-sour",
+   "best_seller": true,
+   "sort_rank": 4,
+   "stock_qty": 130,
+   "status": "active",
+   "images": [
+    "wp/2025/08/DSC06745-1-scaled.jpg"
+   ],
+   "old_url": "/product/شرايط-حامض-حلو/"
+  },
+  {
+   "id": 9472,
+   "slug": "tartebz-fruits-mango",
+   "name": "Tartebz Fruits Mango",
+   "name_ar": "ترتيبز فرووتس مانجو",
+   "flavor": "Mango",
+   "flavor_ar": "مانجو",
+   "description": "Tartebz Fruits Mango carries natural sweetness with a light sour touch: rich and authentic, with a distinctly eastern character everyone loves.",
+   "description_ar": "مانجو ترتيبز فروتس يحمل مزيجًا من الحلاوة الطبيعية واللمسة الحامضة الخفيفة، بطابع غني يعبّر عن الأصالة والطعم الشرقي المميز، ليقدّم تجربة فاخرة ومحببة لدى الجميع.",
+   "price": 3,
+   "sour_level": 2,
+   "weight_grams": 500,
+   "category": "sweet-sour",
+   "best_seller": false,
+   "sort_rank": 5,
+   "stock_qty": 7,
+   "status": "active",
+   "images": [
+    "wp/2025/08/DSC05622-scaled-scaled.webp"
+   ],
+   "old_url": "/product/ترتيبز-فرووتس-مانجو/"
+  },
+  {
+   "id": 9470,
+   "slug": "tartebz-fruits-pineapple",
+   "name": "Tartebz Fruits Pineapple",
+   "name_ar": "ترتيبز فرووتس أناناس",
+   "flavor": "Pineapple",
+   "flavor_ar": "أناناس",
+   "description": "Tartebz Fruits Pineapple brings tropical freshness with a balanced sour edge, a taste of summer and fresh fruit for lovers of bold, refreshing flavour.",
+   "description_ar": "نكهة الأناناس في ترتيبز فروتس تمنحك انتعاشًا استوائيًا بطابع حامض متوازن، يذكّرك بروح الصيف ولذّة الفواكه الطازجة، لتكون الخيار الأمثل لعشّاق الطعم الجريء والمنعش.",
+   "price": 3,
+   "sour_level": 4,
+   "weight_grams": 500,
+   "category": "electric-sour",
+   "best_seller": false,
+   "sort_rank": 6,
+   "stock_qty": 36,
+   "status": "active",
+   "images": [
+    "wp/2025/08/DSC05622-scaled-scaled.webp"
+   ],
+   "old_url": "/product/ترتيبز-فرووتس-اناناس/"
+  },
+  {
+   "id": 9467,
+   "slug": "tartebz-fruits-berry",
+   "name": "Tartebz Fruits Berry",
+   "name_ar": "ترتيبز فرووتس توت",
+   "flavor": "Berry",
+   "flavor_ar": "توت",
+   "description": "The berry flavour of Tartebz Fruits blends a cheerful tang with gentle sweetness, a modern, fruity bite full of youthful energy.",
+   "description_ar": "نكهة التوت في ترتيبز فروتس تجمع بين الحموضة المبهجة والحلاوة الرقيقة، لتمنح إحساسًا فاكهيًا عصريًا يعكس روح الشباب والطاقة، ويُكمل التشكيلة بأناقة لا تقاوم.",
+   "price": 3,
+   "sour_level": 3,
+   "weight_grams": 500,
+   "category": "sweet-sour",
+   "best_seller": false,
+   "sort_rank": 7,
+   "stock_qty": 7,
+   "status": "active",
+   "images": [
+    "wp/2025/08/DSC05622-scaled-scaled.webp"
+   ],
+   "old_url": "/product/ترتيبز-فرووتس-توت/"
+  },
+  {
+   "id": 10022,
+   "slug": "marshmallow-blueberry",
+   "name": "Blueberry Marshmallow",
+   "name_ar": "مارشميلو توت أزرق",
+   "flavor": "Blueberry",
+   "flavor_ar": "توت أزرق",
+   "description": "Light, fluffy marshmallow in blueberry with a gentle sour touch that melts in your mouth.",
+   "description_ar": "مارشميلو هش وطري بنكهة التوت الأزرق مع لمسة حموضة خفيفة تذوب في الفم.",
+   "price": 3,
+   "sour_level": 2,
+   "weight_grams": 500,
+   "category": "sweet-sour",
+   "best_seller": false,
+   "sort_rank": 8,
+   "stock_qty": 12,
+   "status": "active",
+   "images": [
+    "wp/2025/08/DSC06702-1-scaled.jpg"
+   ],
+   "old_url": "/product/مارشميلو-توت-ازرق/"
+  },
+  {
+   "id": 8986,
+   "slug": "marshmallow-yellow",
+   "name": "Yellow Marshmallow",
+   "name_ar": "مارشميلو الأصفر",
+   "flavor": "Sunny fruit",
+   "flavor_ar": "فاكهة صفراء",
+   "description": "Soft yellow marshmallow with a sunny fruit flavour and a refreshing sour touch.",
+   "description_ar": "مارشميلو أصفر طري بنكهة فاكهية مشمسة ولمسة حامضة منعشة.",
+   "price": 3,
+   "sour_level": 2,
+   "weight_grams": 500,
+   "category": "sweet-sour",
+   "best_seller": false,
+   "sort_rank": 9,
+   "stock_qty": 0,
+   "status": "hidden",
+   "images": [],
+   "old_url": "/product/مارشميلو/"
+  },
+  {
+   "id": 9851,
+   "slug": "marshmallow-red-berry",
+   "name": "Red Berry Marshmallow",
+   "name_ar": "مارشميلو توت أحمر",
+   "flavor": "Red berry",
+   "flavor_ar": "توت أحمر",
+   "description": "Red berry marshmallow: soft, light and melt-in-your-mouth, with a hint of sour.",
+   "description_ar": "مارشميلو بنكهة التوت الأحمر، طري وخفيف ويذوب في الفم مع لمسة حموضة.",
+   "price": 3,
+   "sour_level": 2,
+   "weight_grams": 500,
+   "category": "sweet-sour",
+   "best_seller": true,
+   "sort_rank": 10,
+   "stock_qty": 10,
+   "status": "active",
+   "images": [
+    "wp/2025/08/DSC06708-1-scaled.jpg"
+   ],
+   "old_url": "/product/مارشميلو-توت-احمر/"
+  },
+  {
+   "id": 9841,
+   "slug": "gharqana-sweet-mango",
+   "name": "Gharqana Sweet & Sour Mango",
+   "name_ar": "الغرقانة حامض حلو مانجا",
+   "flavor": "Mango",
+   "flavor_ar": "مانجا",
+   "description": "Gharqana in mango with a gentle sweet-and-sour balance.",
+   "description_ar": "الغرقانة بنكهة المانجا بتوازن حامض حلو لطيف.",
+   "price": 3,
+   "sour_level": 2,
+   "weight_grams": 1000,
+   "category": "sweet-sour",
+   "best_seller": false,
+   "sort_rank": 11,
+   "stock_qty": 0,
+   "status": "hidden",
+   "images": [
+    "wp/2025/10/DSC06689-1-scaled.webp"
+   ],
+   "old_url": "/product/الغرقانة-حامض-حلو-مانجا/"
+  }
+ ]
+}

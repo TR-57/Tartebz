@@ -20,9 +20,14 @@ return [
     'customer_session_days' => 30,   // sliding
 
     // Files
-    'upload_dir' => env('UPLOAD_DIR') ?: storage_path('app/uploads'),
-    'upload_url' => env('UPLOAD_URL', '/uploads'),
-    'thumb_dir' => env('THUMB_DIR') ?: storage_path('app/thumbs'),
+    // On Hostinger both live inside public_html, so the web server serves them directly:
+    //   UPLOAD_DIR=/home/<user>/domains/<domain>/public_html/uploads   THUMB_DIR=…/public_html/img
+    // Locally they default to uploads/ and img/ in the repo root (git-ignored).
+    'upload_dir' => env('UPLOAD_DIR') ?: (realpath(base_path('..')) ?: base_path('..')).'/uploads',
+    'upload_url' => rtrim(env('UPLOAD_URL', '/uploads'), '/'),
+    'thumb_dir' => env('THUMB_DIR') ?: (realpath(base_path('..')) ?: base_path('..')).'/img',
+    'thumb_widths' => [200, 400, 800, 1200, 1600, 2400],
+    'upload_max_mb' => 8,
 
     // Repo root (storefront pages, admin, generated i18n catalogue)
     'root' => realpath(base_path('..')) ?: base_path('..'),

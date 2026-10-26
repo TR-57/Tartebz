@@ -20,6 +20,7 @@ return [
         'vatPrices' => 'exclusive',      // exclusive | inclusive
         'vatOutsideBahrain' => 'remove', // remove | keep  (inclusive prices only)
         'addressLine1' => 'Building 0, Road 0, Block 0',
+        'addressLine1_ar' => '',
         'addressLine2' => '',
         'area' => 'Manama',
         'phone' => '+973 0000 0000',
@@ -28,6 +29,16 @@ return [
         'email' => 'hello@example.com',
         'hours' => 'Sat–Thu, 9 am – 9 pm',
         'freeDeliveryOver' => null,      // advertised free-delivery threshold (BHD) – one value used site-wide
+    ],
+
+    // Shop name, logo and social links shown on the storefront and in emails.
+    'brand' => [
+        'name' => 'Tartebz',
+        'name_ar' => 'ترتيبز',
+        'logo' => '',          // media path, e.g. wp/2026/06/logo.png (empty: the drawn logo)
+        'instagram' => '',
+        'tiktok' => '',
+        'mapsUrl' => '',
     ],
 
     'orders' => [

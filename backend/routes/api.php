@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\TranslationsController;
 use App\Http\Controllers\Api\I18nController;
@@ -39,12 +40,22 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index']);
         Route::get('translations', [TranslationsController::class, 'index']);
         Route::get('translations/settings', [TranslationsController::class, 'settings']);
+
+        Route::get('media', [MediaController::class, 'index']);
+        Route::get('media/{id}', [MediaController::class, 'show'])->whereNumber('id');
+        Route::post('media', [MediaController::class, 'store']);
+        Route::put('media/{id}', [MediaController::class, 'update'])->whereNumber('id');
     });
 
     Route::middleware('role:manager')->group(function () {
         Route::put('translations', [TranslationsController::class, 'save']);
         Route::post('translations/reset', [TranslationsController::class, 'reset']);
         Route::put('translations/settings', [TranslationsController::class, 'settings']);
+
+        Route::post('uploads', [MediaController::class, 'upload']);
+        Route::post('media/{id}/replace', [MediaController::class, 'replace'])->whereNumber('id');
+        Route::delete('media/{id}', [MediaController::class, 'destroy'])->whereNumber('id');
+        Route::post('media/bulk-delete', [MediaController::class, 'bulkDelete']);
     });
 
     Route::middleware('role:owner')->group(function () {

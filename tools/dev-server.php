@@ -17,7 +17,26 @@ if (str_starts_with($path, '/api/') || $path === '/api') {
     require $root.'/backend/public/index.php';
     return true;
 }
-if (str_contains($path, '..') || preg_match('#/(\.|backend/|tools/|i18n/.*\.json$)#', $path)) {
+// Resized images: serve the copy if made, else Laravel makes it (same as the Hostinger .htaccess).
+if (preg_match('#^/img/(\d+/(?:uploads|assets)/.+)$#', $path, $m)) {
+    $copy = $root.'/img/'.$m[1].'.webp';
+    if (is_file($copy)) {
+        header('Content-Type: image/webp');
+        header('Cache-Control: public, max-age=2592000');
+        readfile($copy);
+        return true;
+    }
+    $_SERVER['SCRIPT_FILENAME'] = $root.'/backend/public/index.php';
+    $_SERVER['SCRIPT_NAME'] = '/index.php';
+    chdir($root.'/backend/public');
+    require $root.'/backend/public/index.php';
+    return true;
+}
+if (preg_match('#^/wp-content/uploads/(.+)$#', $path, $m)) {
+    header('Location: /uploads/wp/'.$m[1], true, 301);
+    return true;
+}
+if (str_contains($path, '..') || preg_match('#/(\.|backend/|tools/|deploy/|docs/|i18n/.*\.json$)#', $path)) {
     http_response_code(404);
     echo 'Not found';
     return true;

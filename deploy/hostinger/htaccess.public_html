@@ -1,0 +1,52 @@
+# Tartebz – public_html/.htaccess (Hostinger, LiteSpeed/Apache). Copied by deploy.sh as public_html/.htaccess.
+Options -Indexes
+DirectoryIndex index.html
+RewriteEngine On
+
+# Always HTTPS
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# The app's own files never leave the server
+RewriteRule (^|/)\.(?!well-known) - [F]
+
+# API -> Laravel (lives outside public_html, see api.php)
+RewriteRule ^api(/|$) api.php [END,QSA]
+
+# Resized image copies: serve from disk when made, otherwise Laravel makes it once.
+RewriteCond %{DOCUMENT_ROOT}/img/$1.webp -f
+RewriteRule ^img/(\d+/(?:uploads|assets)/.+)$ img/$1.webp [END,T=image/webp]
+RewriteRule ^img/\d+/(?:uploads|assets)/ api.php [END,QSA]
+
+# Old WordPress addresses
+RewriteRule ^wp-content/uploads/(.+)$ /uploads/wp/$1 [R=301,L]
+RewriteRule ^(wp-admin|wp-login\.php) /admin/ [R=302,L]
+
+# Clean URLs: /shop -> shop.html, /about.html -> /about
+RewriteCond %{THE_REQUEST} \s/+([a-z0-9-]+)\.html[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+RewriteRule ^([a-z0-9-]+)/?$ $1.html [END]
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Strict-Transport-Security "max-age=31536000"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), payment=()"
+  <FilesMatch "\.(html)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "public, max-age=3600"
+  </FilesMatch>
+  <FilesMatch "\.(webp|jpe?g|png|gif|svg|ico|woff2?)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+</IfModule>
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml text/xml
+</IfModule>
