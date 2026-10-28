@@ -3,14 +3,17 @@
 namespace App\Support;
 
 /**
- * staff (1) < manager (2) < owner (3). The order-team roles sit outside the ladder (rank 0):
+ * staff (1) < manager (2) < owner (3). The order-team roles and shop staff sit outside the ladder (rank 0):
  * a ladder check never lets them through; they are only allowed where named explicitly.
  */
 class Roles
 {
-    public const RANK = ['staff' => 1, 'manager' => 2, 'owner' => 3, 'order_manager' => 0, 'order_assistant' => 0];
+    public const RANK = ['staff' => 1, 'manager' => 2, 'owner' => 3, 'order_manager' => 0, 'order_assistant' => 0, 'shop_staff' => 0];
 
-    public const ALL = ['owner', 'manager', 'staff', 'order_manager', 'order_assistant'];
+    public const ALL = ['owner', 'manager', 'staff', 'order_manager', 'order_assistant', 'shop_staff'];
+
+    /** Who may use the orders board (/staff): shop staff, and everyone on the ladder. */
+    public const BOARD = ['shop_staff', 'staff+'];
 
     public const LABELS = [
         'owner' => 'Owner',
@@ -18,6 +21,7 @@ class Roles
         'staff' => 'Staff member',
         'order_manager' => 'Order manager',
         'order_assistant' => 'Order assistant',
+        'shop_staff' => 'Shop staff',
     ];
 
     public static function atLeast(string $have, string $need): bool

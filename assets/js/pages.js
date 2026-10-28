@@ -210,6 +210,19 @@
       orderLines(o) + '<a class="btn btn-whatsapp btn-lg btn-block" href="' + e(link) + '" target="_blank" rel="noopener">' + TZ.brandIcon('whatsapp') + e(t('co_go_wa')) + '</a>' +
       '<a class="btn-link" href="' + TZ.url('shop.html') + '">' + e(t('co_continue')) + '</a>');
   }
+  /* "Pay now" / "Complete payment": opens Tap's page for the order (the same one if it is still open). */
+  function bindResume(root, token) {
+    var rs = $('#co-resume');
+    rs.addEventListener('click', function () {
+      rs.disabled = true;
+      api('/api/orders/' + token + '/pay', {}).then(function (r2) {
+        if (r2.d && r2.d.redirect) { location.href = r2.d.redirect; return; }
+        if (r2.d && r2.d.paid) { orderResult(root, token); return; }
+        rs.disabled = false; var m = $('#co-msg'); m.hidden = false;
+        m.textContent = r2.d && r2.d.error && r2.d.error.code === 'changed' ? t('co_changed') : r2.status === 502 ? t('co_unavailable') : t('co_err');
+      });
+    });
+  }
   /* Back from Tap (?order=…&tap_id=…): the server checks with Tap and says what happened. */
   function orderResult(root, token) {
     var tries = 0;
@@ -246,21 +259,20 @@
           });
           return;
         }
+        // An order the team created with a payment link: nothing paid yet, so offer the payment straight away.
+        if (o.status === 'pending_payment' && !o.hasCharge && o.canRetry) {
+          root.innerHTML = ribbon + resultCard(TZ.icon('shield'), 'is-wait', t('co_pay_title', { number: o.number }), t('co_pay_text', { name: o.firstName }),
+            orderLines(o) + '<button class="btn btn-primary btn-lg btn-block" type="button" id="co-resume">' + TZ.icon('shield') + e(t('co_go_pay')) + '</button>' +
+            '<p class="co-msg" id="co-msg" role="alert" hidden></p>');
+          bindResume(root, token);
+          return;
+        }
         // Still waiting for Tap: ask again for about a minute. Someone who left Tap's page can go back to it.
         if (!tries && o.canRetry) {
           root.innerHTML = ribbon + resultCard('<span class="spinner"></span>', 'is-wait', t('co_pending_title'), t('co_pending_text'),
             orderLines(o) + '<button class="btn btn-primary btn-lg btn-block" type="button" id="co-resume">' + TZ.icon('shield') + e(t('pending_pay')) + '</button>' +
             '<p class="co-msg" id="co-msg" role="alert" hidden></p>');
-          var rs = $('#co-resume');
-          rs.addEventListener('click', function () {
-            rs.disabled = true;
-            api('/api/orders/' + token + '/pay', {}).then(function (r2) {
-              if (r2.d && r2.d.redirect) { location.href = r2.d.redirect; return; }
-              if (r2.d && r2.d.paid) { orderResult(root, token); return; }
-              rs.disabled = false; var m = $('#co-msg'); m.hidden = false;
-              m.textContent = r2.d && r2.d.error && r2.d.error.code === 'changed' ? t('co_changed') : r2.status === 502 ? t('co_unavailable') : t('co_err');
-            });
-          });
+          bindResume(root, token);
         }
         tries++;
         if (tries < 20) { setTimeout(poll, 3000); return; }

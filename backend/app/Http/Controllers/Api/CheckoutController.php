@@ -31,7 +31,7 @@ class CheckoutController extends Controller
             throw ApiError::validation(['country' => 'We do not deliver to that country yet.']);
         }
 
-        return $this->ok(['quote' => $this->present(Checkout::quote((array) $r->input('items', []), $country, $cart)), 'payments' => self::methods()]);
+        return $this->ok(['quote' => self::present(Checkout::quote((array) $r->input('items', []), $country, $cart)), 'payments' => self::methods()]);
     }
 
     /** POST /api/checkout {items, country, method: tap|whatsapp, first_name, …} */
@@ -96,7 +96,7 @@ class CheckoutController extends Controller
         });
         if (isset($result['changed'])) {
             return response()->json(['ok' => false, 'error' => ['code' => 'changed', 'message' => 'Your cart changed (price or stock). Please check the new total.'],
-                'quote' => $this->present($result['changed'])], 409);
+                'quote' => self::present($result['changed'])], 409);
         }
         $order = $result['order'];
 
@@ -243,7 +243,7 @@ class CheckoutController extends Controller
         return 'https://wa.me/'.$num.'?text='.rawurlencode(implode("\n", $lines));
     }
 
-    private function present(array $q): array
+    public static function present(array $q): array
     {
         return [
             'lines' => $q['lines'], 'issues' => $q['issues'], 'subtotal' => $q['subtotal'], 'shipping' => $q['shipping'], 'total' => $q['total'],
@@ -263,7 +263,7 @@ class CheckoutController extends Controller
             'currency' => $o->currency, 'rate' => (float) $o->fx_rate, 'chargeCurrency' => $o->charge_currency, 'chargeAmount' => (float) $o->charge_amount,
             'firstName' => $o->first_name, 'country' => $o->country, 'city' => $o->city, 'email' => $o->email,
             'awb' => $o->awb, 'trackingUrl' => $o->awb ? 'https://www.smsaexpress.com/trackingdetails?tracknumbers='.rawurlencode($o->awb) : null,
-            'testMode' => $o->tap_mode === 'test',
+            'testMode' => $o->tap_mode === 'test', 'hasCharge' => $o->tap_charge_id !== '',
             'heldUntil' => $o->payment_status === 'paid' ? null : Holds::orderHeldUntil($o->id),
             'canRetry' => $o->payment_method === 'tap' && $o->payment_status !== 'paid' && in_array($o->status, ['pending_payment', 'payment_failed'], true),
             'items' => $items->map(fn ($i) => ['productId' => $i->product_id, 'name' => $i->name, 'nameAr' => $i->name_ar, 'qty' => (int) $i->qty, 'lineTotal' => (float) $i->line_total])->values(),

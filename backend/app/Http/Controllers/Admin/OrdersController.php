@@ -14,21 +14,30 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Orders. Staff: view, status, notes, payment check, SMSA shipment / label / tracking.
+ * Orders. Staff and shop staff (orders board): view, filter, tick as prepared, status, notes, payment check,
+ * SMSA shipment / label / tracking; shop staff may also mark paid (money received on WhatsApp / Benefit / cash).
  * Managers: mark paid by hand (WhatsApp / bank transfer), cancel (stock is given back), cancel a shipment.
  * Every amount is BHD; the customer's own currency is shown next to it.
  */
 class OrdersController extends Controller
 {
+    /** List tabs: status filters. "prepare" and "prepared" follow the tick on the orders board. */
     private const TABS = [
         'all' => null,
         'todo' => ['paid', 'processing'],
+        'prepare' => ['paid', 'processing'],
+        'prepared' => ['paid', 'processing'],
         'unpaid' => ['pending_payment', 'awaiting_whatsapp', 'payment_failed'],
         'shipped' => ['shipped'],
+        'sent' => ['shipped', 'delivered'],
         'done' => ['delivered'],
         'cancelled' => ['cancelled', 'refunded'],
     ];
 
+    /**
+     * {tab?, q?, from?, to? (Y-m-d, shop time), country?, page?, per?}
+     * Dates and country narrow every tab, so the counts match what the filters show.
+     */
     public function index(Request $r)
     {
         $tab = array_key_exists($r->query('tab'), self::TABS) ? $r->query('tab') : 'all';
@@ -38,21 +47,73 @@ class OrdersController extends Controller
             $base->where(fn ($w) => $w->where('number', 'like', $like)->orWhere('first_name', 'like', $like)->orWhere('last_name', 'like', $like)
                 ->orWhere('phone', 'like', $like)->orWhere('email', 'like', $like)->orWhere('awb', 'like', $like));
         }
-        $counts = [];
-        foreach (self::TABS as $k => $st) {
-            $counts[$k] = (clone $base)->when($st, fn ($q) => $q->whereIn('status', $st))->count();
+        foreach (['from' => '>=', 'to' => '<='] as $k => $op) {
+            $d = (string) $r->query($k, '');
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $d)) {
+                $base->where('created_at', $op, $d.($k === 'from' ? ' 00:00:00' : ' 23:59:59'));
+            }
         }
-        $per = 50;
+        $country = strtoupper((string) $r->query('country', ''));
+        if (preg_match('/^[A-Z]{2}$/', $country)) {
+            $base->where('country', $country);
+        }
+        $counts = [];
+        foreach (array_keys(self::TABS) as $k) {
+            $counts[$k] = $this->inTab(clone $base, $k)->count();
+        }
+        $per = max(10, min(100, (int) $r->query('per', 50)));
         $page = max(1, (int) $r->query('page', 1));
-        $q = (clone $base)->when(self::TABS[$tab], fn ($q, $st) => $q->whereIn('status', $st));
+        $q = $this->inTab(clone $base, $tab);
         $total = (clone $q)->count();
         $rows = $q->orderByDesc('id')->offset(($page - 1) * $per)->limit($per)->get();
-        $items = DB::table('order_items')->whereIn('order_id', $rows->pluck('id')->all() ?: [0])->selectRaw('order_id, SUM(qty) n')->groupBy('order_id')->pluck('n', 'order_id');
+        $lines = DB::table('order_items')->whereIn('order_id', $rows->pluck('id')->all() ?: [0])->orderBy('id')->get()->groupBy('order_id');
 
         return $this->ok([
-            'orders' => $rows->map(fn ($o) => $this->row($o) + ['items' => (int) ($items[$o->id] ?? 0)])->values(),
+            'orders' => $rows->map(fn ($o) => $this->row($o) + [
+                'items' => (int) ($lines[$o->id] ?? collect())->sum('qty'),
+                'lines' => ($lines[$o->id] ?? collect())->map(fn ($i) => ['name' => $i->name, 'nameAr' => $i->name_ar, 'qty' => (int) $i->qty])->values(),
+            ])->values(),
             'counts' => $counts, 'total' => $total, 'page' => $page, 'per' => $per, 'labels' => Orders::LABELS,
+            'countries' => DB::table('orders')->distinct()->orderBy('country')->pluck('country')->filter()->values(),
         ]);
+    }
+
+    private function inTab($q, string $tab)
+    {
+        $st = self::TABS[$tab];
+        if ($st) {
+            $q->whereIn('status', $st);
+        }
+        if ($tab === 'prepare') {
+            $q->whereNull('prepared_at');
+        } elseif ($tab === 'prepared') {
+            $q->whereNotNull('prepared_at');
+        }
+
+        return $q;
+    }
+
+    /** The tick on the orders board: {done: true|false}. A paid order becomes "Preparing"; unticking puts it back. */
+    public function prepared(Request $r, int $id)
+    {
+        $o = $this->find($id);
+        $done = $r->boolean('done');
+        if (in_array($o->status, ['cancelled', 'refunded'], true)) {
+            throw new ApiError('closed', 'This order is cancelled.', 409);
+        }
+        $admin = $this->admin($r);
+        $upd = $done ? ['prepared_at' => $o->prepared_at ?: now(), 'prepared_by' => $admin->name] : ['prepared_at' => null, 'prepared_by' => ''];
+        if ($done && $o->status === 'paid') {
+            $upd['status'] = 'processing';
+        } elseif (! $done && $o->status === 'processing') {
+            $upd['status'] = 'paid';
+        }
+        DB::table('orders')->where('id', $id)->update($upd + ['updated_at' => now()]);
+        if ((bool) $o->prepared_at !== $done) {
+            Orders::event($id, $done ? 'prepared' : 'unprepared', $done ? 'Ticked as prepared.' : 'Tick removed (not prepared).', [], $admin);
+        }
+
+        return $this->ok(['order' => $this->row(DB::table('orders')->find($id)) + ['items' => 0]]);
     }
 
     public function show(int $id)
@@ -307,6 +368,9 @@ class OrdersController extends Controller
             'customerTotal' => $o->currency !== 'BHD' ? round((float) $o->total * (float) $o->fx_rate, (int) (Currency::all()[$o->currency]['decimals'] ?? 2)) : null,
             'testMode' => $o->tap_mode === 'test' || str_ends_with($o->carrier, ':test'),
             'awb' => $o->awb, 'createdAt' => $o->created_at,
+            'prepared' => $o->prepared_at !== null, 'preparedAt' => $o->prepared_at, 'preparedBy' => $o->prepared_by,
+            'source' => $o->source, 'createdBy' => $o->created_by_name, 'alertAt' => $o->alert_at, 'email' => $o->email,
+            'customerUrl' => Orders::customerUrl($o),
         ];
     }
 
@@ -321,7 +385,6 @@ class OrdersController extends Controller
             'paidAt' => $o->paid_at, 'carrier' => $o->carrier, 'hasLabel' => $o->label_path !== '', 'trackingStatus' => $o->tracking_status,
             'trackingAt' => $o->tracking_at, 'shippedAt' => $o->shipped_at, 'deliveredAt' => $o->delivered_at,
             'trackingUrl' => $o->awb ? 'https://www.smsaexpress.com/trackingdetails?tracknumbers='.rawurlencode($o->awb) : null,
-            'customerUrl' => Orders::customerUrl($o),
             'heldUntil' => $o->paid_at || in_array($o->status, ['cancelled', 'refunded'], true) ? null : \App\Support\Holds::orderHeldUntil($o->id),
             'refundedAmount' => (float) $o->refunded_amount, 'refundedBhd' => (float) $o->refunded_bhd,
             'refundable' => $o->paid_at && $o->payment_status === 'paid' ? Refunds::refundable($o) : 0,

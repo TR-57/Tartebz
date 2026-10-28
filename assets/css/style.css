@@ -1185,3 +1185,4 @@ body.has-iab .site-header { top: var(--iab-h); }
 .pending-bar button { background: none; border: 0; color: #bbb; cursor: pointer; font: inherit; padding: 2px 6px; }
 .pd-held { display: flex; gap: 8px; align-items: flex-start; }
 .pd-held .ico { width: 20px; height: 20px; flex: none; margin-top: 2px; }
+.staff-link { color: inherit; opacity: .7; }

@@ -6,6 +6,7 @@ const ROLE_HELP = {
   staff: 'Orders (status, notes, tracking), enquiries, customers (view), abandoned carts and viewing the catalogue.',
   order_manager: 'Only Prepare orders: checks paid orders and reports missing items.',
   order_assistant: 'Only Item requests: answers the requests sent to them.',
+  shop_staff: 'Only the orders board on the website (/staff): sees and ticks orders, creates orders, sends payment links, prints invoices and SMSA labels. Hears a sound for every new order.',
 };
 
 export default {
@@ -36,7 +37,7 @@ export default {
         body: `<form id="sf" class="form-grid" novalidate>
           ${field('name', 'Name', s.name, { autocomplete: 'off' })}
           ${field('email', 'Email', s.email, { type: 'email', dir: 'ltr', autocomplete: 'off' })}
-          ${field('role', 'Role', s.role, { full: true, options: Object.entries(roles).map(([k, v]) => [k, k === 'order_manager' ? 'Order manager (prepares paid orders only)' : k === 'order_assistant' ? 'Order assistant (item requests only)' : v]) })}
+          ${field('role', 'Role', s.role, { full: true, options: Object.entries(roles).map(([k, v]) => [k, k === 'order_manager' ? 'Order manager (prepares paid orders only)' : k === 'order_assistant' ? 'Order assistant (item requests only)' : k === 'shop_staff' ? 'Shop staff (orders board on the website)' : v]) })}
           ${field('password', isNew ? 'Password' : 'New password (leave empty to keep)', '', { type: 'password', dir: 'ltr', autocomplete: 'new-password', hint: 'At least 10 characters. Give it to them in person.', full: true })}
           ${self ? '' : toggle('active', 'Can sign in', s.active)}
           ${toggle('orderEmails', 'Order emails (owners)', s.orderEmails, 'An owner gets an email for every new order and every order update.')}

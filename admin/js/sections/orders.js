@@ -23,13 +23,14 @@ export default {
     if (!alive()) return;
     const pages = Math.max(1, Math.ceil(r.total / r.per));
     main.innerHTML = `
-      <div class="phead"><div><h1>Orders</h1><p class="sub">Amounts are in BHD; what the customer paid in their own currency is shown next to it.</p></div></div>
+      <div class="phead"><div><h1>Orders</h1><p class="sub">Amounts are in BHD; what the customer paid in their own currency is shown next to it.</p></div>
+        <div class="actions"><a class="btn" href="/staff" target="_blank" rel="noopener">${icon('bag')} Orders board</a><a class="btn btn-primary" href="/staff#new" target="_blank" rel="noopener">${icon('plus')} New order</a></div></div>
       <div class="tabs" role="tablist">${TABS.map(([k, l]) => `<a href="#/orders?tab=${k}" role="tab" aria-selected="${tab === k}">${esc(l)} <span class="count-pill${k === 'todo' && r.counts[k] ? ' red' : ''}" data-noi18n>${nf(r.counts[k])}</span></a>`).join('')}</div>
       <div class="toolbar"><input class="input grow" type="search" id="oq" value="${esc(q.q || '')}" placeholder="Search by order number, name, phone, email or waybill" aria-label="Search orders"></div>
       <div class="table-wrap"><table class="t cards"><thead><tr><th>Order</th><th>Customer</th><th>Status</th><th class="num">Total</th><th>Date</th></tr></thead><tbody>
       ${r.orders.length ? r.orders.map((o) => `<tr class="rowlink" data-href="#/orders/${o.id}">
         <td data-label="Order"><a href="#/orders/${o.id}"><b data-noi18n>#${esc(o.number)}</b></a>${o.testMode ? ' ' + pill('Test', 'amber') : ''}
-          <div class="muted small"><span>${o.method === 'whatsapp' ? 'WhatsApp' : 'Card (Tap)'}</span> · <span>${o.items === 1 ? '1 item' : `${nf(o.items)} items`}</span></div></td>
+          <div class="muted small"><span>${o.method === 'whatsapp' ? 'WhatsApp' : 'Card (Tap)'}</span>${o.source === 'staff' ? ' · <span>Created by the team</span>' : ''} · <span>${o.items === 1 ? '1 item' : `${nf(o.items)} items`}</span></div></td>
         <td data-label="Customer">${d(o.name)}<div class="muted small">${ltr(o.phone)} · <span data-noi18n>${esc(o.country)}</span></div></td>
         <td data-label="Status">${pill(r.labels[o.status] || o.status, PILL[o.status] || '')}${o.awb ? `<div class="muted small">SMSA ${ltr(o.awb)}</div>` : ''}</td>
         <td data-label="Total" class="num">${amount({ currency: o.currency, fxRate: o.customerTotal ? o.customerTotal / o.total : 0 }, o.total)}</td>
@@ -99,6 +100,7 @@ async function detail(main, route, alive) {
             <button class="btn btn-sm" id="chk">${icon('check')} Check payment with Tap</button>` : ''}
           ${!paid && !closed && manager ? `<button class="btn btn-sm" id="mpaid">Mark as paid…</button>` : ''}
           ${refundsBox(o, manager)}
+          <p style="margin-top:10px"><a class="btn btn-sm" href="/api/admin/orders/${o.id}/invoice" target="_blank" rel="noopener">${icon('log')} Print invoice</a></p>
           <p class="muted small" style="margin-top:10px">Customer’s order page: <a href="${esc(o.customerUrl)}" target="_blank" rel="noopener">open</a></p>
         </div>
         ${!closed && manager ? `<div class="card"><button class="btn btn-danger btn-sm" id="cancel">${icon('close')} Cancel order</button>

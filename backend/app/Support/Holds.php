@@ -139,7 +139,8 @@ class Holds
                 ->whereNull('paid_at')->where('id', '<>', $order->id))->delete();
             DB::table('orders')->where('id', $order->id)->update(['cart_key' => $cart]);
         }
-        $until = self::orderUntil($order->payment_method);
+        // Orders the team creates (payment link, or paid on WhatsApp) keep their pieces as long as WhatsApp orders.
+        $until = self::orderUntil(($order->source ?? 'website') === 'staff' ? 'whatsapp' : $order->payment_method);
         $counted = DB::table('products')->whereIn('id', array_column($lines, 'id') ?: [0])->get()->keyBy('id');
         foreach ($lines as $l) {
             $p = $counted[$l['id']] ?? null;

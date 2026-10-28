@@ -43,6 +43,13 @@ class BuildPublic extends Command
             $this->put($dest.'/'.basename($file), $html);
         }
 
+        // Orders board: its service worker and app manifest live at the top (a service worker only covers pages below it).
+        foreach (['staff-sw.js', 'staff.webmanifest'] as $f) {
+            if (is_file($src.'/'.$f)) {
+                $this->put($dest.'/'.$f, (string) file_get_contents($src.'/'.$f));
+            }
+        }
+
         // Assets
         $written = [];
         $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($src.'/assets', \FilesystemIterator::SKIP_DOTS));

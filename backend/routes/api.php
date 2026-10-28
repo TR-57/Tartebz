@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\BoardController;
 use App\Http\Controllers\Admin\CategoriesController;
 use App\Http\Controllers\Admin\CurrenciesController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -72,15 +73,32 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::get('categories', [CategoriesController::class, 'index']);
         Route::get('products/{id}/stock-alerts', [StockAlertsController::class, 'index'])->whereNumber('id');
 
+    });
+
+    // Orders – the admin and the orders board on the website (/staff). Shop staff only get these.
+    Route::middleware('role:'.implode(',', \App\Support\Roles::BOARD))->group(function () {
         Route::get('orders', [OrdersController::class, 'index']);
         Route::get('orders/{id}', [OrdersController::class, 'show'])->whereNumber('id');
         Route::post('orders/{id}/status', [OrdersController::class, 'status'])->whereNumber('id');
         Route::post('orders/{id}/note', [OrdersController::class, 'note'])->whereNumber('id');
+        Route::post('orders/{id}/prepared', [OrdersController::class, 'prepared'])->whereNumber('id');
         Route::post('orders/{id}/check-payment', [OrdersController::class, 'refreshPayment'])->whereNumber('id');
         Route::post('orders/{id}/ship', [OrdersController::class, 'ship'])->whereNumber('id');
         Route::get('orders/{id}/label', [OrdersController::class, 'label'])->whereNumber('id');
         Route::post('orders/{id}/track', [OrdersController::class, 'track'])->whereNumber('id');
+        Route::get('orders/{id}/invoice', [BoardController::class, 'invoice'])->whereNumber('id');
+        Route::post('orders/{id}/payment-link', [BoardController::class, 'paymentLink'])->whereNumber('id');
+        Route::get('board/products', [BoardController::class, 'products']);
+        Route::post('board/quote', [BoardController::class, 'quote']);
+        Route::post('board/orders', [BoardController::class, 'store']);
+        Route::get('board/pulse', [BoardController::class, 'pulse']);
+        Route::get('board/push-key', [BoardController::class, 'pushKey']);
+        Route::post('board/push', [BoardController::class, 'pushSubscribe']);
+        Route::post('board/push/remove', [BoardController::class, 'pushUnsubscribe']);
+        Route::post('board/push/test', [BoardController::class, 'pushTest']);
     });
+    // Money received outside the website (WhatsApp / Benefit / cash): shop staff and managers.
+    Route::middleware('role:shop_staff,manager+')->post('orders/{id}/paid', [OrdersController::class, 'markPaid'])->whereNumber('id');
 
     Route::middleware('role:manager')->group(function () {
         Route::put('translations', [TranslationsController::class, 'save']);
@@ -103,7 +121,6 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::delete('categories/{id}', [CategoriesController::class, 'destroy'])->whereNumber('id');
         Route::post('stock-alerts/{id}/done', [StockAlertsController::class, 'done'])->whereNumber('id');
         Route::delete('stock-alerts/{id}', [StockAlertsController::class, 'destroy'])->whereNumber('id');
-        Route::post('orders/{id}/paid', [OrdersController::class, 'markPaid'])->whereNumber('id');
         Route::post('orders/{id}/cancel', [OrdersController::class, 'cancel'])->whereNumber('id');
         Route::post('orders/{id}/refund', [OrdersController::class, 'refund'])->whereNumber('id');
         Route::post('orders/{id}/refunds/{refundId}/check', [OrdersController::class, 'refundCheck'])->whereNumber(['id', 'refundId']);

@@ -2,7 +2,7 @@
 
 export const state = { admin: null, badges: {} };
 
-const RANK = { staff: 1, manager: 2, owner: 3, order_manager: 0, order_assistant: 0 };
+const RANK = { staff: 1, manager: 2, owner: 3, order_manager: 0, order_assistant: 0, shop_staff: 0 };
 
 /** Ladder check (manager or owner…). Team roles never pass a ladder check. Mirrors the server. */
 export function can(role) {

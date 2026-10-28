@@ -10,7 +10,7 @@ The shop needs a Hostinger plan with **SSH, Git and Composer** (Business or Clou
 
 ## First install
 1. hPanel → **Advanced → PHP Configuration**: choose **PHP 8.3**. In *PHP extensions* make sure these are ticked:
-   `pdo_mysql, mbstring, openssl, curl, fileinfo, gd, tokenizer, ctype, xml`.
+   `pdo_mysql, mbstring, openssl, curl, fileinfo, gd, tokenizer, ctype, xml, bcmath`.
    In *PHP options*: `memory_limit 256M`, `upload_max_filesize 16M`, `post_max_size 16M`.
 2. hPanel → **Databases**: create a MySQL database and user; note the names and password.
 3. hPanel → **SSL**: install the free certificate for the domain (the site must run on https).

@@ -34,6 +34,8 @@ class Doctor
         foreach (['pdo_mysql', 'mbstring', 'openssl', 'curl', 'fileinfo', 'gd', 'tokenizer', 'ctype', 'xml'] as $ext) {
             $add(extension_loaded($ext) ? 'ok' : 'fail', 'PHP extension '.$ext, 'hPanel › Advanced › PHP Configuration › PHP extensions › tick '.$ext.'.');
         }
+        $add(extension_loaded('bcmath') || extension_loaded('gmp') ? 'ok' : 'warn', 'PHP extension bcmath or gmp (faster order notifications)',
+            'hPanel › Advanced › PHP Configuration › PHP extensions › tick bcmath.');
         $webp = function_exists('gd_info') && (gd_info()['WebP Support'] ?? false);
         $add($webp ? 'ok' : 'warn', 'Pictures can be saved as WebP', 'Without it, resized photos are larger. Ask Hostinger support to enable WebP in GD.');
         $mem = self::bytes((string) ini_get('memory_limit'));

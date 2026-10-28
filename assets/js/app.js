@@ -449,7 +449,8 @@
       '<li>' + TZ.icon('pin') + '<span>' + TZ.esc(TZ.L(TZ.store.address)) + '</span></li>' +
       '</ul></div></div>' +
       '<div class="container footer-bottom">' +
-      '<p>' + TZ.esc(TZ.t('footer_rights', { y: new Date().getFullYear() })) + ' · ' + TZ.esc(TZ.t('footer_cr', { cr: TZ.store.cr })) + '</p>' +
+      '<p>' + TZ.esc(TZ.t('footer_rights', { y: new Date().getFullYear() })) + ' · ' + TZ.esc(TZ.t('footer_cr', { cr: TZ.store.cr })) +
+      ' · <a class="staff-link" href="/staff" rel="nofollow">' + TZ.esc(TZ.t('staff_signin')) + '</a></p>' +
       '<div class="pay-row"><span>' + TZ.esc(TZ.t('footer_pay')) + '</span>' + TZ.payLogos() + '</div>' +
       '</div></footer>';
   }

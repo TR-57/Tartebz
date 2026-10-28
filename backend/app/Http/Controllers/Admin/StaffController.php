@@ -16,7 +16,7 @@ class StaffController extends Controller
 {
     public function index()
     {
-        $rows = DB::table('admins')->orderByRaw("FIELD(role,'owner','manager','staff','order_manager','order_assistant')")->orderBy('name')
+        $rows = DB::table('admins')->orderByRaw("FIELD(role,'owner','manager','staff','shop_staff','order_manager','order_assistant')")->orderBy('name')
             ->get(['id', 'name', 'email', 'role', 'active', 'order_emails', 'last_login_at', 'created_at']);
 
         return $this->ok(['staff' => $rows->map(fn ($a) => [

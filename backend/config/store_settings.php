@@ -103,6 +103,9 @@ return [
         ],
     ],
 
+    // Phone / computer notifications for new orders (Web Push). The key pair is made on first use; the private key is sealed.
+    'push' => ['publicKey' => '', 'privateKey' => ''],
+
     'orders' => [
         'holdMinutes' => 60,          // an unpaid card order keeps its stock this long (Tap's payment page closes before)
         'whatsappHoldHours' => 24,    // a WhatsApp order keeps its stock this long, until staff mark it paid

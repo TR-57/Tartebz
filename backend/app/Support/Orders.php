@@ -29,6 +29,8 @@ class Orders
                 'token' => bin2hex(random_bytes(20)),
                 'status' => $method === 'whatsapp' ? 'awaiting_whatsapp' : 'pending_payment',
                 'payment_method' => $method, 'payment_status' => 'unpaid',
+                'source' => $meta['source'] ?? 'website',
+                'created_by' => $meta['admin']->id ?? null, 'created_by_name' => $meta['admin']->name ?? '',
                 'first_name' => $c['first_name'], 'last_name' => $c['last_name'], 'email' => $c['email'], 'phone' => $c['phone'],
                 'country' => $quote['country'], 'state' => $c['state'], 'city' => $c['city'], 'address1' => $c['address1'], 'address2' => $c['address2'],
                 'notes' => $c['notes'] ?: null, 'lang' => $c['lang'],
@@ -47,10 +49,28 @@ class Orders
                     'price' => $l['price'], 'qty' => $l['qty'], 'line_total' => $l['lineTotal'], 'weight_grams' => $l['weightGrams'],
                 ]);
             }
-            self::event($id, 'created', $method === 'whatsapp' ? 'Order placed – to be confirmed on WhatsApp.' : 'Order placed – waiting for the card payment.');
+            if (($meta['source'] ?? 'website') === 'staff') {
+                self::event($id, 'created', 'Order created by '.($meta['admin']->name ?? 'the team').($method === 'tap' ? ' – the customer pays with a payment link.' : '.'), [], $meta['admin'] ?? null);
+            } else {
+                self::event($id, 'created', $method === 'whatsapp' ? 'Order placed – to be confirmed on WhatsApp.' : 'Order placed – waiting for the card payment.');
+                if ($method === 'whatsapp') {
+                    self::alert($id); // the team must act on it now; card orders alert once paid
+                }
+            }
 
             return DB::table('orders')->find($id);
         });
+    }
+
+    /**
+     * The order now needs the team: it shows as new on the orders board (sound) and every board user's phone /
+     * computer gets a notification – sent after the database transaction is saved.
+     */
+    public static function alert(int $orderId): void
+    {
+        DB::table('orders')->where('id', $orderId)->update(['alert_at' => now()]);
+        // Sent after the answer has gone to the customer, so checkout never waits for it.
+        DB::afterCommit(fn () => \Illuminate\Support\defer(fn () => Push::newOrder($orderId)));
     }
 
     public static function event(int $orderId, string $type, string $message, array $data = [], ?object $admin = null): void
@@ -110,6 +130,9 @@ class Orders
         ]);
         self::takeStock($o);
         Holds::releaseOrder($o->id);
+        if ($o->source !== 'staff' && ! $o->alert_at) {
+            self::alert($o->id);
+        }
         self::event($o->id, 'paid', $message, $data, $admin);
         if ($o->status === 'cancelled') {
             self::event($o->id, 'paid_after_cancel', 'This order was cancelled before the payment arrived. Send it, or refund the payment.');

@@ -110,6 +110,8 @@ function homeKey() {
 }
 
 function renderShell() {
+  // Shop staff work on the orders board on the website, not in the admin.
+  if (state.admin && state.admin.role === 'shop_staff') { location.replace('/staff'); return; }
   document.body.setAttribute('data-signed-in', '');
   const a = state.admin;
   const groups = [['store', 'Store'], ['catalogue', 'Catalogue'], ['marketing', 'Marketing'], ['settings', 'Settings']];

@@ -299,7 +299,7 @@
    "co_go_pay": {
     "en": "Continue to payment",
     "ar": "متابعة للدفع",
-    "where": ""
+    "where": "assets/js/pages.js"
    },
    "co_go_wa": {
     "en": "Send order on WhatsApp",
@@ -324,6 +324,16 @@
    "co_paid_title": {
     "en": "Paid – thank you, {name}! 🎉",
     "ar": "تم الدفع، شكرًا {name}! 🎉",
+    "where": "assets/js/pages.js"
+   },
+   "co_pay_text": {
+    "en": "Hi {name}! Check your order, then press the button to pay securely.",
+    "ar": "هلا {name}! راجع طلبك واضغط الزر للدفع بشكل آمن.",
+    "where": "assets/js/pages.js"
+   },
+   "co_pay_title": {
+    "en": "Your order {number} is ready to pay",
+    "ar": "طلبك رقم {number} جاهز للدفع",
     "where": "assets/js/pages.js"
    },
    "co_payment": {
@@ -1170,6 +1180,11 @@
     "en": "How sour can you go?",
     "ar": "قد إيش تتحمّل الحموضة؟",
     "where": "index.html"
+   },
+   "staff_signin": {
+    "en": "Team sign-in",
+    "ar": "دخول فريق العمل",
+    "where": "assets/js/app.js"
    },
    "stat_countries": {
     "en": "Gulf countries we deliver to",
@@ -2115,7 +2130,32 @@
    "Refunds pending": "استرجاعات قيد التنفيذ",
    "waiting for Tap to confirm": "بانتظار تأكيد Tap",
    "Scheduled tasks (cron) are not running": "المهام المجدولة (cron) لا تعمل",
-   "hPanel > Advanced > Cron Jobs – add the line from docs/hostinger.md (every minute). Without it, missed card payments and refunds are not re-checked.": "hPanel > Advanced > Cron Jobs – أضف السطر من docs/hostinger.md (كل دقيقة). بدونه لا يُعاد التحقق من المدفوعات والاسترجاعات الفائتة."
+   "hPanel > Advanced > Cron Jobs – add the line from docs/hostinger.md (every minute). Without it, missed card payments and refunds are not re-checked.": "hPanel > Advanced > Cron Jobs – أضف السطر من docs/hostinger.md (كل دقيقة). بدونه لا يُعاد التحقق من المدفوعات والاسترجاعات الفائتة.",
+   "Orders board": "لوحة الطلبات",
+   "New order": "طلب جديد",
+   "Print invoice": "طباعة الفاتورة",
+   "Created by the team": "أنشأه الفريق",
+   "Shop staff": "موظف المتجر",
+   "Shop staff (orders board on the website)": "موظف المتجر (لوحة الطلبات في الموقع)",
+   "Only the orders board on the website (/staff): sees and ticks orders, creates orders, sends payment links, prints invoices and SMSA labels. Hears a sound for every new order.": "لوحة الطلبات في الموقع فقط (‎/staff): يرى الطلبات ويعلّم المجهّز منها، ينشئ طلبات، يرسل روابط الدفع، يطبع الفواتير وبوالص سمسا، ويسمع صوتًا مع كل طلب جديد.",
+   "Enter the customer’s name.": "أدخل اسم العميل.",
+   "Enter the customer’s phone number.": "أدخل رقم هاتف العميل.",
+   "This email does not look right (or leave it empty).": "البريد غير صحيح (أو اتركه فارغًا).",
+   "Choose the delivery country.": "اختر دولة التوصيل.",
+   "Enter the city or area.": "أدخل المدينة أو المنطقة.",
+   "Enter the address (house, road, block).": "أدخل العنوان (منزل، طريق، مجمع).",
+   "Choose how the customer pays.": "اختر طريقة دفع العميل.",
+   "Say how it was paid (e.g. Benefit transfer, cash).": "اذكر طريقة الدفع (مثلًا تحويل بنفت، نقدًا).",
+   "Card payment links need Tap to be switched on (Settings › Payments).": "روابط الدفع بالبطاقة تحتاج تفعيل Tap (الإعدادات › الدفع).",
+   "Add at least one product that is in stock.": "أضف منتجًا متوفرًا واحدًا على الأقل.",
+   "Stock or prices changed. Check the order again.": "تغيّر المخزون أو الأسعار. راجع الطلب مرة أخرى.",
+   "This order has no email. Send the link on WhatsApp.": "لا يوجد بريد لهذا الطلب. أرسل الرابط على واتساب.",
+   "We do not deliver to that country.": "لا نوصّل إلى هذه الدولة.",
+   "This browser sent a notification subscription that cannot be used.": "هذا المتصفح أرسل اشتراك تنبيهات غير صالح.",
+   "Ticked as prepared.": "عُلّم كمجهّز.",
+   "Tick removed (not prepared).": "أُزيلت علامة التجهيز.",
+   "Payment link sent by email.": "أُرسل رابط الدفع بالإيميل.",
+   "Payment link sent on WhatsApp.": "أُرسل رابط الدفع على واتساب."
   }
  }
 }
