@@ -132,8 +132,10 @@ Red pill buttons, cream table headers, rounded bordered tables, 74px rounded thu
 Lots of junk from old demo themes (Sapa, Astra, Besa, Neve…): ~50 unused electronics/fashion menus, demo sliders (Black Friday, Sk8er shop, Ride & connect), testimonials (Molly Kay…), demo "services", 12 unused Google fonts, the Terms demo text, a broken logout URL, and about 34 plugins, many of them redundant (Elementor + Spectra + Smart Slider + Rev Slider + LayerSlider; Yoast + AIOSEO; Jetpack + Wordfence + LiteSpeed…).
 
 ## 11. ⚠️ Security / privacy
-The dump is in a **public** GitHub repo and contains:
+The old site's database dump was uploaded to the GitHub repo. It has been **removed from the files** (and `.gitignore` now blocks
+`*.sql` / `*.sql.gz` dumps), but older commits still contain it until the git history is purged. It contains:
 - Personal data of ~472 customers and ~2,500 orders (names, phones, emails, addresses).
 - Password hashes for 475 users (2 admins).
 - Live API tokens (UBEX Express JWT, and others stored in options).
-Action: make the repo private or remove the file **and purge it from git history**, then rotate the UBEX token, Gate-E keys and admin passwords.
+Still to do: purge it from git history (all branches) and keep the repo private; rotate the UBEX token, Gate-E keys and the old
+WordPress admin passwords. Keep any copy of the dump offline only (never in the repo, chat or email).

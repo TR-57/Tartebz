@@ -1,3 +1,10 @@
 # Media library files and generated thumbnails (live in public_html on Hostinger)
 /uploads/
 /img/
+
+# Database dumps and data exports never go in the repository (customer data, tokens).
+*.sql
+*.sql.gz
+*.sql.zip
+*.dump
+*.bak
