@@ -219,6 +219,7 @@
         var o = res.d && res.d.order;
         if (!o) { root.innerHTML = resultCard(TZ.icon('search'), 'is-fail', t('co_not_found'), '', '<a class="btn btn-primary" href="' + TZ.url('shop.html') + '">' + e(t('back_to_shop')) + '</a>'); return; }
         var ribbon = o.testMode ? '<div class="test-ribbon" role="note">' + TZ.icon('bolt') + e(t('test_mode')) + '</div>' : '';
+        if (o.paymentStatus !== 'unpaid' && o.paymentStatus !== 'failed' || o.status === 'cancelled') TZ.pending.clear(o.token);
         if (o.paymentStatus === 'paid') {
           TZ.cart.clear();
           var ship = o.awb ? '<p class="co-ship">' + TZ.icon('truck') + e(t('co_shipped', { awb: o.awb })) + ' <a class="btn-link" href="' + e(o.trackingUrl) + '" target="_blank" rel="noopener">' + e(t('co_track')) + '</a></p>' : '';
@@ -245,7 +246,22 @@
           });
           return;
         }
-        // Still waiting for Tap: ask again for about a minute.
+        // Still waiting for Tap: ask again for about a minute. Someone who left Tap's page can go back to it.
+        if (!tries && o.canRetry) {
+          root.innerHTML = ribbon + resultCard('<span class="spinner"></span>', 'is-wait', t('co_pending_title'), t('co_pending_text'),
+            orderLines(o) + '<button class="btn btn-primary btn-lg btn-block" type="button" id="co-resume">' + TZ.icon('shield') + e(t('pending_pay')) + '</button>' +
+            '<p class="co-msg" id="co-msg" role="alert" hidden></p>');
+          var rs = $('#co-resume');
+          rs.addEventListener('click', function () {
+            rs.disabled = true;
+            api('/api/orders/' + token + '/pay', {}).then(function (r2) {
+              if (r2.d && r2.d.redirect) { location.href = r2.d.redirect; return; }
+              if (r2.d && r2.d.paid) { orderResult(root, token); return; }
+              rs.disabled = false; var m = $('#co-msg'); m.hidden = false;
+              m.textContent = r2.d && r2.d.error && r2.d.error.code === 'changed' ? t('co_changed') : r2.status === 502 ? t('co_unavailable') : t('co_err');
+            });
+          });
+        }
         tries++;
         if (tries < 20) { setTimeout(poll, 3000); return; }
         root.innerHTML = ribbon + resultCard('<span class="spinner"></span>', 'is-wait', t('co_pending_title'), t('co_pending_slow'), orderLines(o));
@@ -417,6 +433,7 @@
         '<output id="pd-qty" aria-live="polite">' + qty + '</output>' +
         '<button type="button" data-pqty="1" aria-label="' + e(t('increase')) + '">' + TZ.icon('plus') + '</button></div>' +
         '<button class="btn btn-primary btn-lg btn-add-lg" id="pd-add" type="button" data-add="' + p.id + '" data-qty-val="' + qty + '">' + TZ.icon('bag') + e(t('add_to_cart')) + '</button></div>' :
+        p.inCarts ? '<p class="pd-held">' + TZ.icon('clock') + ' ' + e(t('in_carts_long')) + '</p>' :
         (TZ.shop.backInStock ? notifyForm(p, asked) : '<div class="buy-row"><button class="btn btn-disabled btn-lg btn-block" type="button" disabled>' + e(t('sold_out')) + '</button></div>');
       var tags = p.cats.filter(function (k) { return k !== 'best-sellers'; }).map(function (k) { var cc = TZ.cat(k); return cc ? '<a class="tag" href="' + TZ.url('shop.html?cat=' + k) + '">' + e(TZ.L(cc.name)) + '</a>' : ''; }).join('');
 
@@ -437,7 +454,7 @@
         (p.flavor && TZ.L(p.flavor) ? '<p class="pd-flavor">' + e(t('flavor')) + ': <b>' + e(TZ.L(p.flavor)) + '</b></p>' : '') +
         '<div class="pd-price-row"><span class="pd-price">' + e(TZ.money(p.price)) + '</span>' +
         (p.regularPrice > p.price ? '<s class="pd-was">' + e(TZ.money(p.regularPrice)) + '</s>' : '') +
-        '<span class="badge badge-stock ' + (p.inStock ? 'in' : 'out') + '">' + e(t(p.inStock ? 'in_stock' : 'out_of_stock')) + '</span></div>' +
+        TZ.stockBadge(p) + '</div>' +
         '<div class="pd-cur">' + TZ.curPicker() + (p.inStock ? TZ.deliveryChip() : '') + '</div>' +
         buy +
         (p.inStock ? '<div class="pd-pay"><span>' + e(t('pay_with')) + '</span>' + TZ.payLogos() + '</div>' : '') +
@@ -483,7 +500,11 @@
         root.addEventListener('click', function (ev) {
           var q = ev.target.closest('[data-pqty]');
           if (q) {
-            root._qty = Math.max(1, Math.min(99, root._qty + (+q.getAttribute('data-pqty'))));
+            var qp = TZ.find(root.querySelector('.pd-gallery').getAttribute('data-id'));
+            var cap = qp && qp.maxQty != null ? Math.max(1, qp.maxQty) : 99;
+            var want = root._qty + (+q.getAttribute('data-pqty'));
+            if (want > cap) TZ.toast(t('hold_max', { n: cap }), 'cart');
+            root._qty = Math.max(1, Math.min(cap, want));
             $('#pd-qty').textContent = root._qty;
             root.querySelectorAll('[data-qty-val]').forEach(function (b) { b.setAttribute('data-qty-val', root._qty); });
           }
@@ -577,7 +598,7 @@
         field('notes', t('f_notes'), { optional: true, textarea: true }) +
         '</div></div>' +
         '<div class="co-card"><h2>' + TZ.icon('card') + e(t('co_payment')) + '</h2>' + methods.map(payOpt).join('') + '</div></form>' +
-        '<aside class="co-summary"><div class="co-card sticky"><h2>' + TZ.icon('bag') + e(t('co_summary')) + '</h2><ul class="co-lines">' +
+        '<aside class="co-summary"><div class="co-card sticky"><h2>' + TZ.icon('bag') + e(t('co_summary')) + '</h2>' + TZ.holdTimer() + '<ul class="co-lines">' +
         lines.map(function (l) {
           return '<li><span class="co-thumb">' + TZ.productArt(l.p) + '<i>' + l.qty + '</i></span><span class="co-name">' + e(TZ.L(l.p.name)) + '</span><b>' + e(TZ.money(l.p.price * l.qty)) + '</b></li>';
         }).join('') + '</ul>' +
@@ -602,7 +623,7 @@
 
       // Tell the customer up front when the card is charged in BHD instead of their own currency.
       if (chosen === 'tap' && c.cur && c.cur !== 'BHD') {
-        api('/api/checkout/quote', { items: cartItems(), country: c.code }).then(function (res) {
+        api('/api/checkout/quote', { items: cartItems(), country: c.code, cart: TZ.cart.key() }).then(function (res) {
           var q = res.d && res.d.quote; var box = $('#co-charge');
           if (q && box && q.chargeCurrency !== q.currency) {
             box.hidden = false;
@@ -629,13 +650,17 @@
         var btn = $('#place-order'); btn.disabled = true; btn.classList.add('is-busy'); sending = true;
         hideMsg();
         api('/api/checkout', {
-          items: cartItems(), country: TZ.country().code, method: chosen, lang: TZ.lang(), expected_total: Math.round(TZ.cart.total() * 1000) / 1000,
+          items: cartItems(), cart: TZ.cart.key(), country: TZ.country().code, method: chosen, lang: TZ.lang(), expected_total: Math.round(TZ.cart.total() * 1000) / 1000,
           first_name: v('first'), last_name: v('last'), email: v('email'), phone: v('phone'),
           address1: v('addr1'), address2: v('addr2'), city: v('city'), state: v('state'), notes: v('notes')
         }).then(function (res) {
           sending = false; btn.disabled = false; btn.classList.remove('is-busy');
           var d = res.d || {};
-          if (d.ok && d.redirect) { btn.disabled = true; location.href = d.redirect; return; }
+          if (d.ok && d.redirect) {
+            btn.disabled = true;
+            TZ.pending.set(d.order); // reminds them on any page if they leave the payment page without paying
+            location.href = d.redirect; return;
+          }
           if (d.ok && d.whatsapp) {
             TZ.cart.clear();
             history.replaceState(null, '', TZ.url('checkout.html?order=' + d.order.token));

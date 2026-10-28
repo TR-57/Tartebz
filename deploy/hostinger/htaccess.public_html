@@ -18,6 +18,8 @@ RewriteRule ^api(/|$) api.php [END,QSA]
 # Old WordPress product addresses (/product/<arabic-name>/) are redirected there too.
 RewriteRule ^product/.+ api.php [END,QSA]
 RewriteRule ^(sitemap\.xml|robots\.txt)$ api.php [END,QSA]
+# Apple Pay domain check (file uploaded in Admin › Payments)
+RewriteRule ^\.well-known/apple-developer-merchantid-domain-association$ api.php [END,QSA]
 
 # Link-preview pictures (1200x630 JPEG): from disk when made, otherwise Laravel makes it once.
 RewriteCond %{DOCUMENT_ROOT}/img/og/$1.jpg -f

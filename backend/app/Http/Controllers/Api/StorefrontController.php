@@ -24,6 +24,7 @@ class StorefrontController extends Controller
             DB::table('products')->max('updated_at'), DB::table('products')->count(),
             DB::table('categories')->max('updated_at'), DB::table('categories')->count(),
             DB::table('settings')->max('updated_at'), DB::table('media')->max('updated_at'),
+            \App\Support\Holds::stamp(),
         ]);
         $etag = '"'.substr(sha1($stamp), 0, 20).'"';
         $headers = ['ETag' => $etag, 'Cache-Control' => 'public, max-age=60, must-revalidate'];
@@ -36,6 +37,7 @@ class StorefrontController extends Controller
         $products = DB::table('products')->where('status', 'active')->whereIn('category_id', array_keys($live) ?: [0])
             ->orderBy('sort_rank')->orderByDesc('id')->get();
 
+        $held = \App\Support\Holds::heldAll($products->pluck('id')->all());
         $brand = Settings::get('brand');
         $biz = Settings::get('business');
         $logo = $brand['logo'] ? Media::url($brand['logo'], (int) DB::table('media')->where('path', $brand['logo'])->value('version')) : '';
@@ -74,7 +76,7 @@ class StorefrontController extends Controller
                 'icon' => $c->icon ?: 'star', 'image' => $c->image ? Thumbs::url($c->image, 800) : null,
                 'inMenu' => (bool) $c->in_menu, 'onHome' => (bool) $c->on_home,
             ], $live)),
-            'products' => $products->map(function ($p) use ($tree) {
+            'products' => $products->map(function ($p) use ($tree, $held) {
                 $images = json_decode((string) $p->images, true) ?: [];
                 $cat = $tree[$p->category_id] ?? null;
                 $cats = $cat ? [$cat->slug] : [];
@@ -85,7 +87,10 @@ class StorefrontController extends Controller
                 return [
                     'id' => $p->id, 'slug' => $p->slug, 'order' => (int) $p->sort_rank,
                     'price' => (float) $p->price, 'regularPrice' => (float) $p->regular_price,
-                    'inStock' => Catalog::available($p), 'stockLeft' => $p->manage_stock && $p->type === 'simple' ? max(0, (int) $p->stock_qty) : null,
+                    // stockLeft = what nobody holds right now; a customer's own cart holds are added back in the browser.
+                    'inStock' => Catalog::available($p),
+                    'stockLeft' => $p->manage_stock && $p->type === 'simple' ? max(0, (int) $p->stock_qty - ($held[$p->id] ?? 0)) : null,
+                    'reserved' => $held[$p->id] ?? 0,
                     'bestSeller' => (bool) $p->best_seller, 'isNew' => (bool) $p->is_new, 'cats' => $cats,
                     'sour' => $p->sour_level ? (int) $p->sour_level : null, 'weight' => Catalog::weightGrams($p, $tree) / 1000,
                     'name' => ['en' => $p->name, 'ar' => $p->name_ar ?: $p->name],

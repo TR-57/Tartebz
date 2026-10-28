@@ -10,6 +10,24 @@
 
   TZ.payments = { tap: false, whatsapp: true, testMode: false };
 
+  /* Pieces the server keeps for this browser's cart (app.js keeps it up to date). */
+  TZ.holds = (function () {
+    var h = null;
+    try { h = JSON.parse(localStorage.getItem('tz_holds') || 'null'); } catch (e) { /* ignore */ }
+    return h && h.until > Date.now() ? { mine: h.mine || {}, until: h.until } : { mine: {}, until: 0 };
+  })();
+  /* inStock = can be bought now: real stock, minus what other customers are keeping (plus what this cart keeps).
+     inCarts = in stock, but every piece left sits in other customers' carts for now. */
+  TZ.applyHolds = function () {
+    TZ.products.forEach(function (p) {
+      if (p.realStock == null) p.realStock = !!p.inStock;
+      var mine = TZ.holds.mine[p.id] || 0;
+      p.inCarts = p.realStock && p.stockLeft === 0 && (p.reserved || 0) > 0 && mine === 0;
+      p.inStock = p.realStock && !p.inCarts;
+      p.maxQty = p.stockLeft == null ? 99 : Math.min(99, p.stockLeft + mine);
+    });
+  };
+
   /* Website settings (Admin › Settings › Website); these defaults apply until the server answers. */
   TZ.shop = {
     whatsappOrders: true, whatsapp: TZ.store.phoneRaw, backInStock: true,
@@ -70,6 +88,7 @@
     if (products.some(function (p) { return p.bestSeller; })) cats.unshift(TZ.bestCat);
     TZ.products = products;
     TZ.categories = cats;
+    TZ.applyHolds();
     TZ.isLive = true;
     return true;
   }

@@ -13,7 +13,9 @@ const pname = (p) => (isAr() && p.nameAr ? p.nameAr : p.name);
 const catLabel = (c) => '— '.repeat(c.depth) + (isAr() && c.nameAr ? c.nameAr : c.name);
 
 function stockCell(p, edit) {
-  return stockInner(p, edit) + (p.waiting ? `<div class="waiting">${icon('bell')} <span>${p.waiting === 1 ? '1 person waiting' : `${p.waiting} people waiting`}</span></div>` : '');
+  return stockInner(p, edit)
+    + (p.held ? `<div class="waiting" title="Kept for customers who are paying or have it in their cart">${icon('bag')} <span>${p.held === 1 ? '1 in carts' : `${p.held} in carts`}</span></div>` : '')
+    + (p.waiting ? `<div class="waiting">${icon('bell')} <span>${p.waiting === 1 ? '1 person waiting' : `${p.waiting} people waiting`}</span></div>` : '');
 }
 function stockInner(p, edit) {
   if (p.type === 'variable') return `<span class="muted small">By variation</span> ${p.available ? pill('In stock', 'green') : pill('Out of stock', 'red')}`;

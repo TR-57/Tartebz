@@ -17,7 +17,7 @@ class Checkout
      * @return array{lines: array, issues: array, subtotal: float, shipping: float, total: float, weightGrams: int,
      *               country: string, currency: string, rate: float, decimals: int, chargeCurrency: string, chargeAmount: float}
      */
-    public static function quote(array $items, string $country): array
+    public static function quote(array $items, string $country, ?string $cart = null, ?int $orderId = null): array
     {
         $country = strtoupper($country);
         $want = [];
@@ -30,6 +30,8 @@ class Checkout
         }
         $tree = Catalog::categoryTree();
         $products = DB::table('products')->whereIn('id', array_keys($want) ?: [0])->get()->keyBy('id');
+        // Pieces other customers are holding in their carts or unpaid orders are not for sale to this one.
+        $others = Holds::heldByOthers(array_keys($want), $cart, $orderId);
         $lines = [];
         $issues = [];
         $subtotal = 0.0;
@@ -42,9 +44,13 @@ class Checkout
 
                 continue;
             }
-            if ($p->type === 'simple' && $p->manage_stock && $qty > $p->stock_qty) {
-                $issues[] = ['id' => $id, 'code' => 'only', 'left' => (int) $p->stock_qty, 'name' => $p->name, 'nameAr' => $p->name_ar];
-                $qty = (int) $p->stock_qty;
+            $free = Holds::free($p, $others);
+            if ($free !== null && $qty > $free) {
+                $issues[] = ['id' => $id, 'code' => $free > 0 ? 'only' : 'held', 'left' => $free, 'name' => $p->name, 'nameAr' => $p->name_ar];
+                if ($free === 0) {
+                    continue;
+                }
+                $qty = $free;
             }
             $price = round((float) $p->price, 3);
             $w = Catalog::weightGrams($p, $tree);

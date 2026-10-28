@@ -7,6 +7,7 @@ use App\Support\ApiError;
 use App\Support\Audit;
 use App\Support\Currency;
 use App\Support\Orders;
+use App\Support\Refunds;
 use App\Support\Smsa;
 use App\Support\Tap;
 use Illuminate\Http\Request;
@@ -125,7 +126,7 @@ class OrdersController extends Controller
         }
         DB::transaction(function () use ($r, $id, $how) {
             $o = DB::table('orders')->where('id', $id)->lockForUpdate()->first() ?? throw ApiError::notFound('That order does not exist.');
-            if ($o->payment_status === 'paid') {
+            if ($o->paid_at) {
                 throw new ApiError('already_paid', 'This order is already paid.', 409);
             }
             if (in_array($o->status, ['cancelled', 'refunded'], true)) {
@@ -150,11 +151,56 @@ class OrdersController extends Controller
         }
         DB::transaction(function () use ($o, $id, $reason, $r) {
             Orders::giveBackStock($o);
+            \App\Support\Holds::releaseOrder($id);
             DB::table('orders')->where('id', $id)->update(['status' => 'cancelled', 'updated_at' => now()]);
             Orders::event($id, 'cancelled', 'Cancelled'.($reason ? ': '.$reason : '.').($o->payment_status === 'paid' && $o->tap_charge_id
-                ? ' The card payment must be refunded in the Tap dashboard.' : ''), [], $this->admin($r));
+                ? ' The payment is not given back by cancelling – use Refund on this order.' : ''), [], $this->admin($r));
         });
         Audit::log($r, 'order_cancelled', 'order', $id, ['reason' => $reason]);
+
+        return $this->ok(['order' => $this->full(DB::table('orders')->find($id))]);
+    }
+
+    /**
+     * Managers: gives money back. {amount (paid currency), reason?, restock?, method: tap|manual}
+     * tap = sent to Tap (card orders); manual = money already returned another way, just recorded.
+     */
+    public function refund(Request $r, int $id)
+    {
+        $this->find($id);
+        $method = $r->input('method') === 'manual' ? 'manual' : 'tap';
+        $amount = filter_var($r->input('amount'), FILTER_VALIDATE_FLOAT);
+        if ($amount === false) {
+            throw ApiError::validation(['amount' => 'Enter the amount to refund.']);
+        }
+        $reason = $this->str($r, 'reason', 300);
+        $rf = Refunds::start($id, (float) $amount, $reason, $r->boolean('restock'), $method, $this->admin($r));
+        Audit::log($r, 'order_refund', 'order', $id, ['method' => $method, 'amount' => (float) $rf->amount, 'currency' => $rf->currency, 'status' => $rf->status]);
+
+        return $this->ok(['order' => $this->full(DB::table('orders')->find($id)), 'refund' => ['status' => $rf->status]]);
+    }
+
+    /**
+     * Managers: a pending refund. Card refunds with a Tap id are checked with Tap; otherwise {result: done|failed}
+     * settles it by hand (after looking in the Tap dashboard).
+     */
+    public function refundCheck(Request $r, int $id, int $refundId)
+    {
+        $this->find($id);
+        $rf = DB::table('order_refunds')->where('id', $refundId)->where('order_id', $id)->first() ?? throw ApiError::notFound('That refund does not exist.');
+        if ($rf->status !== 'pending') {
+            return $this->ok(['order' => $this->full(DB::table('orders')->find($id))]);
+        }
+        $result = (string) $r->input('result', '');
+        if (in_array($result, ['done', 'failed'], true)) {
+            Refunds::settle($refundId, $result, 'marked by hand', $this->admin($r));
+            Audit::log($r, 'order_refund_settled', 'order', $id, ['refund' => $refundId, 'result' => $result]);
+        } elseif ($rf->tap_refund_id !== '') {
+            $o = DB::table('orders')->find($id);
+            Refunds::fromTap($refundId, Tap::retrieveRefund($rf->tap_refund_id, $o->tap_mode ?: null));
+        } else {
+            throw ApiError::validation(['result' => 'Check the Tap dashboard, then say whether the refund went through.']);
+        }
 
         return $this->ok(['order' => $this->full(DB::table('orders')->find($id))]);
     }
@@ -276,6 +322,10 @@ class OrdersController extends Controller
             'trackingAt' => $o->tracking_at, 'shippedAt' => $o->shipped_at, 'deliveredAt' => $o->delivered_at,
             'trackingUrl' => $o->awb ? 'https://www.smsaexpress.com/trackingdetails?tracknumbers='.rawurlencode($o->awb) : null,
             'customerUrl' => Orders::customerUrl($o),
+            'heldUntil' => $o->paid_at || in_array($o->status, ['cancelled', 'refunded'], true) ? null : \App\Support\Holds::orderHeldUntil($o->id),
+            'refundedAmount' => (float) $o->refunded_amount, 'refundedBhd' => (float) $o->refunded_bhd,
+            'refundable' => $o->paid_at && $o->payment_status === 'paid' ? Refunds::refundable($o) : 0,
+            'refunds' => Refunds::forOrder($o->id),
             'whatsapp' => 'https://wa.me/'.preg_replace('/\D/', '', $o->phone),
             'items' => DB::table('order_items')->where('order_id', $o->id)->get()->map(fn ($i) => [
                 'productId' => $i->product_id, 'name' => $i->name, 'nameAr' => $i->name_ar, 'image' => $i->image ? \App\Support\Thumbs::url($i->image, 200) : null,

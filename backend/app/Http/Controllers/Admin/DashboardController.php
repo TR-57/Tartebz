@@ -18,6 +18,7 @@ class DashboardController extends Controller
         $has = fn (string $t) => Schema::hasTable($t);
         $counts = [
             'unhandled' => DB::table('orders')->where('status', 'paid')->count(),
+            'refundsPending' => DB::table('order_refunds')->where('status', 'pending')->count(),
             'awaitingPayment' => DB::table('orders')->whereIn('status', ['pending_payment', 'awaiting_whatsapp'])->where('created_at', '>', now()->subDays(3))->count(),
             'toShip' => DB::table('orders')->whereIn('status', ['paid', 'processing'])->count(),
             'lowStock' => DB::table('products')->where('status', 'active')->where('type', 'simple')->where('manage_stock', true)->whereBetween('stock_qty', [1, \App\Support\Catalog::LOW_STOCK])->count(),
@@ -30,12 +31,16 @@ class DashboardController extends Controller
             ['ok' => DB::table('admins')->where('role', 'owner')->where('active', 1)->exists(), 'label' => 'At least one active owner account', 'hint' => 'Staff > Add a person'],
             ['ok' => \App\Support\Tap::enabled(), 'label' => 'Card payments (Tap)', 'hint' => 'Settings > Payments – paste the Tap keys, test, then switch to live.'],
             ['ok' => ! \App\Support\Tap::enabled() || \App\Support\Tap::mode() === 'live', 'label' => 'Tap is in TEST mode – no real money is taken', 'hint' => 'Settings > Payments – switch to live when your test order worked.'],
+            ['ok' => \App\Support\Doctor::cronRecent(), 'label' => 'Scheduled tasks (cron) are not running', 'hint' => 'hPanel > Advanced > Cron Jobs – add the line from docs/hostinger.md (every minute). Without it, missed card payments and refunds are not re-checked.'],
             ['ok' => \App\Support\Smsa::enabled(), 'label' => 'SMSA shipping', 'hint' => 'Settings > Shipping – paste the SMSA key, fill in the sender address, test.'],
         ];
-        $paid = fn ($from) => DB::table('orders')->where('payment_status', 'paid')->where('paid_at', '>=', $from);
-        $sum = fn ($from) => ['revenue' => round((float) $paid($from)->sum('total'), 3), 'orders' => $paid($from)->count()];
-        $days = DB::table('orders')->where('payment_status', 'paid')->where('paid_at', '>=', now()->subDays(13)->startOfDay())
-            ->selectRaw('DATE(paid_at) d, SUM(total) revenue')->groupBy('d')->pluck('revenue', 'd');
+        // Revenue = paid orders minus what was refunded on them (BHD).
+        $paid = fn ($from) => DB::table('orders')->whereIn('payment_status', ['paid', 'refunded'])->where('paid_at', '>=', $from);
+        $sum = fn ($from) => ['revenue' => round((float) $paid($from)->sum(DB::raw('total - refunded_bhd')), 3),
+            'orders' => $paid($from)->where('payment_status', 'paid')->count(),
+            'refunded' => round((float) $paid($from)->sum('refunded_bhd'), 3)];
+        $days = DB::table('orders')->whereIn('payment_status', ['paid', 'refunded'])->where('paid_at', '>=', now()->subDays(13)->startOfDay())
+            ->selectRaw('DATE(paid_at) d, SUM(total - refunded_bhd) revenue')->groupBy('d')->pluck('revenue', 'd');
         $series = [];
         for ($i = 13; $i >= 0; $i--) {
             $d = now()->subDays($i)->toDateString();

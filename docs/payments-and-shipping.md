@@ -33,13 +33,49 @@ Everything is built. You only paste keys, test, and switch to live – all in th
 - Card details never touch this website – customers pay on Tap's page.
 - An order is marked paid only after the website asks Tap directly and Tap says **CAPTURED** for the **exact amount and currency**.
   A fake "paid" message from a browser or a forged notification changes nothing.
-- Payment methods shown on Tap's page (Apple Pay, Benefit, mada, KNET…) are switched on **in your Tap account**. Apple Pay also needs
-  your domain verified with Tap – ask Tap support.
+- Payment methods shown on Tap's page (Apple Pay, Benefit, mada, KNET…) are switched on **in your Tap account**. See *Apple Pay* below.
 - **Currencies:** by default everyone is charged in **BHD** (the same price, converted). If your Tap account can settle SAR, AED, etc.,
   tick them under *Charge in these currencies* – Saudi customers are then charged in SAR. Reports always add up in BHD.
-- **Refunds** are done in the Tap dashboard. Then cancel the order in the admin (gives the stock back).
+- **Refunds** are done from the order page – see *Refunds* below.
 - Tap sends updates to `https://<your-domain>/api/payments/tap/webhook`. The website includes this address on every payment,
   so you normally do not need to enter it in Tap.
+
+### Apple Pay
+1. Ask Tap support to **switch on Apple Pay** for your account (test first, then live). From then on the Apple Pay button shows on
+   Tap's payment page for customers on iPhone, iPad and Mac (Safari). Nothing changes on the website.
+2. If Tap asks you to **verify your domain** for Apple Pay, they send a file named
+   `apple-developer-merchantid-domain-association`. Upload it in **Payments → Apple Pay**. The website serves it at
+   `https://<your-domain>/.well-known/apple-developer-merchantid-domain-association` (the *Open* link checks it). Tell Tap it is in place.
+3. Test with an iPhone in Tap's test mode, then live.
+4. To show the Apple Pay logo at checkout and in the footer: Settings → **Website** → Payment logos → tick Apple Pay.
+
+---
+
+## Refunds
+**Where:** the order page → **Refund** (managers and owners).
+
+- **Card orders (Tap):** enter the amount (all of it, or part) and a reason. The refund is sent to Tap at once. It shows
+  *Refund pending* until Tap confirms it (usually seconds; the website also re-checks every 5 minutes), then *Refunded*.
+  The customer gets an email; the money reaches their card in 5–10 working days, depending on their bank.
+- **WhatsApp / bank transfer / cash orders:** give the money back yourself, then **Record a refund** – it is saved as done at once.
+  Use this too if you ever refund a card payment in the Tap dashboard instead.
+- A full refund turns the order into **Refunded**. Tick **Put the items back in stock** if the goods came back or never left.
+  For part of an order, change the stock in Products.
+- You can never refund more than was paid – refunds that are still pending count too, so a double click never refunds twice.
+- If Tap cannot be reached while refunding, the refund stays *pending*: look in the Tap dashboard, then press **It went through** or
+  **It did not go through** on the order.
+- The dashboard's sales figures are **after refunds**.
+
+---
+
+## Stock reservation (no two customers pay for the last piece)
+- When a customer adds a product to the cart, those pieces are **kept for them for 15 minutes**. The time starts again whenever they
+  use the cart or the checkout. The cart shows *Kept for you mm:ss*.
+- Other customers see only the stock nobody is keeping. If someone keeps the last piece, the product shows *In other carts – check back soon*.
+- Placing a card order keeps the pieces **60 minutes** for the payment; a WhatsApp order keeps them **24 hours** until you mark it paid.
+  Paying takes them from stock for good. Cancelling gives them back.
+- All three times are in Settings → **Website → Stock reservation**. One visitor can keep at most 60 pieces at once, so nobody can empty the shop.
+- Products → the stock column shows *n in carts* while pieces are kept.
 
 ---
 

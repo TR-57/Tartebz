@@ -129,6 +129,45 @@ class Tap
     }
 
     /**
+     * Gives money back on a captured charge (all or part). $amount is in the currency the customer paid.
+     * Tap answers with the refund (id re_…, status PENDING / IN_PROGRESS / REFUNDED / FAILED …) and later posts
+     * the final status to the webhook.
+     */
+    public static function refund(object $order, float $amount, string $reason, int $refundRowId): array
+    {
+        return self::request('POST', 'refunds', [
+            'charge_id' => $order->tap_charge_id,
+            'amount' => $amount,
+            'currency' => $order->charge_currency,
+            'reason' => mb_substr($reason !== '' ? $reason : 'requested_by_customer', 0, 255),
+            'reference' => ['merchant' => 'rf_'.$order->number.'_'.$refundRowId],
+            'metadata' => ['udf1' => $order->number, 'udf2' => (string) $refundRowId],
+            'post' => ['url' => config('store.store_url').'/api/payments/tap/webhook'],
+        ], $order->tap_mode ?: null);
+    }
+
+    public static function retrieveRefund(string $refundId, ?string $mode = null): array
+    {
+        if (! preg_match('/^re_[A-Za-z0-9]+$/', $refundId)) {
+            throw new ApiError('tap_bad_id', 'That is not a Tap refund id.', 422);
+        }
+
+        return self::request('GET', 'refunds/'.$refundId, null, $mode);
+    }
+
+    /** Tap refund status → ours: done | failed | pending. */
+    public static function refundState(string $status): string
+    {
+        $s = strtoupper($status);
+
+        return match (true) {
+            in_array($s, ['REFUNDED', 'SUCCEEDED', 'CAPTURED'], true) => 'done',
+            in_array($s, ['FAILED', 'CANCELLED', 'DECLINED', 'REJECTED', 'VOID', 'REVERSED'], true) => 'failed',
+            default => 'pending',
+        };
+    }
+
+    /**
      * Checks the saved key for a mode without charging anything: asks Tap for a charge that does not exist.
      * A wrong key answers 401; a right key answers "not found".
      */

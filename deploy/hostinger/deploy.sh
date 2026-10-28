@@ -44,5 +44,10 @@ if [ -n "${CF_ZONE_ID:-}" ] && [ -n "${CF_API_TOKEN:-}" ]; then
     -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json" --data '{"purge_everything":true}' >/dev/null \
     && echo "Cloudflare cache cleared." || echo "Could not clear the Cloudflare cache (check CF_ZONE_ID / CF_API_TOKEN)."
 fi
+mkdir -p backend/storage/app/labels
+echo
+echo "Server check (php artisan store:doctor):"
+"$PHP" backend/artisan store:doctor || echo "Fix the FAIL lines above (docs/hostinger.md)."
+echo
 echo "Done. Cron (hPanel > Advanced > Cron Jobs, every minute):"
 echo "  $PHP $APP_DIR/backend/artisan schedule:run >> /dev/null 2>&1"

@@ -676,7 +676,76 @@
     "sk_test_…": "sk_test_…",
     "sk_live_…": "sk_live_…",
     "pk_live_…": "pk_live_…",
-    "API key": "مفتاح API"
+    "API key": "مفتاح API",
+    "Kept for customers who are paying or have it in their cart": "محجوز لعملاء يدفعون الآن أو في سلالهم",
+    "1 in carts": "١ في السلال",
+    "{0} in carts": "{0} في السلال",
+    "Stock reservation": "حجز المخزون",
+    "Pieces in a customer’s cart are kept for them, so two people never pay for the last one. Other customers see only what nobody is keeping.": "القطع في سلة العميل تُحجز له، فلا يدفع شخصان ثمن آخر قطعة. يرى باقي العملاء فقط ما لم يحجزه أحد.",
+    "In a cart (minutes)": "في السلة (دقائق)",
+    "Starts again each time the customer uses the cart.": "يبدأ من جديد كلما استخدم العميل السلة.",
+    "Card order waiting for payment (minutes)": "طلب بطاقة بانتظار الدفع (دقائق)",
+    "After that, the pieces go back on sale if the order is still unpaid.": "بعدها ترجع القطع للبيع إذا لم يُدفع الطلب.",
+    "WhatsApp order (hours)": "طلب واتساب (ساعات)",
+    "Until you mark it paid or cancel it.": "حتى تؤكد الدفع أو تلغي الطلب.",
+    "Between 1 and 120 minutes.": "بين ١ و١٢٠ دقيقة.",
+    "Between 10 and 1440 minutes (Tap’s payment page is open for up to an hour).": "بين ١٠ و١٤٤٠ دقيقة (صفحة الدفع في Tap تبقى مفتوحة حتى ساعة).",
+    "Between 1 and 168 hours.": "بين ١ و١٦٨ ساعة.",
+    "Domain file uploaded": "تم رفع ملف النطاق",
+    "Apple Pay shows on Tap’s payment page (iPhone, iPad, Mac with Safari) once Tap switches it on for your account – ask Tap support. If Tap asks you to verify your domain, upload the file they give you (apple-developer-merchantid-domain-association) here.": "يظهر Apple Pay في صفحة الدفع من Tap (آيفون وآيباد وماك عبر Safari) بعد أن يفعّله Tap لحسابك – اطلب ذلك من دعم Tap. إذا طلب Tap التحقق من نطاقك، ارفع هنا الملف الذي يرسلونه (apple-developer-merchantid-domain-association).",
+    "Replace the file": "استبدال الملف",
+    "Upload the file": "رفع الملف",
+    "Open": "فتح",
+    "Address Apple checks:": "العنوان الذي تتحقق منه Apple:",
+    "To show the Apple Pay mark on the website: Settings › Website › Payment marks.": "لإظهار شعار Apple Pay في الموقع: الإعدادات › الموقع › شعارات الدفع.",
+    "Apple Pay file saved": "تم حفظ ملف Apple Pay",
+    "Remove the Apple Pay domain file?": "إزالة ملف نطاق Apple Pay؟",
+    "This is not an Apple Pay domain file. Upload the file named apple-developer-merchantid-domain-association exactly as you received it.": "هذا ليس ملف نطاق Apple Pay. ارفع الملف المسمى apple-developer-merchantid-domain-association كما وصلك تمامًا.",
+    "Partly refunded": "مسترجع جزئيًا",
+    "Stock kept for this order until": "المخزون محجوز لهذا الطلب حتى",
+    "to the card": "إلى البطاقة",
+    "recorded by hand": "مسجّل يدويًا",
+    "items back in stock": "أُرجعت المنتجات للمخزون",
+    "Check with Tap": "تحقق مع Tap",
+    "Tap could not be reached. Look in the Tap dashboard, then:": "تعذر الوصول إلى Tap. راجع لوحة Tap، ثم:",
+    "It went through": "تم الاسترجاع",
+    "It did not go through": "لم يتم الاسترجاع",
+    "Refund…": "استرجاع…",
+    "Refund": "استرجاع",
+    "Refund pending": "استرجاع قيد التنفيذ",
+    "Refund failed": "فشل الاسترجاع",
+    "How": "الطريقة",
+    "Back to the card (Tap)": "إلى البطاقة (Tap)",
+    "Already given back another way": "أُرجع المبلغ بطريقة أخرى",
+    "Amount": "المبلغ",
+    "Up to": "حتى",
+    "Reason (optional)": "السبب (اختياري)",
+    "e.g. out of stock, damaged": "مثلًا: نفد المخزون، تالف",
+    "Put the items back in stock": "إرجاع المنتجات للمخزون",
+    "Only with a full refund. Untick if the goods were sent and are not coming back.": "فقط مع الاسترجاع الكامل. ألغِ التحديد إذا أُرسلت البضاعة ولن ترجع.",
+    "Give the money back yourself first (Benefit transfer, cash…). This only records it.": "أرجع المبلغ بنفسك أولًا (تحويل بنفت، نقدًا…). هنا يُسجّل فقط.",
+    "Did you see this refund in the Tap dashboard?": "هل رأيت هذا الاسترجاع في لوحة Tap؟",
+    "Yes, it went through": "نعم، تم",
+    "Mark this refund as not done? The amount can be refunded again.": "تسجيل هذا الاسترجاع كغير منفّذ؟ يمكن استرجاع المبلغ مرة أخرى.",
+    "Not done": "غير منفّذ",
+    "Refund sent – waiting for Tap": "أُرسل الاسترجاع – بانتظار Tap",
+    "Gives the stock back. It does not give the money back – use Refund for that.": "يُرجع المخزون. لا يُرجع المبلغ – استخدم «استرجاع» لذلك.",
+    "This order is already fully refunded.": "هذا الطلب مسترجع بالكامل.",
+    "Only paid orders can be refunded.": "يمكن استرجاع الطلبات المدفوعة فقط.",
+    "This order was not paid by card through Tap. Give the money back yourself, then record the refund here.": "هذا الطلب لم يُدفع بالبطاقة عبر Tap. أرجع المبلغ بنفسك ثم سجّل الاسترجاع هنا.",
+    "Enter the amount to refund.": "أدخل مبلغ الاسترجاع.",
+    "Stock goes back only with a full refund. For part of an order, change the stock in Products.": "يرجع المخزون فقط مع الاسترجاع الكامل. لجزء من الطلب، عدّل المخزون من المنتجات.",
+    "Could not reach Tap. Check the Tap dashboard before trying again – the refund is kept as \"pending\".": "تعذر الوصول إلى Tap. راجع لوحة Tap قبل المحاولة مرة أخرى – الاسترجاع محفوظ «قيد التنفيذ».",
+    "Check the Tap dashboard, then say whether the refund went through.": "راجع لوحة Tap، ثم حدّد هل تم الاسترجاع.",
+    "That refund does not exist.": "هذا الاسترجاع غير موجود.",
+    "That is not a Tap refund id.": "هذا ليس رقم استرجاع من Tap.",
+    "Tap could not be reached while refunding. Check the Tap dashboard, then mark this refund as done or failed.": "تعذر الوصول إلى Tap أثناء الاسترجاع. راجع لوحة Tap، ثم سجّل الاسترجاع كمنفّذ أو فاشل.",
+    "This order was cancelled before the payment arrived. Send it, or refund the payment.": "أُلغي هذا الطلب قبل وصول الدفع. أرسله أو استرجع المبلغ.",
+    "The payment is not given back by cancelling – use Refund on this order.": "الإلغاء لا يُرجع المبلغ – استخدم «استرجاع» في هذا الطلب.",
+    "Refunds pending": "استرجاعات قيد التنفيذ",
+    "waiting for Tap to confirm": "بانتظار تأكيد Tap",
+    "Scheduled tasks (cron) are not running": "المهام المجدولة (cron) لا تعمل",
+    "hPanel > Advanced > Cron Jobs – add the line from docs/hostinger.md (every minute). Without it, missed card payments and refunds are not re-checked.": "hPanel > Advanced > Cron Jobs – أضف السطر من docs/hostinger.md (كل دقيقة). بدونه لا يُعاد التحقق من المدفوعات والاسترجاعات الفائتة."
   },
   "patterns": [
     [
@@ -826,6 +895,46 @@
     [
       "New paid order (.+)",
       "طلب مدفوع جديد $1"
+    ],
+    [
+      "Refund ([A-Z]{3}) ([\\d.,]+) to the customer’s card\\? This cannot be undone\\.",
+      "استرجاع $1 $2 إلى بطاقة العميل؟ لا يمكن التراجع عن ذلك."
+    ],
+    [
+      "Record a refund of ([A-Z]{3}) ([\\d.,]+)\\?",
+      "تسجيل استرجاع بمبلغ $1 $2؟"
+    ],
+    [
+      "The most that can still be refunded is ([A-Z]{3} [\\d.,]+)\\.",
+      "أقصى مبلغ يمكن استرجاعه الآن هو $1."
+    ],
+    [
+      "Card refund sent to Tap: (.+)",
+      "أُرسل استرجاع إلى البطاقة عبر Tap: $1"
+    ],
+    [
+      "Refund recorded: (.+)",
+      "سُجّل استرجاع: $1"
+    ],
+    [
+      "Refunded ([A-Z]{3} [\\d.,]+) – the whole order\\.",
+      "تم استرجاع $1 – الطلب كاملًا."
+    ],
+    [
+      "Refunded ([A-Z]{3} [\\d.,]+)\\.",
+      "تم استرجاع $1."
+    ],
+    [
+      "Refund of ([A-Z]{3} [\\d.,]+) did not go through(.*)\\.",
+      "لم يتم استرجاع $1$2."
+    ],
+    [
+      "Stock went below zero for: (.+)\\. Check you can send everything before shipping\\.",
+      "المخزون أصبح أقل من صفر لـ: $1. تأكد أنك تستطيع إرسال كل شيء قبل الشحن."
+    ],
+    [
+      "An earlier payment attempt \\((.+)\\) was also paid\\. Check the Tap dashboard and refund the extra payment there\\.",
+      "محاولة دفع سابقة ($1) دُفعت أيضًا. راجع لوحة Tap واسترجع الدفعة الزائدة من هناك."
     ]
   ]
 }

@@ -37,6 +37,20 @@ export default {
       <div class="card"><h2>Payment marks</h2><p class="muted small">Shown near the price, in the cart and in the footer. Tick only the ways you really accept.</p>
         <div class="logo-picks">${r.logos.map((k) => `<label class="chip-check"><input type="checkbox" name="logo" value="${k}" ${s.paymentLogos.includes(k) ? 'checked' : ''}><span>${esc(LOGO_NAMES[k] || k)}</span></label>`).join('')}</div>
       </div>
+      <div class="card"><h2>${icon('bag')} Stock reservation</h2>
+        <p class="muted small">Pieces in a customer’s cart are kept for them, so two people never pay for the last one. Other customers see only what nobody is keeping.</p>
+        <div class="grid-3">
+          <div class="field" data-field="cartHoldMinutes"><label for="hc">In a cart (minutes)</label>
+            <input id="hc" name="cartHoldMinutes" type="number" min="1" max="120" value="${r.holds.cartHoldMinutes}" dir="ltr">
+            <span class="hint">Starts again each time the customer uses the cart.</span></div>
+          <div class="field" data-field="orderHoldMinutes"><label for="ho">Card order waiting for payment (minutes)</label>
+            <input id="ho" name="orderHoldMinutes" type="number" min="10" max="1440" value="${r.holds.orderHoldMinutes}" dir="ltr">
+            <span class="hint">After that, the pieces go back on sale if the order is still unpaid.</span></div>
+          <div class="field" data-field="whatsappHoldHours"><label for="hw">WhatsApp order (hours)</label>
+            <input id="hw" name="whatsappHoldHours" type="number" min="1" max="168" value="${r.holds.whatsappHoldHours}" dir="ltr">
+            <span class="hint">Until you mark it paid or cancel it.</span></div>
+        </div>
+      </div>
       <div class="card"><h2>Delivery times</h2><p class="muted small">Days after the order. The website shows them as dates, e.g. “Arrives Sun 3 Nov – Wed 6 Nov”.</p>
         <div class="table-wrap"><table class="t cards"><thead><tr><th>Country</th><th>From (days)</th><th>To (days)</th><th>Shown as</th><th></th></tr></thead><tbody id="drows">${rows()}</tbody></table></div>
         <p><button type="button" class="btn btn-sm" id="dadd">${icon('plus')} Add a country</button></p>
@@ -64,6 +78,9 @@ export default {
         whatsappNumber: form.querySelector('[name=whatsappNumber]').value,
         paymentLogos: [...form.querySelectorAll('[name=logo]:checked')].map((c) => c.value),
         delivery,
+        cartHoldMinutes: +form.querySelector('[name=cartHoldMinutes]').value,
+        orderHoldMinutes: +form.querySelector('[name=orderHoldMinutes]').value,
+        whatsappHoldHours: +form.querySelector('[name=whatsappHoldHours]').value,
       };
       try {
         await busy(main.querySelector('#save'), () => api('website', { method: 'PUT', body }));

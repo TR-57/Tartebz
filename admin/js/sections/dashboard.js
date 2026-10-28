@@ -21,6 +21,7 @@ export default {
         ${tile('New enquiries', c.enquiries, '', '#/enquiries?status=new', true)}
         ${tile('Low stock', c.lowStock, '', '#/products?tab=low', true)}
         ${c.mailFailed ? tile('Emails failed', c.mailFailed, 'check SMTP settings', '#/emails/sent?status=failed', true) : ''}
+        ${c.refundsPending ? tile('Refunds pending', c.refundsPending, 'waiting for Tap to confirm', '#/orders', true) : ''}
       </div>
       <div class="grid-2">
         <div class="card"><h2>Sales, last 14 days</h2>

@@ -79,6 +79,28 @@ class PaymentsController extends Controller
         return $this->ok($res);
     }
 
+    /** Apple Pay domain verification file (text from Apple / Tap), or {clear: true}. */
+    public function applePayFile(Request $r)
+    {
+        $p = Settings::get('payments');
+        if ($this->bool($r, 'clear')) {
+            $p['applePay'] = ['domainFile' => '', 'uploadedAt' => null];
+        } else {
+            $file = $r->file('file');
+            $text = $file ? (string) file_get_contents($file->getRealPath()) : (string) $r->input('text', '');
+            $text = trim($text);
+            // Apple's file is a long line of hex / base64-like text (a few KB). Anything else is refused.
+            if ($text === '' || strlen($text) > 20000 || ! preg_match('/^[A-Za-z0-9+\/=\s{}":,._-]+$/', $text)) {
+                throw ApiError::validation(['file' => 'This is not an Apple Pay domain file. Upload the file named apple-developer-merchantid-domain-association exactly as you received it.']);
+            }
+            $p['applePay'] = ['domainFile' => $text, 'uploadedAt' => now()->toIso8601String()];
+        }
+        Settings::set('payments', $p);
+        Audit::log($r, 'applepay_file', 'settings', 'payments', ['set' => $p['applePay']['domainFile'] !== '']);
+
+        return $this->ok($this->present());
+    }
+
     private function present(): array
     {
         $p = Settings::get('payments');
@@ -96,6 +118,11 @@ class PaymentsController extends Controller
             'currencies' => array_keys(Currency::enabled()),
             'webhookUrl' => config('store.store_url').'/api/payments/tap/webhook',
             'returnUrl' => config('store.store_url').'/checkout',
+            'applePay' => [
+                'fileSet' => ($p['applePay']['domainFile'] ?? '') !== '', 'uploadedAt' => $p['applePay']['uploadedAt'] ?? null,
+                'url' => config('store.store_url').'/.well-known/apple-developer-merchantid-domain-association',
+                'domain' => parse_url((string) config('store.store_url'), PHP_URL_HOST),
+            ],
         ];
     }
 }

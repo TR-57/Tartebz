@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
  * Order life cycle. Statuses:
  *   pending_payment → paid → processing → shipped → delivered
  *   awaiting_whatsapp (ordered on WhatsApp; staff confirm the payment by hand)
- *   payment_failed (the customer may try again) · cancelled · refunded
+ *   payment_failed (the customer may try again) · cancelled · refunded (the whole payment given back – see Refunds)
  * Paying is recorded once (row lock), stock is taken once, and a cancelled paid order gives its stock back.
  */
 class Orders
@@ -71,8 +71,8 @@ class Orders
         DB::transaction(function () use ($orderId, $charge) {
             $o = DB::table('orders')->where('id', $orderId)->lockForUpdate()->first();
             $status = strtoupper((string) ($charge['status'] ?? ''));
-            if (! $o || ($charge['id'] ?? '') !== $o->tap_charge_id || $o->payment_status === 'paid') {
-                return;
+            if (! $o || ($charge['id'] ?? '') !== $o->tap_charge_id || $o->paid_at) {
+                return; // paid once already (later refunds must not turn it back into "paid")
             }
             DB::table('orders')->where('id', $o->id)->update(['tap_status' => $status, 'updated_at' => now()]);
             if ($status === 'CAPTURED') {
@@ -101,7 +101,7 @@ class Orders
     /** Records payment once: status, stock, emails. $o must be locked by the caller's transaction. */
     public static function markPaid(object $o, string $message, array $data = [], ?object $admin = null): void
     {
-        if ($o->payment_status === 'paid') {
+        if ($o->paid_at) {
             return;
         }
         DB::table('orders')->where('id', $o->id)->update([
@@ -109,7 +109,11 @@ class Orders
             'payment_status' => 'paid', 'paid_at' => now(), 'updated_at' => now(),
         ]);
         self::takeStock($o);
+        Holds::releaseOrder($o->id);
         self::event($o->id, 'paid', $message, $data, $admin);
+        if ($o->status === 'cancelled') {
+            self::event($o->id, 'paid_after_cancel', 'This order was cancelled before the payment arrived. Send it, or refund the payment.');
+        }
         $fresh = DB::table('orders')->find($o->id);
         self::emailCustomer($fresh);
         self::emailOwners($fresh);
@@ -128,6 +132,12 @@ class Orders
         }
         DB::table('products')->where('manage_stock', true)->where('type', 'simple')->where('stock_qty', '<=', 0)->update(['in_stock' => false]);
         DB::table('orders')->where('id', $o->id)->update(['stock_taken' => true]);
+        // Paid after its reservation ran out and someone else bought the piece meanwhile: tell the team.
+        $short = DB::table('order_items')->join('products', 'products.id', '=', 'order_items.product_id')
+            ->where('order_items.order_id', $o->id)->where('products.manage_stock', true)->where('products.stock_qty', '<', 0)->pluck('products.name')->all();
+        if ($short) {
+            self::event($o->id, 'oversold', 'Stock went below zero for: '.implode(', ', $short).'. Check you can send everything before shipping.');
+        }
     }
 
     public static function giveBackStock(object $o): void

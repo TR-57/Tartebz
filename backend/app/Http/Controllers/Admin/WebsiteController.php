@@ -9,14 +9,14 @@ use App\Support\Settings;
 use App\Support\StockAlerts;
 use Illuminate\Http\Request;
 
-/** Website extras: WhatsApp ordering, back-in-stock alerts, payment logos, delivery times (managers). */
+/** Website extras: WhatsApp ordering, back-in-stock alerts, payment logos, delivery times, stock reservation times (managers). */
 class WebsiteController extends Controller
 {
     public const LOGOS = ['benefit', 'visa', 'mastercard', 'applepay', 'mada', 'knet', 'tabby', 'cod'];
 
     public function index()
     {
-        return $this->ok(['storefront' => Settings::get('storefront'), 'logos' => self::LOGOS, 'businessWhatsapp' => Settings::get('business')['whatsapp'] ?: Settings::get('business')['phone']]);
+        return $this->ok(['storefront' => Settings::get('storefront'), 'holds' => self::holds(), 'logos' => self::LOGOS, 'businessWhatsapp' => Settings::get('business')['whatsapp'] ?: Settings::get('business')['phone']]);
     }
 
     public function save(Request $r)
@@ -42,6 +42,18 @@ class WebsiteController extends Controller
             }
             $delivery[] = ['country' => $cc, 'min' => $min, 'max' => $max];
         }
+        $cartMin = (int) $r->input('cartHoldMinutes', Settings::get('storefront')['cartHoldMinutes'] ?? 15);
+        $orderMin = (int) $r->input('orderHoldMinutes', Settings::get('orders')['holdMinutes'] ?? 60);
+        $waHours = (int) $r->input('whatsappHoldHours', Settings::get('orders')['whatsappHoldHours'] ?? 24);
+        if ($cartMin < 1 || $cartMin > 120) {
+            $f['cartHoldMinutes'] = 'Between 1 and 120 minutes.';
+        }
+        if ($orderMin < 10 || $orderMin > 1440) {
+            $f['orderHoldMinutes'] = 'Between 10 and 1440 minutes (Tap’s payment page is open for up to an hour).';
+        }
+        if ($waHours < 1 || $waHours > 168) {
+            $f['whatsappHoldHours'] = 'Between 1 and 168 hours.';
+        }
         if ($f) {
             throw ApiError::validation($f);
         }
@@ -51,10 +63,20 @@ class WebsiteController extends Controller
             'backInStock' => $this->bool($r, 'backInStock', true),
             'paymentLogos' => $logos,
             'delivery' => $delivery,
+            'cartHoldMinutes' => $cartMin,
         ];
         Settings::set('storefront', $value);
+        Settings::set('orders', ['holdMinutes' => $orderMin, 'whatsappHoldHours' => $waHours] + Settings::get('orders'));
         Audit::log($r, 'website_settings_saved', 'settings', 'storefront', ['paymentLogos' => $logos, 'whatsappOrders' => $value['whatsappOrders'], 'backInStock' => $value['backInStock']]);
 
-        return $this->ok(['storefront' => Settings::get('storefront')]);
+        return $this->ok(['storefront' => Settings::get('storefront'), 'holds' => self::holds()]);
+    }
+
+    private static function holds(): array
+    {
+        $o = Settings::get('orders');
+
+        return ['cartHoldMinutes' => (int) (Settings::get('storefront')['cartHoldMinutes'] ?? 15),
+            'orderHoldMinutes' => (int) ($o['holdMinutes'] ?? 60), 'whatsappHoldHours' => (int) ($o['whatsappHoldHours'] ?? 24)];
     }
 }

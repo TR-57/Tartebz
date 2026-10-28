@@ -1,4 +1,4 @@
-import { api, esc, ltr, pill, toggle, busy, toast, toastErr, showErrors, clearErrors, icon, confirmBox } from '../core.js';
+import { api, upload, esc, ltr, pill, toggle, busy, toast, toastErr, showErrors, clearErrors, icon, confirmBox } from '../core.js';
 
 /* Owner: Tap card payments. Paste the keys, test the connection, place a test order, then switch to live. */
 export default {
@@ -48,6 +48,13 @@ export default {
       <div class="card"><h2>WhatsApp orders</h2>
         ${toggle('whatsappEnabled', 'Offer “Order on WhatsApp” at checkout', r.whatsappEnabled, 'The order is saved; you confirm the payment by hand in Orders (Mark as paid).')}
       </div>
+      <div class="card"><div class="card-head"><h2>Apple Pay</h2>${r.applePay.fileSet ? pill('Domain file uploaded', 'green') : ''}</div>
+        <p class="muted small">Apple Pay shows on Tap’s payment page (iPhone, iPad, Mac with Safari) once Tap switches it on for your account – ask Tap support. If Tap asks you to verify your domain, upload the file they give you (apple-developer-merchantid-domain-association) here.</p>
+        <p><label class="btn btn-sm">${icon('upload')} <span>${r.applePay.fileSet ? 'Replace the file' : 'Upload the file'}</span><input type="file" id="apfile" hidden></label>
+          ${r.applePay.fileSet ? `<a class="btn btn-sm" href="${esc(r.applePay.url)}" target="_blank" rel="noopener">Open</a> <button type="button" class="btn btn-sm btn-ghost" id="apclear">Remove</button>` : ''}</p>
+        <p class="muted small"><span>Address Apple checks:</span> ${ltr(r.applePay.url)}</p>
+        <p class="muted small">To show the Apple Pay mark on the website: Settings › Website › Payment marks.</p>
+      </div>
       <div class="card"><h2>For your Tap dashboard</h2>
         <p class="muted small">Tap sends payment updates here (the website also sets it on every payment, so usually nothing to do):</p>
         <p>${ltr(r.webhookUrl)}</p>
@@ -72,6 +79,16 @@ export default {
       });
       if (body.mode === 'live' && body.enabled && !(await confirmBox('Switch to LIVE? Customers will be charged real money.', { ok: 'Go live' }))) return;
       try { await busy(main.querySelector('#save'), () => api('payments', { method: 'PUT', body })); toast('Saved'); this.view(main, route, alive); } catch (err) { showErrors(form, err); }
+    });
+    main.querySelector('#apfile').addEventListener('change', async (e) => {
+      const f = e.target.files[0];
+      if (!f) return;
+      try { await upload('payments/apple-pay-file', f); toast('Apple Pay file saved'); this.view(main, route, alive); } catch (err) { toastErr(err); }
+    });
+    const apc = main.querySelector('#apclear');
+    if (apc) apc.addEventListener('click', async () => {
+      if (!(await confirmBox('Remove the Apple Pay domain file?', { ok: 'Remove' }))) return;
+      try { await api('payments/apple-pay-file', { method: 'POST', body: { clear: true } }); toast('Removed'); this.view(main, route, alive); } catch (err) { toastErr(err); }
     });
     main.querySelectorAll('[data-test]').forEach((b) => b.addEventListener('click', async () => {
       const out = main.querySelector(`[data-res="${b.dataset.test}"]`);

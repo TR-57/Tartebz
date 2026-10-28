@@ -187,8 +187,12 @@
   };
 
   /* ---------- cart ---------- */
-  var cart = (store.get('cart', []) || []).filter(function (l) { var p = TZ.find(l.id); return p && p.inStock && l.qty > 0; });
-  function saveCart() { store.set('cart', cart); renderCart(); doc.dispatchEvent(new CustomEvent('tz:cart')); }
+  // Lines whose product still has stock stay; whether this customer can keep them is settled by TZ.holds.sync().
+  var cart = (store.get('cart', []) || []).filter(function (l) { var p = TZ.find(l.id); return p && (p.realStock != null ? p.realStock : p.inStock) && l.qty > 0; });
+  function saveCart(fromServer) {
+    store.set('cart', cart); renderCart(); doc.dispatchEvent(new CustomEvent('tz:cart'));
+    if (!fromServer) TZ.holds.sync();
+  }
   TZ.cart = {
     lines: function () { return cart.map(function (l) { return { p: TZ.find(l.id), qty: l.qty }; }); },
     count: function () { return cart.reduce(function (s, l) { return s + l.qty; }, 0); },
@@ -196,19 +200,134 @@
     weight: function () { return cart.reduce(function (s, l) { return s + TZ.find(l.id).weight * l.qty; }, 0); },
     shipping: function () { return TZ.shipCost(TZ.cart.weight()); },
     total: function () { return TZ.cart.subtotal() + TZ.cart.shipping(); },
+    /* Returns how many were really added (0 when no more can be had). */
     add: function (id, qty) {
-      var p = TZ.find(id); if (!p || !p.inStock) return;
+      var p = TZ.find(id); if (!p || !p.inStock) return 0;
       var l = cart.filter(function (x) { return x.id === p.id; })[0];
-      if (l) l.qty = Math.min(99, l.qty + (qty || 1)); else cart.push({ id: p.id, qty: qty || 1 });
+      var have = l ? l.qty : 0, max = p.maxQty != null ? p.maxQty : 99;
+      var next = Math.min(max, have + (qty || 1));
+      if (next <= have) { toast(TZ.t('hold_max', { n: max }), 'cart'); return 0; }
+      if (l) l.qty = next; else cart.push({ id: p.id, qty: next });
       saveCart();
+      return next - have;
     },
     set: function (id, qty) {
+      var p = TZ.find(id), max = p && p.maxQty != null ? p.maxQty : 99;
+      if (qty > max) { toast(TZ.t('hold_max', { n: max }), 'cart'); qty = max; }
       cart = cart.map(function (l) { if (l.id === +id) l.qty = Math.max(0, Math.min(99, qty)); return l; }).filter(function (l) { return l.qty > 0; });
       saveCart();
     },
     remove: function (id) { cart = cart.filter(function (l) { return l.id !== +id; }); saveCart(); },
-    clear: function () { cart = []; saveCart(); }
+    clear: function () { cart = []; saveCart(); },
+    key: function () { return cartKey; }
   };
+
+  /* ---------- stock reservation ----------
+     The server keeps the pieces in this cart for this customer for a few minutes (set in the admin), so two people
+     never pay for the same last piece. Every cart change, opening the cart and every page load renews it; when it
+     runs out nothing is renewed by itself. If the server could not keep some pieces, the cart is trimmed and says why. */
+  var cartKey = store.get('cartkey', '');
+  if (!/^[a-f0-9]{32}$/.test(cartKey)) {
+    var rnd = new Uint8Array(16);
+    (window.crypto || window.msCrypto).getRandomValues(rnd);
+    cartKey = Array.prototype.map.call(rnd, function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+    store.set('cartkey', cartKey);
+  }
+  var holdTimer = null, holdBusy = false, holdAgain = false, holdSent = '';
+  function keepHolds() { store.set('holds', { mine: TZ.holds.mine, until: TZ.holds.until }); }
+  TZ.holds.sync = function (now) {
+    if (!TZ.isLive) return;
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(send, now ? 0 : 500);
+  };
+  function send() {
+    if (holdBusy) { holdAgain = true; return; }
+    var items = cart.map(function (l) { return { id: l.id, qty: l.qty }; });
+    var sig = JSON.stringify(items);
+    // An empty cart with nothing kept needs no call.
+    if (!items.length && !Object.keys(TZ.holds.mine).length && holdSent === sig) return;
+    holdBusy = true; holdSent = sig;
+    fetch('/api/cart/hold', {
+      method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ cart: cartKey, items: items })
+    }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (d) {
+      holdBusy = false;
+      if (d && d.ok) applyHoldAnswer(d);
+      if (holdAgain) { holdAgain = false; send(); }
+    });
+  }
+  function applyHoldAnswer(d) {
+    var mine = {}, changed = false, before = TZ.products.map(function (p) { return p.inStock; }).join();
+    d.items.forEach(function (it) {
+      var p = TZ.find(it.id);
+      if (p && p.stockLeft != null) mine[it.id] = it.qty;
+      if (it.qty < it.wanted && p) {
+        p.maxQty = it.qty;
+        var l = cart.filter(function (x) { return x.id === it.id; })[0];
+        if (l) {
+          if (it.qty > 0) { l.qty = it.qty; toast(TZ.t('hold_only', { name: TZ.L(p.name), n: it.qty }), 'cart'); }
+          else { cart = cart.filter(function (x) { return x.id !== it.id; }); toast(TZ.t('hold_gone', { name: TZ.L(p.name) }), 'cart'); }
+          changed = true;
+        }
+      }
+    });
+    TZ.holds.mine = mine;
+    TZ.holds.until = cart.length ? Date.parse(d.expiresAt) : 0;
+    keepHolds();
+    TZ.applyHolds();
+    if (changed) saveCart(true); else renderCart();
+    // A product someone else was keeping may be free for this customer now (or the other way round).
+    if (TZ.booted && before !== TZ.products.map(function (p) { return p.inStock; }).join() && TZ.rerender) TZ.rerender();
+    tickHold();
+  }
+  /* "Kept for you 14:32" in the cart and at checkout. */
+  var tick = null;
+  function tickHold() {
+    clearInterval(tick);
+    var paint = function () {
+      var left = TZ.holds.until - Date.now(), els = doc.querySelectorAll('[data-hold-timer]');
+      if (!cart.length || !TZ.holds.until || !Object.keys(TZ.holds.mine).length) { els.forEach(function (el) { el.hidden = true; }); clearInterval(tick); return; }
+      els.forEach(function (el) {
+        el.hidden = false;
+        if (left <= 0) { el.classList.add('is-over'); el.innerHTML = TZ.icon('clock') + '<span>' + TZ.esc(TZ.t('hold_over')) + '</span>'; return; }
+        var m = Math.floor(left / 60000), sec = Math.floor(left / 1000) % 60;
+        el.classList.toggle('is-low', left < 120000); el.classList.remove('is-over');
+        el.innerHTML = TZ.icon('clock') + '<span>' + TZ.esc(TZ.t('hold_kept', { t: m + ':' + (sec < 10 ? '0' : '') + sec })) + '</span>';
+      });
+      if (left <= 0) clearInterval(tick);
+    };
+    paint();
+    tick = setInterval(paint, 1000);
+  }
+  TZ.holdTimer = function () { return '<p class="hold-timer" data-hold-timer hidden></p>'; };
+  TZ.refreshHoldTimer = function () { if (TZ.holds.until) tickHold(); };
+
+  /* ---------- an unpaid card order ----------
+     After going to Tap's page, a customer who leaves without paying sees a small bar on every page with a link back
+     to the order (Pay again). It goes away once the order is paid, cancelled or a day old. */
+  TZ.pending = {
+    set: function (o) { store.set('pending', { token: o.token, number: o.number, at: Date.now() }); },
+    clear: function (token) { var p = store.get('pending', null); if (p && (!token || p.token === token)) store.set('pending', null); }
+  };
+  function pendingBar() {
+    var p = store.get('pending', null);
+    if (!p || !p.token) return;
+    if (Date.now() - p.at > 24 * 3600e3) { TZ.pending.clear(); return; }
+    if (params.get('order') === p.token) return; // already on that order's page
+    fetch('/api/orders/' + p.token, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (d) {
+        var o = d && d.order;
+        if (!o) return;
+        if (!o.canRetry) { TZ.pending.clear(p.token); return; }
+        var bar = doc.createElement('div');
+        bar.className = 'pending-bar'; bar.setAttribute('role', 'status');
+        bar.innerHTML = '<span>' + TZ.esc(TZ.t('pending_bar', { number: o.number })) + '</span>' +
+          '<a href="' + TZ.url('checkout.html?order=' + o.token) + '">' + TZ.esc(TZ.t('pending_pay')) + '</a>' +
+          '<button type="button" aria-label="' + TZ.esc(TZ.t('close')) + '">✕</button>';
+        bar.querySelector('button').addEventListener('click', function () { TZ.pending.clear(p.token); bar.remove(); });
+        doc.body.appendChild(bar);
+      });
+  }
 
   /* ---------- shared components ---------- */
   TZ.sourMeter = function (level, big) {
@@ -223,9 +342,13 @@
       '<span class="sour-bar">' + segs + '</span></div>';
   };
 
+  TZ.stockBadge = function (p) {
+    if (p.inCarts) return '<span class="badge badge-stock held">' + TZ.esc(TZ.t('in_carts')) + '</span>';
+    return '<span class="badge badge-stock ' + (p.inStock ? 'in' : 'out') + '">' + TZ.esc(TZ.t(p.inStock ? 'in_stock' : 'out_of_stock')) + '</span>';
+  };
   TZ.badges = function (p, noStock) {
     return '<span class="badges">' +
-      (noStock ? '<span></span>' : '<span class="badge badge-stock ' + (p.inStock ? 'in' : 'out') + '">' + TZ.esc(TZ.t(p.inStock ? 'in_stock' : 'out_of_stock')) + '</span>') +
+      (noStock ? '<span></span>' : TZ.stockBadge(p)) +
       (p.bestSeller ? '<span class="badge badge-bs">★ ' + TZ.esc(TZ.t('best_seller')) + '</span>' : '') +
       '</span>';
   };
@@ -243,6 +366,7 @@
       '<div class="pcard-foot"><span class="price">' + TZ.esc(TZ.money(p.price)) + '</span>' +
       (p.inStock
         ? '<button class="btn-add" type="button" data-add="' + p.id + '" aria-label="' + TZ.esc(TZ.t('add_to_cart') + ': ' + TZ.L(p.name)) + '">' + TZ.icon('plus') + '<span>' + TZ.esc(TZ.t('add')) + '</span></button>'
+        : p.inCarts ? '<span class="sold-out held">' + TZ.esc(TZ.t('in_carts_short')) + '</span>'
         : (TZ.shop && TZ.shop.backInStock
           ? '<a class="btn-notify" href="' + TZ.productUrl(p) + '#notify">' + TZ.icon('bell') + '<span>' + TZ.esc(TZ.t('notify_card')) + '</span></a>'
           : '<span class="sold-out">' + TZ.esc(TZ.t('sold_out')) + '</span>')) +
@@ -379,6 +503,7 @@
     var w = Math.round(TZ.cart.weight() * 10) / 10;
     var foot = lines.length ?
       '<div class="cart-foot">' +
+      TZ.holdTimer() +
       '<label class="ship-to">' + TZ.icon('truck') + '<span>' + TZ.esc(TZ.t('ship_to_label')) + '</span><span class="select-wrap"><select data-country>' + TZ.countryOptions() + '</select>' + TZ.icon('chevron', 'chev') + '</span></label>' +
       '<dl class="totals"><div><dt>' + TZ.esc(TZ.t('cart_subtotal')) + '</dt><dd>' + TZ.esc(TZ.money(TZ.cart.subtotal())) + '</dd></div>' +
       '<div><dt>' + TZ.esc(TZ.t('cart_shipping')) + '<small>' + TZ.esc(c.ship === 'flat' ? TZ.t('cart_ship_note_flat') : TZ.t('cart_ship_note_ubex', { w: w })) + '</small></dt><dd>' + TZ.esc(TZ.money(TZ.cart.shipping())) + '</dd></div>' +
@@ -394,6 +519,7 @@
       '<button class="icon-btn" type="button" data-close-cart aria-label="' + TZ.esc(TZ.t('close')) + '">' + TZ.icon('close') + '</button></div>' +
       '<div class="cart-body">' + body + '</div>' + foot;
     updateCount();
+    if (typeof tickHold === 'function' && TZ.holds.until) tickHold();
   }
 
   /* A short list of products with a quick "+" (empty cart, empty checkout). */
@@ -428,7 +554,7 @@
     doc.body.classList.remove('no-scroll');
     if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
-  TZ.openCart = function () { closeMenu(); openPanel(drawer, '.cart-ov'); };
+  TZ.openCart = function () { closeMenu(); openPanel(drawer, '.cart-ov'); if (cart.length) TZ.holds.sync(true); };
   TZ.closeCart = function () { closePanel(drawer, '.cart-ov'); };
   function openMenu() {
     var mp = doc.getElementById('mobile-panel');
@@ -443,9 +569,9 @@
   /* Add-to-cart: little pack flies into the floating cart */
   TZ.addToCart = function (id, qty, fromEl) {
     var p = TZ.find(id); if (!p || !p.inStock) return;
-    TZ.cart.add(id, qty || 1);
+    qty = TZ.cart.add(id, qty || 1);
+    if (!qty) return;
     toast(TZ.t('added', { name: TZ.L(p.name) }));
-    qty = qty || 1;
     var art = fromEl && (fromEl.closest('[data-id]') || doc).querySelector('.art');
     var fabShown = fab.offsetParent && !fab.classList.contains('is-away') && !doc.body.classList.contains('has-buybar');
     if (!art || reduced) { bump(qty); return; }
@@ -605,6 +731,8 @@
       doc.body.classList.add('is-ready');
       onScroll();
       welcomeBack();
+      if (TZ.cart.count() || Object.keys(TZ.holds.mine).length) TZ.holds.sync(true); // a page load counts as activity
+      if (TZ.isLive) pendingBar();
     };
     /* Wait for the live shop data (see live.js); fall back to the built-in data if it never comes. */
     if (TZ.live && TZ.live.ready) TZ.live.ready.then(start, start); else start();

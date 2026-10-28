@@ -31,6 +31,7 @@ Route::get('health', fn () => response()->json(['ok' => true, 'time' => now()->t
 // ---- Storefront (public) ----
 Route::get('storefront', [StorefrontController::class, 'index']);
 Route::post('stock-alerts', [StockAlertController::class, 'store']);
+Route::post('cart/hold', [CheckoutController::class, 'hold']);
 Route::post('checkout/quote', [CheckoutController::class, 'quote']);
 Route::post('checkout', [CheckoutController::class, 'place']);
 Route::get('orders/{token}', [CheckoutController::class, 'show'])->where('token', '[a-f0-9]{40}');
@@ -104,6 +105,8 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::delete('stock-alerts/{id}', [StockAlertsController::class, 'destroy'])->whereNumber('id');
         Route::post('orders/{id}/paid', [OrdersController::class, 'markPaid'])->whereNumber('id');
         Route::post('orders/{id}/cancel', [OrdersController::class, 'cancel'])->whereNumber('id');
+        Route::post('orders/{id}/refund', [OrdersController::class, 'refund'])->whereNumber('id');
+        Route::post('orders/{id}/refunds/{refundId}/check', [OrdersController::class, 'refundCheck'])->whereNumber(['id', 'refundId']);
         Route::post('orders/{id}/cancel-shipment', [OrdersController::class, 'cancelShipment'])->whereNumber('id');
         Route::get('website', [WebsiteController::class, 'index']);
         Route::put('website', [WebsiteController::class, 'save']);
@@ -119,6 +122,7 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::get('payments', [PaymentsController::class, 'index']);
         Route::put('payments', [PaymentsController::class, 'save']);
         Route::post('payments/test', [PaymentsController::class, 'test']);
+        Route::post('payments/apple-pay-file', [PaymentsController::class, 'applePayFile']);
         Route::get('shipping', [ShippingController::class, 'index']);
         Route::put('shipping', [ShippingController::class, 'save']);
         Route::post('shipping/test', [ShippingController::class, 'test']);

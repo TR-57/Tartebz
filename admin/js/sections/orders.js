@@ -1,4 +1,4 @@
-import { api, esc, d, ltr, pill, busy, toast, toastErr, modal, confirmBox, fmtDate, money, nf, debounce, setQuery, go, can, icon, isAr } from '../core.js';
+import { api, esc, d, ltr, pill, busy, toast, toastErr, modal, confirmBox, showErrors, clearErrors, fmtDate, money, nf, debounce, setQuery, go, can, icon, isAr } from '../core.js';
 
 const TABS = [['all', 'All'], ['todo', 'To prepare'], ['unpaid', 'Not paid'], ['shipped', 'Shipped'], ['done', 'Delivered'], ['cancelled', 'Cancelled']];
 const PILL = { pending_payment: 'amber', awaiting_whatsapp: 'amber', payment_failed: 'red', paid: 'blue', processing: 'purple', shipped: 'blue', delivered: 'green', cancelled: 'hidden', refunded: 'hidden' };
@@ -91,15 +91,18 @@ async function detail(main, route, alive) {
           <p class="muted small">Language: <span data-noi18n>${o.lang === 'en' ? 'English' : 'العربية'}</span></p>
         </div>
         <div class="card"><h2>Payment</h2>
-          <p>${paid ? pill('Paid', 'green') : pill(o.paymentStatus === 'failed' ? 'Not completed' : 'Not paid', paid ? 'green' : 'amber')} <span class="muted small">${o.method === 'whatsapp' ? 'WhatsApp order' : 'Card through Tap'}</span></p>
+          <p>${o.paymentStatus === 'refunded' ? pill('Refunded', 'hidden') : paid ? pill('Paid', 'green') : pill(o.paymentStatus === 'failed' ? 'Not completed' : 'Not paid', 'amber')}
+            ${paid && o.refundedAmount > 0 ? pill('Partly refunded', 'amber') : ''} <span class="muted small">${o.method === 'whatsapp' ? 'WhatsApp order' : 'Card through Tap'}</span></p>
+          ${o.heldUntil ? `<p class="muted small">${icon('bag')} <span>Stock kept for this order until</span> <span data-noi18n>${esc(fmtDate(o.heldUntil))}</span></p>` : ''}
           ${o.paidAt ? `<p class="muted small">Paid <span data-noi18n>${esc(fmtDate(o.paidAt))}</span></p>` : ''}
           ${o.tapChargeId ? `<p class="muted small">Tap charge: ${ltr(o.tapChargeId)} · <span data-noi18n>${esc(o.tapStatus || '')}</span>${o.tapMode === 'test' ? ' · ' + pill('Test', 'amber') : ''}</p>
             <button class="btn btn-sm" id="chk">${icon('check')} Check payment with Tap</button>` : ''}
           ${!paid && !closed && manager ? `<button class="btn btn-sm" id="mpaid">Mark as paid…</button>` : ''}
+          ${refundsBox(o, manager)}
           <p class="muted small" style="margin-top:10px">Customer’s order page: <a href="${esc(o.customerUrl)}" target="_blank" rel="noopener">open</a></p>
         </div>
         ${!closed && manager ? `<div class="card"><button class="btn btn-danger btn-sm" id="cancel">${icon('close')} Cancel order</button>
-          <p class="muted small">Gives the stock back. A card payment is refunded in the Tap dashboard.</p></div>` : ''}
+          <p class="muted small">Gives the stock back. It does not give the money back – use Refund for that.</p></div>` : ''}
       </div>
     </div>`;
 
@@ -127,6 +130,77 @@ async function detail(main, route, alive) {
     act(cn, 'cancel', {}, 'Order cancelled');
   });
   bindShip(main, o, r.smsa, act, reload);
+  bindRefunds(main, o, id, act, reload);
+}
+
+const dec = (c) => (['BHD', 'KWD', 'OMR', 'JOD'].includes(c) ? 3 : 2);
+const cash = (c, n) => `<span data-noi18n>${esc(c)} ${nf(n, dec(c))}</span>`;
+const REFUND_PILL = { done: ['Refunded', 'green'], pending: ['Refund pending', 'amber'], failed: ['Refund failed', 'red'] };
+
+/* Refunds on the Payment card: the list, the pending ones to check, and the Refund button (managers). */
+function refundsBox(o, manager) {
+  const list = o.refunds.map((f) => `<li data-rf="${f.id}">
+      <div>${pill(...REFUND_PILL[f.status])} <b>${cash(f.currency, f.amount)}</b> <span class="muted small">${f.method === 'tap' ? 'to the card' : 'recorded by hand'}</span></div>
+      <div class="muted small"><span data-noi18n>${esc(fmtDate(f.at))}</span>${f.by ? ` · ${d(f.by)}` : ''}${f.reason ? ` · ${d(f.reason)}` : ''}${f.restocked ? ' · <span>items back in stock</span>' : ''}</div>
+      ${f.status === 'pending' && manager ? (f.tapRefundId
+        ? `<button class="btn btn-sm" data-rcheck="${f.id}">${icon('check')} Check with Tap</button>`
+        : `<p class="muted small">Tap could not be reached. Look in the Tap dashboard, then:</p>
+           <button class="btn btn-sm" data-rset="${f.id}" data-result="done">It went through</button> <button class="btn btn-sm btn-ghost" data-rset="${f.id}" data-result="failed">It did not go through</button>`) : ''}
+    </li>`).join('');
+  return `${list ? `<ul class="refunds">${list}</ul>` : ''}
+    ${manager && o.refundable > 0 ? `<button class="btn btn-sm" id="refund">${icon('card')} Refund…</button>` : ''}`;
+}
+
+function bindRefunds(main, o, id, act, reload) {
+  main.querySelectorAll('[data-rcheck]').forEach((b) => b.addEventListener('click', () => act(b, `refunds/${b.dataset.rcheck}/check`, {}, 'Checked with Tap')));
+  main.querySelectorAll('[data-rset]').forEach((b) => b.addEventListener('click', async () => {
+    const done = b.dataset.result === 'done';
+    if (!(await confirmBox(done ? 'Did you see this refund in the Tap dashboard?' : 'Mark this refund as not done? The amount can be refunded again.', { ok: done ? 'Yes, it went through' : 'Not done' }))) return;
+    act(b, `refunds/${b.dataset.rset}/check`, { result: b.dataset.result }, 'Saved');
+  }));
+  const btn = main.querySelector('#refund');
+  if (!btn) return;
+  const card = o.method === 'tap' && o.tapChargeId;
+  const c = o.chargeCurrency;
+  btn.addEventListener('click', () => modal({
+    title: 'Refund',
+    body: `<form id="rff" class="form-grid" novalidate>
+      ${card ? `<div class="field full"><span class="field-label">How</span><div class="seg" role="radiogroup" aria-label="How">
+        <label><input type="radio" name="method" value="tap" checked><span>Back to the card (Tap)</span></label>
+        <label><input type="radio" name="method" value="manual"><span>Already given back another way</span></label></div></div>` : ''}
+      <div class="field" data-field="amount"><label for="ramt"><span>Amount</span> <span data-noi18n>(${esc(c)})</span></label>
+        <input id="ramt" name="amount" type="number" min="0" step="${dec(c) === 3 ? '0.001' : '0.01'}" max="${o.refundable}" value="${o.refundable.toFixed(dec(c))}" dir="ltr">
+        <span class="hint"><span>Up to</span> ${cash(c, o.refundable)}</span></div>
+      <div class="field" data-field="reason"><label for="rwhy">Reason (optional)</label><input id="rwhy" name="reason" maxlength="300" placeholder="e.g. out of stock, damaged"></div>
+      <div class="field full" data-field="restock"><label class="mini-check"><input type="checkbox" name="restock" id="rstock" ${o.status === 'shipped' || o.status === 'delivered' ? '' : 'checked'}> <span>Put the items back in stock</span></label>
+        <span class="hint" id="rstockhint">Only with a full refund. Untick if the goods were sent and are not coming back.</span></div>
+      ${card ? '' : '<p class="muted small full">Give the money back yourself first (Benefit transfer, cash…). This only records it.</p>'}
+    </form>`,
+    foot: '<button class="btn" data-close>Cancel</button><button class="btn btn-primary" id="rfok">Refund</button>',
+    onOpen: (el, close) => {
+      const amt = el.querySelector('#ramt');
+      const rs = el.querySelector('#rstock');
+      const full = () => Math.abs((+amt.value || 0) - o.refundable) < 0.0005;
+      const sync = () => { rs.disabled = !full(); if (!full()) rs.checked = false; };
+      amt.addEventListener('input', sync); sync();
+      el.querySelector('#rfok').addEventListener('click', async (e) => {
+        const f = el.querySelector('#rff');
+        clearErrors(f);
+        const method = card ? f.querySelector('[name=method]:checked').value : 'manual';
+        const body = { amount: +amt.value, reason: f.reason.value, restock: rs.checked, method };
+        const sure = method === 'tap'
+          ? `Refund ${c} ${(+amt.value).toFixed(dec(c))} to the customer’s card? This cannot be undone.`
+          : `Record a refund of ${c} ${(+amt.value).toFixed(dec(c))}?`;
+        if (!(await confirmBox(sure, { ok: 'Refund', danger: method === 'tap' }))) return;
+        try {
+          const res = await busy(e.currentTarget, () => api(`orders/${id}/refund`, { method: 'POST', body }));
+          close();
+          toast(res.refund.status === 'done' ? 'Refunded' : res.refund.status === 'pending' ? 'Refund sent – waiting for Tap' : 'Refund failed');
+          reload();
+        } catch (err) { showErrors(f, err); toastErr(err); reload(); }
+      });
+    },
+  }));
 }
 
 function shipBox(o, smsa) {

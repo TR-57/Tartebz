@@ -20,6 +20,7 @@ class ProductsController extends Controller
 
     /** product id => people waiting for it (filled once per list request). */
     private ?array $waiting = null;
+    private ?array $held = null;
 
     public function index(Request $r)
     {
@@ -37,6 +38,7 @@ class ProductsController extends Controller
             return ! $cat || (int) $p->category_id === $cat;
         });
 
+        $this->held = \App\Support\Holds::heldAll();
         $this->waiting = DB::table('stock_alerts')->whereNull('notified_at')->selectRaw('product_id, COUNT(*) n')->groupBy('product_id')->pluck('n', 'product_id')->all();
         $counts = array_fill_keys(self::TABS, 0);
         $list = [];
@@ -280,6 +282,8 @@ class ProductsController extends Controller
             'flavor' => $p->flavor, 'flavorAr' => $p->flavor_ar, 'sourLevel' => $p->sour_level,
             'bestSeller' => (bool) $p->best_seller, 'isNew' => (bool) $p->is_new,
             'missing' => self::missing($p, $tree), 'updatedAt' => $p->updated_at,
+            // Pieces kept for customers right now (carts and unpaid orders); they are still counted in stockQty.
+            'held' => $this->held !== null ? (int) ($this->held[$p->id] ?? 0) : (\App\Support\Holds::heldAll([$p->id])[$p->id] ?? 0),
             'waiting' => $this->waiting !== null ? (int) ($this->waiting[$p->id] ?? 0)
                 : DB::table('stock_alerts')->where('product_id', $p->id)->whereNull('notified_at')->count(),
         ];

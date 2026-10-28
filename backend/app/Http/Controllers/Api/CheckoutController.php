@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Support\ApiError;
 use App\Support\Checkout;
+use App\Support\Holds;
 use App\Support\ClientIp;
 use App\Support\Orders;
 use App\Support\Settings;
@@ -24,12 +25,13 @@ class CheckoutController extends Controller
     /** POST /api/checkout/quote {items, country} */
     public function quote(Request $r)
     {
+        $cart = self::cartKey($r);
         $country = strtoupper($this->str($r, 'country', 2));
         if (! Shipping::delivers($country)) {
             throw ApiError::validation(['country' => 'We do not deliver to that country yet.']);
         }
 
-        return $this->ok(['quote' => $this->present(Checkout::quote((array) $r->input('items', []), $country)), 'payments' => self::methods()]);
+        return $this->ok(['quote' => $this->present(Checkout::quote((array) $r->input('items', []), $country, $cart)), 'payments' => self::methods()]);
     }
 
     /** POST /api/checkout {items, country, method: tap|whatsapp, first_name, …} */
@@ -71,17 +73,32 @@ class CheckoutController extends Controller
         if ($f) {
             throw ApiError::validation($f);
         }
-        $quote = Checkout::quote((array) $r->input('items', []), $country);
-        if (! $quote['lines']) {
-            throw new ApiError('empty', 'Your cart is empty or its products are sold out.', 409);
-        }
-        // Prices or stock changed since the customer looked: show them the new figures before taking money.
+        $cart = self::cartKey($r);
+        $items = (array) $r->input('items', []);
         $seen = round((float) $r->input('expected_total', -1), 3);
-        if ($quote['issues'] || ($seen >= 0 && abs($seen - $quote['total']) > 0.0005)) {
+        // One request at a time per product: lock the rows, price the cart against what is free, create the order
+        // and move the cart's reservations to it – all before anyone else can take the same pieces.
+        $result = DB::transaction(function () use ($items, $country, $cart, $seen, $c, $method, $ip, $r) {
+            $ids = array_values(array_filter(array_map(fn ($i) => (int) (((array) $i)['id'] ?? 0), $items)));
+            DB::table('products')->whereIn('id', $ids ?: [0])->orderBy('id')->lockForUpdate()->get(['id']);
+            $quote = Checkout::quote($items, $country, $cart);
+            if (! $quote['lines']) {
+                throw new ApiError('empty', 'Your cart is empty or its products are sold out.', 409);
+            }
+            // Prices or stock changed since the customer looked: show them the new figures before taking money.
+            if ($quote['issues'] || ($seen >= 0 && abs($seen - $quote['total']) > 0.0005)) {
+                return ['changed' => $quote];
+            }
+            $order = Orders::create($quote, $c, $method, ['ip' => $ip, 'ua' => (string) $r->userAgent()]);
+            Holds::toOrder($cart, $order, $quote['lines']);
+
+            return ['order' => $order];
+        });
+        if (isset($result['changed'])) {
             return response()->json(['ok' => false, 'error' => ['code' => 'changed', 'message' => 'Your cart changed (price or stock). Please check the new total.'],
-                'quote' => $this->present($quote)], 409);
+                'quote' => $this->present($result['changed'])], 409);
         }
-        $order = Orders::create($quote, $c, $method, ['ip' => $ip, 'ua' => (string) $r->userAgent()]);
+        $order = $result['order'];
 
         if ($method === 'whatsapp') {
             return $this->ok(['order' => $this->publicOrder($order), 'whatsapp' => $this->whatsappLink($order)]);
@@ -119,14 +136,59 @@ class CheckoutController extends Controller
         if (! Tap::enabled()) {
             throw new ApiError('tap_off', 'Card payment is not available right now. Please order on WhatsApp.', 409);
         }
-        // Still in stock?
-        $items = DB::table('order_items')->where('order_id', $o->id)->get()->map(fn ($i) => ['id' => $i->product_id, 'qty' => $i->qty])->all();
-        if (Checkout::quote($items, $o->country)['issues']) {
+        // Left Tap's page without finishing: send them back to the same payment (never a second charge while
+        // the first one can still be paid). Tap's page stays open 30 minutes.
+        if ($o->status === 'pending_payment' && $o->tap_charge_id) {
+            try {
+                $charge = Tap::retrieve($o->tap_charge_id, $o->tap_mode ?: null);
+            } catch (ApiError) {
+                throw new ApiError('payment_unavailable', 'The payment page could not be opened. Please try again in a moment.', 502);
+            }
+            $o = Orders::applyTapCharge($o->id, $charge);
+            if ($o->paid_at) {
+                return $this->ok(['paid' => true]);
+            }
+            $created = (int) (($charge['transaction']['created'] ?? 0) / 1000) ?: strtotime((string) $o->updated_at);
+            $url = (string) ($charge['transaction']['url'] ?? '');
+            if ($o->status === 'pending_payment' && $url !== '' && time() - $created < 29 * 60) {
+                DB::transaction(fn () => Holds::renewOrder($o));
+
+                return $this->ok(['redirect' => $url]);
+            }
+            if ($o->status === 'pending_payment' && time() - $created < 30 * 60) {
+                throw new ApiError('payment_open', 'Your payment is still open. Please try again in a minute.', 409);
+            }
+        }
+        // Keep (or take back) the order's pieces; if someone else has them by now, say so before taking money.
+        if (! DB::transaction(fn () => Holds::renewOrder($o))) {
             throw new ApiError('changed', 'Some products in this order are sold out now. Please place a new order.', 409);
         }
         DB::table('orders')->where('id', $o->id)->update(['status' => 'pending_payment', 'payment_status' => 'unpaid', 'updated_at' => now()]);
 
         return $this->ok(['redirect' => $this->openCharge(DB::table('orders')->find($o->id))]);
+    }
+
+    /** POST /api/cart/hold {cart, items} – reserves the cart's products for this customer for a few minutes. */
+    public function hold(Request $r)
+    {
+        $ip = ClientIp::of($r);
+        if (! Throttle::attempt('cart-hold:'.$ip, 600, 3600)) {
+            throw new ApiError('too_many', 'Too many requests. Please try again later.', 429);
+        }
+        $cart = self::cartKey($r);
+        if (! $cart) {
+            throw ApiError::validation(['cart' => 'Missing cart.']);
+        }
+
+        return $this->ok(Holds::syncCart($cart, (array) $r->input('items', []), $ip));
+    }
+
+    /** The browser's random cart id (32 hex characters). */
+    public static function cartKey(Request $r): ?string
+    {
+        $k = (string) $r->input('cart', '');
+
+        return preg_match('/^[a-f0-9]{32}$/', $k) ? $k : null;
     }
 
     /** Which ways to pay the checkout offers now. */
@@ -202,6 +264,7 @@ class CheckoutController extends Controller
             'firstName' => $o->first_name, 'country' => $o->country, 'city' => $o->city, 'email' => $o->email,
             'awb' => $o->awb, 'trackingUrl' => $o->awb ? 'https://www.smsaexpress.com/trackingdetails?tracknumbers='.rawurlencode($o->awb) : null,
             'testMode' => $o->tap_mode === 'test',
+            'heldUntil' => $o->payment_status === 'paid' ? null : Holds::orderHeldUntil($o->id),
             'canRetry' => $o->payment_method === 'tap' && $o->payment_status !== 'paid' && in_array($o->status, ['pending_payment', 'payment_failed'], true),
             'items' => $items->map(fn ($i) => ['productId' => $i->product_id, 'name' => $i->name, 'nameAr' => $i->name_ar, 'qty' => (int) $i->qty, 'lineTotal' => (float) $i->line_total])->values(),
             'createdAt' => $o->created_at,

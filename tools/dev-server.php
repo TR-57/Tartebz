@@ -18,7 +18,7 @@ $laravel = function () use ($root) {
     return true;
 };
 // Server-built pages: product pages (link previews, Google), sitemap, robots.
-if (preg_match('#^/product/.+#', $path) || $path === '/sitemap.xml' || $path === '/robots.txt') {
+if (preg_match('#^/product/.+#', $path) || $path === '/sitemap.xml' || $path === '/robots.txt' || $path === '/.well-known/apple-developer-merchantid-domain-association') {
     return $laravel();
 }
 // Link-preview pictures (1200×630 JPEG).

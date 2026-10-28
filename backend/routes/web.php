@@ -13,3 +13,11 @@ Route::get('img/{w}/{path}', [ImageController::class, 'show'])->whereNumber('w')
 Route::get('product/{slug}', [ProductPageController::class, 'show'])->where('slug', '.+');
 Route::get('sitemap.xml', [SeoController::class, 'sitemap']);
 Route::get('robots.txt', [SeoController::class, 'robots']);
+
+// Apple Pay domain verification (the file is uploaded in Admin › Settings › Payments).
+Route::get('.well-known/apple-developer-merchantid-domain-association', function () {
+    $text = \App\Support\Settings::get('payments')['applePay']['domainFile'] ?? '';
+    abort_if($text === '', 404);
+
+    return response($text, 200, ['Content-Type' => 'text/plain', 'Cache-Control' => 'no-cache']);
+});

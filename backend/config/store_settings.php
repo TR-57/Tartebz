@@ -46,6 +46,7 @@ return [
         'whatsappOrders' => true,   // "Order on WhatsApp" button in the cart
         'whatsappNumber' => '',     // digits with country code; empty = the business WhatsApp/phone
         'backInStock' => true,      // "Tell me when it's back" on sold-out products
+        'cartHoldMinutes' => 15,    // a product added to a cart is kept for that customer this long (renewed while they are active)
         'paymentLogos' => ['benefit', 'visa', 'mastercard'], // shown near prices, in the cart and the footer – only what you really accept
         // Delivery time per country, in days after the order (shown as "Arrives tomorrow" / "Arrives Sun 3 – Wed 6 Nov").
         'delivery' => [
@@ -79,6 +80,10 @@ return [
             'chargeCurrencies' => ['BHD'], // currencies your Tap account can charge in; others are charged in BHD
         ],
         'whatsapp' => ['enabled' => true], // "order and pay on WhatsApp" at checkout
+        // Apple Pay: shows on Tap's payment page once Tap switches it on for the account. If Tap (or Apple) asks to
+        // verify the domain, the file they give is uploaded in Payments and served at
+        // /.well-known/apple-developer-merchantid-domain-association.
+        'applePay' => ['domainFile' => '', 'uploadedAt' => null],
     ],
 
     // SMSA Express (smsaexpress.com) – shipments, labels and tracking through the eCommerce API.
@@ -99,7 +104,8 @@ return [
     ],
 
     'orders' => [
-        'holdMinutes' => 60,
+        'holdMinutes' => 60,          // an unpaid card order keeps its stock this long (Tap's payment page closes before)
+        'whatsappHoldHours' => 24,    // a WhatsApp order keeps its stock this long, until staff mark it paid
         'numberPrefix' => '',
         'firstNumber' => 20001,   // order numbers continue after the old shop's
     ],
