@@ -27,6 +27,18 @@ TZ.countries = [
   { code: 'OM', cur: 'OMR', rate: 1.1,  dec: 3, sym: { ar: 'ر.ع', en: 'OMR' }, name: { ar: 'عُمان', en: 'Oman' }, flag: '🇴🇲', ship: 'ubex' }
 ];
 
+/* Mobile numbers: the customer picks the country code, then types the rest.
+   [code, dial, digits after the code, allowed first digits, example, grouping]. Same rules as backend/app/Support/Phone.php. */
+TZ.phones = [
+  ['BH', '973', 8, /^[36]/, '3600 1234', [4, 4]], ['SA', '966', 9, /^5/, '50 123 4567', [2, 3, 4]],
+  ['AE', '971', 9, /^5/, '50 123 4567', [2, 3, 4]], ['QA', '974', 8, /^[3567]/, '3312 3456', [4, 4]],
+  ['KW', '965', 8, /^[4569]/, '5012 3456', [4, 4]], ['OM', '968', 8, /^[79]/, '9123 4567', [4, 4]],
+  ['EG', '20', 10, /^1/, '10 1234 5678', [2, 4, 4]], ['JO', '962', 9, /^7/, '79 123 4567', [2, 3, 4]],
+  ['GB', '44', 10, /^7/, '7400 123456', [4, 6]], ['US', '1', 10, /^[2-9]/, '201 555 0123', [3, 3, 4]]
+].map(function (r) { return { code: r[0], dial: r[1], len: r[2], start: r[3], example: r[4], groups: r[5] }; });
+TZ.phoneNames = { EG: { ar: 'مصر', en: 'Egypt', flag: '🇪🇬' }, JO: { ar: 'الأردن', en: 'Jordan', flag: '🇯🇴' },
+  GB: { ar: 'بريطانيا', en: 'UK', flag: '🇬🇧' }, US: { ar: 'أمريكا', en: 'USA', flag: '🇺🇸' } };
+
 /* Shipping in BHD. Bahrain is a flat rate; the rest of the GCC uses the UBEX weight table (kg → BHD). */
 TZ.shipping = {
   flatBH: 1.5,
@@ -187,11 +199,12 @@ TZ.i18n = {
     f_first: 'الاسم الأول', f_last: 'الاسم الأخير', f_country: 'الدولة / المنطقة',
     f_addr1: 'عنوان الشارع / الحي', f_addr1_ph: 'رقم المنزل واسم الشارع / الحي',
     f_addr2: 'الشقة، الجناح، الوحدة، إلخ.', f_addr2_ph: 'رقم الشقة، الجناح، الوحدة، إلخ. (اختياري)',
-    f_city: 'المدينة', f_state: 'المنطقة', f_phone: 'الهاتف', f_email: 'البريد الإلكتروني', f_notes: 'ملاحظات الطلب (اختياري)',
+    f_city: 'المدينة', f_state: 'المنطقة', f_phone: 'رقم الجوال (واتساب)', f_dial: 'رمز الدولة', f_email_opt: 'البريد الإلكتروني (اختياري)', f_email: 'البريد الإلكتروني', f_notes: 'ملاحظات الطلب (اختياري)',
     optional: '(اختياري)', co_payment: 'طريقة الدفع', pay_gatee: 'بطاقة، Apple Pay أو بنفت',
     pay_note: 'تدفع في صفحة Tap الآمنة؛ بيانات بطاقتك لا تمر عبر موقعنا.', place_order: 'تأكيد الطلب', co_summary: 'ملخص طلبك',
     co_empty: 'سلتك فاضية، أضف منتجات أولاً.',
-    err_required: 'هذا الحقل مطلوب', err_email: 'أدخل بريداً إلكترونياً صحيحاً', err_phone: 'أدخل رقم هاتف صحيح',
+    err_required: 'هذا الحقل مطلوب', err_email: 'أدخل بريداً إلكترونياً صحيحاً', err_phone: 'أدخل رقم هاتف صحيح', err_phone_cc: 'رقم جوال {country} غير صحيح. مثال: {example}', phone_eg: 'مثال: {example}',
+    remember_me: 'احفظ بياناتي على هذا الجهاز للطلب القادم', 
     co_done_title: 'تم تجهيز طلبك! 🎉',
     co_done_text: 'هذه نسخة تجريبية من الواجهة ولم يتم أي دفع بعد. أرسل طلبك لنا عبر واتساب ونكمل معك.',
     co_whatsapp: 'أرسل الطلب عبر واتساب', co_back: 'تعديل الطلب', wa_order_intro: 'مرحباً ترتيبز، أبغى أطلب:',
@@ -349,11 +362,12 @@ TZ.i18n = {
     f_first: 'First name', f_last: 'Last name', f_country: 'Country / Region',
     f_addr1: 'Street / Area', f_addr1_ph: 'House number and street / area',
     f_addr2: 'Apartment, suite, unit, etc.', f_addr2_ph: 'Apartment, suite, unit, etc. (optional)',
-    f_city: 'City', f_state: 'Region', f_phone: 'Phone', f_email: 'Email', f_notes: 'Order notes (optional)',
+    f_city: 'City', f_state: 'Region', f_phone: 'Mobile (WhatsApp)', f_dial: 'Country code', f_email_opt: 'Email (optional)', f_email: 'Email', f_notes: 'Order notes (optional)',
     optional: '(optional)', co_payment: 'Payment method', pay_gatee: 'Card, Apple Pay or Benefit',
     pay_note: 'You pay on Tap’s secure page; your card details never pass through our site.', place_order: 'Place order', co_summary: 'Your order',
     co_empty: 'Your cart is empty, add some products first.',
-    err_required: 'This field is required', err_email: 'Enter a valid email', err_phone: 'Enter a valid phone number',
+    err_required: 'This field is required', err_email: 'Enter a valid email', err_phone: 'Enter a valid phone number', err_phone_cc: 'This {country} mobile number doesn’t look right. Example: {example}', phone_eg: 'Example: {example}',
+    remember_me: 'Remember my details on this device for next time', 
     co_done_title: 'Your order is ready! 🎉',
     co_done_text: 'This is a front-end preview, so no payment was taken. Send your order to us on WhatsApp and we’ll complete it with you.',
     co_whatsapp: 'Send order on WhatsApp', co_back: 'Edit order', wa_order_intro: 'Hi Tartebz, I’d like to order:',

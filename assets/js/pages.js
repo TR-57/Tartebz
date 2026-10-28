@@ -563,7 +563,11 @@
       var token = new URLSearchParams(location.search).get('order');
       if (token && /^[a-f0-9]{40}$/.test(token)) { orderResult(root, token); return; }
       var memo = {};
-      root.querySelectorAll('input, textarea').forEach(function (f) { if (f.name && f.type !== 'radio') memo[f.name] = f.value; });
+      root.querySelectorAll('input, textarea, select[name=dial]').forEach(function (f) { if (f.name && f.type !== 'radio' && f.type !== 'checkbox') memo[f.name] = f.value; });
+      var oldDial = root.querySelector('select[name=dial]'), dialTouched = !!(oldDial && oldDial.dataset.touched), fromForm = !!oldDial;
+      // A returning customer's details (kept on their own device only, when they ticked "remember").
+      var saved = store('co_details');
+      if (!fromForm && saved && typeof saved === 'object') memo = saved;
       var chosen = (root.querySelector('input[name=pay]:checked') || {}).value;
       var lines = TZ.cart.lines(), c = TZ.country();
 
@@ -602,12 +606,14 @@
         (P.testMode ? '<div class="test-ribbon" role="note">' + TZ.icon('bolt') + e(t('test_mode')) + '</div>' : '') +
         '<form class="co-form" id="co-form" novalidate><div class="co-card"><h2>' + TZ.icon('pin') + e(t('co_billing')) + '</h2><div class="fields">' +
         field('first', t('f_first'), { half: true, ac: 'given-name' }) + field('last', t('f_last'), { half: true, ac: 'family-name' }) +
+        TZ.phoneField('phone', t('f_phone'), (fromForm ? dialTouched && memo.dial : memo.dial) || (TZ.phones.some(function (p) { return p.code === c.code; }) ? c.code : 'BH')) +
+        field('email', chosen === 'tap' ? t('f_email') : t('f_email_opt'), { type: 'email', ac: 'email', dir: 'ltr', optional: chosen !== 'tap' }) +
         '<div class="field"><label for="f-country">' + e(t('f_country')) + ' <abbr>*</abbr></label><span class="select-wrap"><select id="f-country" data-country>' + TZ.countryOptions() + '</select>' + TZ.icon('chevron', 'chev') + '</span></div>' +
+        field('city', t('f_city'), { half: true, ac: 'address-level2' }) + field('state', t('f_state'), { half: true, ac: 'address-level1', optional: true }) +
         field('addr1', t('f_addr1'), { ph: t('f_addr1_ph'), ac: 'address-line1' }) +
         field('addr2', t('f_addr2'), { ph: t('f_addr2_ph'), optional: true, ac: 'address-line2' }) +
-        field('city', t('f_city'), { half: true, ac: 'address-level2' }) + field('state', t('f_state'), { half: true, ac: 'address-level1', optional: true }) +
-        field('phone', t('f_phone'), { half: true, type: 'tel', ac: 'tel', dir: 'ltr' }) + field('email', t('f_email'), { half: true, type: 'email', ac: 'email', dir: 'ltr' }) +
         field('notes', t('f_notes'), { optional: true, textarea: true }) +
+        '<label class="remember"><input type="checkbox" id="f-remember"' + (saved === null || saved ? ' checked' : '') + '> <span>' + e(t('remember_me')) + '</span></label>' +
         '</div></div>' +
         '<div class="co-card"><h2>' + TZ.icon('card') + e(t('co_payment')) + '</h2>' + methods.map(payOpt).join('') + '</div></form>' +
         '<aside class="co-summary"><div class="co-card sticky"><h2>' + TZ.icon('bag') + e(t('co_summary')) + '</h2>' + TZ.holdTimer() + '<ul class="co-lines">' +
@@ -623,9 +629,11 @@
         '<button class="btn btn-primary btn-block btn-lg" type="submit" form="co-form" id="place-order">' + TZ.icon(chosen === 'tap' ? 'shield' : 'arrow') + e(t(chosen === 'tap' ? 'co_go_pay' : 'co_go_wa')) + '</button>' +
         '<p class="co-secure">' + TZ.icon('shield') + e(chosen === 'tap' ? t('pay_note') : t('pay_wa_note')) + '</p></div></aside>';
 
-      Object.keys(memo).forEach(function (k) { var f = root.querySelector('[name="' + k + '"]'); if (f) f.value = memo[k]; });
+      Object.keys(memo).forEach(function (k) { if (k === 'dial') return; var f = root.querySelector('[name="' + k + '"]'); if (f && !f.value) f.value = memo[k]; });
 
       var form = $('#co-form');
+      TZ.bindPhone(form.querySelector('.phone-field'), function (n, m) { showErr(n, m); });
+      if (dialTouched) form.querySelector('select[name=dial]').dataset.touched = '1';
       form.addEventListener('change', function (ev) { if (ev.target.name === 'pay') TZ.pages.checkout(); });
       form.addEventListener('submit', submit);
       $('#place-order').addEventListener('click', function (ev) { ev.preventDefault(); submit(ev); });
@@ -649,11 +657,12 @@
         if (ev && ev.preventDefault) ev.preventDefault();
         if (sending) return;
         var ok = true, first;
-        ['first', 'last', 'addr1', 'city', 'phone', 'email'].forEach(function (n) {
+        var ph = TZ.phoneTidy(form.elements.phone.value, form.elements.dial.value);
+        ['first', 'last', 'phone', 'email', 'city', 'addr1'].forEach(function (n) {
           var f = form.elements[n], v = f.value.trim(), msg = '';
-          if (!v) msg = t('err_required');
-          else if (n === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) msg = t('err_email');
-          else if (n === 'phone' && v.replace(/\D/g, '').length < 8) msg = t('err_phone');
+          if (!v && !(n === 'email' && chosen !== 'tap')) msg = t('err_required');
+          else if (n === 'email' && v && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) msg = t('err_email');
+          else if (n === 'phone' && !ph.ok) msg = t('err_phone_cc', { country: TZ.phoneLabel(ph.code).name, example: TZ.ltrText('+' + ph.rule.dial + ' ' + ph.rule.example) });
           showErr(n, msg);
           if (msg && ok) { ok = false; first = f; }
         });
@@ -663,11 +672,12 @@
         hideMsg();
         api('/api/checkout', {
           items: cartItems(), cart: TZ.cart.key(), country: TZ.country().code, method: chosen, lang: TZ.lang(), expected_total: Math.round(TZ.cart.total() * 1000) / 1000,
-          first_name: v('first'), last_name: v('last'), email: v('email'), phone: v('phone'),
+          first_name: v('first'), last_name: v('last'), email: v('email'), phone: ph.full,
           address1: v('addr1'), address2: v('addr2'), city: v('city'), state: v('state'), notes: v('notes')
         }).then(function (res) {
           sending = false; btn.disabled = false; btn.classList.remove('is-busy');
           var d = res.d || {};
+          if (d.ok) rememberDetails();
           if (d.ok && d.redirect) {
             btn.disabled = true;
             TZ.pending.set(d.order); // reminds them on any page if they leave the payment page without paying
@@ -688,6 +698,14 @@
           }
           showMsg(res.status === 502 ? t('co_unavailable') : (err.message && TZ.lang() === 'en' ? err.message : t('co_err')));
         });
+      }
+      /* Saved only in this browser, only when the box is ticked; unticking forgets them. */
+      function rememberDetails() {
+        var keep = $('#f-remember') && $('#f-remember').checked;
+        if (!keep) { store('co_details', false); return; }
+        var o = {};
+        ['first', 'last', 'phone', 'email', 'city', 'state', 'addr1', 'addr2', 'dial'].forEach(function (n) { if (form.elements[n]) o[n] = form.elements[n].value.trim(); });
+        store('co_details', o);
       }
       function showErr(n, msg) {
         var f = form.elements[n], el = $('#err-' + n);

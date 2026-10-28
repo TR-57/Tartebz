@@ -15,20 +15,10 @@
   src: url("/assets/fonts/alexandria-latin.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 
-/* Thmanyah Sans is the original brand font. Drop the files in assets/fonts/ and
-   uncomment the url() lines to self-host it; until then Alexandria (Google Fonts) is used. */
-@font-face {
-  font-family: "Thmanyah Sans";
-  src: local("Thmanyah Sans"), local("ThmanyahSans-Regular");
-  /* , url("../fonts/thmanyahsans-Regular.woff2") format("woff2"); */
-  font-weight: 400; font-display: swap;
-}
-@font-face {
-  font-family: "Thmanyah Sans";
-  src: local("Thmanyah Sans Bold"), local("ThmanyahSans-Bold");
-  /* , url("../fonts/thmanyahsans-Bold.woff2") format("woff2"); */
-  font-weight: 700 900; font-display: swap;
-}
+/* The old site used Thmanyah Sans (ثمانية). Its licence (font.thmanyah.com/licenses) allows personal use only and does
+   not allow serving the font files from a website, so it is NOT used here. With a commercial web licence from Thmanyah
+   (Ask@thmanyah.com): put the .woff2 files in assets/fonts/, add @font-face rules for them here, and put "Thmanyah Sans"
+   first in --font below. Until then: Alexandria – an open-licence Arabic font with the same rounded, modern feel. */
 
 :root {
   --red: #E30613;
@@ -47,7 +37,7 @@
   --green: #1A7F37;
   --out: #C0392B;
 
-  --font: "Thmanyah Sans", "Alexandria", system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+  --font: "Alexandria", system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
   --fs: 18px;
   --radius: 18px;
   --radius-sm: 12px;
@@ -1186,3 +1176,18 @@ body.has-iab .site-header { top: var(--iab-h); }
 .pd-held { display: flex; gap: 8px; align-items: flex-start; }
 .pd-held .ico { width: 20px; height: 20px; flex: none; margin-top: 2px; }
 .staff-link { color: inherit; opacity: .7; }
+
+/* ---------- mobile number: country code + number ---------- */
+.phone-in { display: flex; gap: 8px; align-items: stretch; }
+.phone-in .dial { position: relative; flex: none; }
+.dial-chip { display: flex; align-items: center; gap: 6px; height: 100%; min-height: 50px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--cream, #FFF8E7); font-weight: 800; white-space: nowrap; }
+.dial-chip .dial-flag { font-size: 1.25rem; line-height: 1; }
+.dial-chip .chev { width: 14px; height: 14px; transform: rotate(90deg); opacity: .6; }
+.phone-in .dial select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; min-height: 0; padding: 0; border: 0; }
+.phone-in .dial:focus-within .dial-chip { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(255, 176, 0, .45); }
+.phone-in input { flex: 1; min-width: 0; letter-spacing: .04em; font-weight: 700; }
+.field-hint { font-size: .82rem; color: var(--muted, #6a6b72); }
+.field-err:not(:empty) ~ .field-hint, .phone-field:has(.field-err:not(:empty)) .field-hint { display: none; }
+.remember { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; font-size: .92rem; cursor: pointer; }
+.remember input { width: 20px; height: 20px; accent-color: var(--red); }

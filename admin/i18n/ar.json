@@ -770,7 +770,8 @@
     "Ticked as prepared.": "عُلّم كمجهّز.",
     "Tick removed (not prepared).": "أُزيلت علامة التجهيز.",
     "Payment link sent by email.": "أُرسل رابط الدفع بالإيميل.",
-    "Payment link sent on WhatsApp.": "أُرسل رابط الدفع على واتساب."
+    "Payment link sent on WhatsApp.": "أُرسل رابط الدفع على واتساب.",
+    "Enter the phone number with its country code.": "أدخل رقم الهاتف مع رمز الدولة."
   },
   "patterns": [
     [
@@ -972,6 +973,10 @@
     [
       "Paid \\(recorded when the order was created\\): (.+)\\.",
       "مدفوع (سُجّل عند إنشاء الطلب): $1."
+    ],
+    [
+      "This mobile number does not look right for the country code chosen \\(example: (.+)\\)\\.",
+      "رقم الجوال غير صحيح لرمز الدولة المختار (مثال: $1)."
     ]
   ]
 }

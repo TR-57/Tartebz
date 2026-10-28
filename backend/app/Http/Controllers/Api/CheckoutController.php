@@ -61,11 +61,17 @@ class CheckoutController extends Controller
                 $f[$k] = $msg;
             }
         }
-        if (! filter_var($c['email'], FILTER_VALIDATE_EMAIL)) {
-            $f['email'] = 'Enter a valid email.';
+        // Email: needed for card payments (receipt, confirmation); optional when ordering on WhatsApp.
+        if ($c['email'] !== '' || $method === 'tap') {
+            if (! filter_var($c['email'], FILTER_VALIDATE_EMAIL)) {
+                $f['email'] = 'Enter a valid email.';
+            }
         }
-        if (strlen(preg_replace('/\D/', '', $c['phone'])) < 8) {
-            $f['phone'] = 'Enter a valid phone number.';
+        [$phone, $phoneErr] = \App\Support\Phone::check($c['phone'], strtoupper($this->str($r, 'country', 2)));
+        if ($phoneErr) {
+            $f['phone'] = $phoneErr;
+        } else {
+            $c['phone'] = $phone;
         }
         if (! Shipping::delivers($country)) {
             $f['country'] = 'We do not deliver to that country yet.';

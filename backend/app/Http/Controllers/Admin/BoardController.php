@@ -85,8 +85,9 @@ class BoardController extends Controller
         if (mb_strlen($c['first_name']) < 2) {
             $f['first_name'] = 'Enter the customer’s name.';
         }
-        if (strlen(preg_replace('/\D/', '', $c['phone'])) < 8) {
-            $f['phone'] = 'Enter the customer’s phone number.';
+        [$phone, $phoneErr] = \App\Support\Phone::check($c['phone'], $country);
+        if ($phoneErr) {
+            $f['phone'] = $c['phone'] === '' ? 'Enter the customer’s phone number.' : $phoneErr;
         }
         if ($c['email'] !== '' && ! filter_var($c['email'], FILTER_VALIDATE_EMAIL)) {
             $f['email'] = 'This email does not look right (or leave it empty).';
@@ -113,9 +114,7 @@ class BoardController extends Controller
         if ($f) {
             throw ApiError::validation($f);
         }
-        // The phone is saved with its country code, so WhatsApp and SMSA can use it.
-        [$cc, $num] = Shipping::splitPhone($c['phone'], $country);
-        $c['phone'] = '+'.$cc.' '.$num;
+        $c['phone'] = $phone; // saved with its country code, so WhatsApp and SMSA can use it
 
         $items = (array) $r->input('items', []);
         $seen = round((float) $r->input('expected_total', -1), 3);

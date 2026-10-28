@@ -28,7 +28,7 @@
       push_ios: 'On iPhone or iPad: tap Share → “Add to Home Screen”, open Orders from the Home Screen, then turn notifications on here.',
       push_none: 'This browser cannot show notifications.', push_ready: 'Notifications are on for this device.', push_sent: 'Test sent – it should arrive in a few seconds.',
       install: 'Add to Home Screen', language: 'Language', signout: 'Sign out', signed_in_as: 'Signed in as',
-      customer: 'Customer', name: 'Full name', phone: 'Phone (WhatsApp)', country: 'Country', city: 'City / area', address: 'Address (house, road, block)',
+      customer: 'Customer', name: 'Full name', phone: 'Mobile (WhatsApp)', dial: 'Country code', bad_phone: 'This {c} mobile number doesn’t look right. Example: {e}', country: 'Country', city: 'City / area', address: 'Address (house, road, block)',
       address2: 'More details (flat, landmark)', notes: 'Notes', email_opt: 'Email (optional)', cust_lang: 'Customer’s language',
       products: 'Products', find: 'Find a product', left: '{n} left', sold_out: 'Sold out', add: 'Add',
       summary: 'Summary', items: 'Items', weight: 'Weight', subtotal: 'Subtotal', delivery: 'Delivery', total: 'Total', charged: 'Customer pays',
@@ -65,7 +65,7 @@
       push_ios: 'في الآيفون أو الآيباد: اضغط مشاركة ← «إضافة إلى الشاشة الرئيسية»، افتح «Orders» من الشاشة الرئيسية، ثم فعّل التنبيهات من هنا.',
       push_none: 'هذا المتصفح لا يدعم التنبيهات.', push_ready: 'التنبيهات مفعّلة على هذا الجهاز.', push_sent: 'تم إرسال التجربة – ستصل خلال ثوانٍ.',
       install: 'إضافة للشاشة الرئيسية', language: 'اللغة', signout: 'تسجيل الخروج', signed_in_as: 'مسجّل باسم',
-      customer: 'العميل', name: 'الاسم الكامل', phone: 'الهاتف (واتساب)', country: 'الدولة', city: 'المدينة / المنطقة', address: 'العنوان (منزل، طريق، مجمع)',
+      customer: 'العميل', name: 'الاسم الكامل', phone: 'رقم الجوال (واتساب)', dial: 'رمز الدولة', bad_phone: 'رقم جوال {c} غير صحيح. مثال: {e}', country: 'الدولة', city: 'المدينة / المنطقة', address: 'العنوان (منزل، طريق، مجمع)',
       address2: 'تفاصيل إضافية (شقة، علامة مميزة)', notes: 'ملاحظات', email_opt: 'البريد الإلكتروني (اختياري)', cust_lang: 'لغة العميل',
       products: 'المنتجات', find: 'ابحث عن منتج', left: 'متبقي {n}', sold_out: 'نفد', add: 'أضف',
       summary: 'الملخص', items: 'القطع', weight: 'الوزن', subtotal: 'المجموع الفرعي', delivery: 'التوصيل', total: 'الإجمالي', charged: 'يدفع العميل',
@@ -274,6 +274,22 @@
       var device = (isIOS ? 'iPhone/iPad' : /Android/.test(navigator.userAgent) ? 'Android' : /Mac/.test(navigator.platform) ? 'Mac' : /Win/.test(navigator.platform) ? 'Windows' : 'Browser');
       return api('board/push', { body: { subscription: sub.toJSON(), device: device } });
     });
+  }
+
+  /* Mobile numbers: country code + the rest. Same rules as backend/app/Support/Phone.php. */
+  var PH = { BH: ['973', 8, /^[36]/, '3600 1234'], SA: ['966', 9, /^5/, '50 123 4567'], AE: ['971', 9, /^5/, '50 123 4567'], QA: ['974', 8, /^[3567]/, '3312 3456'],
+    KW: ['965', 8, /^[4569]/, '5012 3456'], OM: ['968', 8, /^[79]/, '9123 4567'], EG: ['20', 10, /^1/, '10 1234 5678'], JO: ['962', 9, /^7/, '79 123 4567'],
+    GB: ['44', 10, /^7/, '7400 123456'], US: ['1', 10, /^[2-9]/, '201 555 0123'] };
+  var PH_NAMES = { EG: ['Egypt', 'مصر'], JO: ['Jordan', 'الأردن'], GB: ['UK', 'بريطانيا'], US: ['USA', 'أمريكا'] };
+  function phName(cc) { return W[lang].countries[cc] || (PH_NAMES[cc] ? PH_NAMES[cc][lang === 'ar' ? 1 : 0] : cc); }
+  function phTidy(v, cc) {
+    var raw = String(v || ''), d = raw.replace(/\D/g, ''), r = PH[cc] || PH.BH;
+    if (/^\s*(\+|00)/.test(raw)) {
+      if (d.indexOf('00') === 0) d = d.slice(2);
+      Object.keys(PH).sort(function (a, b) { return PH[b][0].length - PH[a][0].length; }).some(function (k) { if (d.indexOf(PH[k][0]) === 0) { cc = k; r = PH[k]; d = d.slice(PH[k][0].length); return true; } return false; });
+    }
+    d = d.replace(/^0+/, '').slice(0, r[1]);
+    return { cc: cc, digits: d, ok: d.length === r[1] && r[2].test(d), full: '+' + r[0] + ' ' + d, example: '\u2066+' + r[0] + ' ' + r[3] + '\u2069' };
   }
 
   /* ---------------- state ---------------- */
@@ -626,7 +642,7 @@
 
   /* ---------------- new order ---------------- */
   function newOrder() {
-    var N = store.get('draft', null) || { name: '', phone: '', email: '', country: 'BH', city: '', address1: '', address2: '', notes: '', lang: 'ar', items: {}, payment: '', how: '' };
+    var N = store.get('draft', null) || { name: '', phone: '', email: '', country: 'BH', dial: '', city: '', address1: '', address2: '', notes: '', lang: 'ar', items: {}, payment: '', how: '' };
     var quote = null, qT = null, P = S.products, search = '';
     var el = sheet(esc(tr('new_order')), '<p class="muted">…</p>',
       '<div class="sum" id="n-sum" style="margin:0 0 10px"></div><button class="btn btn-red btn-block btn-lg" id="n-create">' + icon('check') + esc(tr('create')) + '</button>',
@@ -637,14 +653,16 @@
       draw();
     }, function (e) { toast(e.message, true); closeSheet(); });
 
-    function dial() { var c = (S.boardCountries || []).filter(function (x) { return x.code === N.country; })[0]; return c ? '+' + c.dial : ''; }
+    function dialCC() { return N.dial || (PH[N.country] ? N.country : 'BH'); }
     function draw() {
       var b = el.querySelector('.sheet-body');
       b.innerHTML =
         '<form id="n-form" novalidate>' +
         '<div class="card"><h3>' + esc(tr('customer')) + '</h3>' +
         fld('name', tr('name'), 'text', 'name') +
-        '<div class="field" data-f="phone"><label for="n-phone">' + esc(tr('phone')) + '</label><div class="phone"><span class="cc" id="n-cc">' + esc(dial()) + '</span><input id="n-phone" name="phone" type="tel" inputmode="tel" autocomplete="off" value="' + esc(N.phone) + '"></div><span class="err"></span></div>' +
+        '<div class="field" data-f="phone"><label for="n-phone">' + esc(tr('phone')) + '</label><div class="phone"><select class="cc" id="n-dial" name="dial" aria-label="' + esc(tr('dial')) + '">' +
+        Object.keys(PH).map(function (k) { return '<option value="' + k + '"' + (k === dialCC() ? ' selected' : '') + '>' + flag(k) + ' +' + PH[k][0] + ' ' + esc(phName(k)) + '</option>'; }).join('') +
+        '</select><input id="n-phone" name="phone" type="tel" inputmode="numeric" autocomplete="off" placeholder="' + esc(PH[dialCC()][3]) + '" value="' + esc(N.phone) + '"></div><span class="err"></span></div>' +
         '<div class="row2"><div class="field" data-f="country"><label for="n-country">' + esc(tr('country')) + '</label><select id="n-country" name="country">' +
         (S.boardCountries || []).map(function (c) { return '<option value="' + c.code + '"' + (c.code === N.country ? ' selected' : '') + '>' + flag(c.code) + ' ' + esc(cname(c.code)) + '</option>'; }).join('') + '</select><span class="err"></span></div>' +
         fld('city', tr('city'), 'text', 'address-level2') + '</div>' +
@@ -664,13 +682,26 @@
       var f = b.querySelector('#n-form');
       f.addEventListener('input', function (e) {
         var n = e.target.name; if (!n || n === 'pay') return;
+        if (n === 'phone') {
+          var tp = phTidy(e.target.value, dialCC());
+          if (tp.cc !== dialCC()) { N.dial = tp.cc; el.querySelector('#n-dial').value = tp.cc; }
+          e.target.value = tp.digits;
+        }
         N[n] = e.target.value;
         var fl = e.target.closest('.field'); if (fl) { fl.classList.remove('bad'); var er = fl.querySelector('.err'); if (er) er.textContent = ''; }
-        if (n === 'country') { el.querySelector('#n-cc').textContent = dial(); requote(); }
       });
       f.addEventListener('change', function (e) {
         if (e.target.name === 'pay') { N.payment = e.target.value; el.querySelector('#n-how').hidden = N.payment !== 'paid'; el.querySelector('#n-pay-err').textContent = ''; }
-        if (e.target.name === 'country') { N.country = e.target.value; el.querySelector('#n-cc').textContent = dial(); requote(); }
+        if (e.target.name === 'country') {
+          N.country = e.target.value;
+          if (!N.dialTouched && PH[N.country]) { N.dial = N.country; el.querySelector('#n-dial').value = N.country; el.querySelector('#n-phone').placeholder = PH[N.country][3]; }
+          requote();
+        }
+        if (e.target.name === 'dial') { N.dial = e.target.value; N.dialTouched = true; el.querySelector('#n-phone').placeholder = PH[N.dial][3]; }
+      });
+      b.querySelector('#n-phone').addEventListener('blur', function () {
+        var tp = phTidy(this.value, dialCC()), fl = this.closest('.field');
+        if (this.value && !tp.ok) { fl.classList.add('bad'); fl.querySelector('.err').textContent = tr('bad_phone', { c: phName(tp.cc), e: tp.example }); }
       });
       b.querySelectorAll('[data-how]').forEach(function (c) { c.onclick = function () { N.how = c.dataset.how; el.querySelector('#n-howi').value = N.how; }; });
       b.querySelector('#n-find').oninput = function () { search = this.value.trim().toLowerCase(); paintProducts(); };
@@ -726,14 +757,14 @@
       el.querySelectorAll('.field.bad').forEach(function (x) { x.classList.remove('bad'); });
       var parts = N.name.trim().split(/\s+/);
       var body = {
-        first_name: parts.shift() || '', last_name: parts.join(' '), phone: N.phone, email: N.email, country: N.country, city: N.city,
+        first_name: parts.shift() || '', last_name: parts.join(' '), phone: N.phone ? phTidy(N.phone, dialCC()).full : '', email: N.email, country: N.country, city: N.city,
         address1: N.address1, address2: N.address2, notes: N.notes, lang: N.lang, items: items(), payment: N.payment, paid_how: N.how,
         expected_total: quote ? quote.total : -1
       };
       if (!body.items.length) { el.querySelector('#n-items-err').textContent = tr('no_items'); el.querySelector('[data-f=items]').scrollIntoView({ behavior: 'smooth' }); return; }
       var btn = el.querySelector('#n-create');
       busy(btn, api('board/orders', { body: body })).then(function (r) {
-        N = { name: '', phone: '', email: '', country: N.country, city: '', address1: '', address2: '', notes: '', lang: N.lang, items: {}, payment: '', how: '' };
+        N = { name: '', phone: '', email: '', country: N.country, dial: '', city: '', address1: '', address2: '', notes: '', lang: N.lang, items: {}, payment: '', how: '' };
         store.set('draft', null);
         S.products = null; // stock changed
         done(r);

@@ -329,6 +329,69 @@
       });
   }
 
+  /* ---------- mobile number: country code + number ---------- */
+  /* Keeps "+973 3600 1234" in the right order inside Arabic text. */
+  TZ.ltrText = function (s) { return '\u2066' + s + '\u2069'; };
+  TZ.phoneRule = function (code) { return TZ.phones.filter(function (r) { return r.code === code; })[0] || TZ.phones[0]; };
+  TZ.phoneLabel = function (code) {
+    var c = TZ.countries.filter(function (x) { return x.code === code; })[0], n = TZ.phoneNames[code];
+    return c ? { flag: c.flag, name: TZ.L(c.name) } : { flag: n.flag, name: TZ.L({ ar: n.ar, en: n.en }) };
+  };
+  /* The picker and the box for the rest of the number. */
+  TZ.phoneField = function (name, label, dialCode) {
+    var r = TZ.phoneRule(dialCode);
+    return '<div class="field phone-field"><label for="f-' + name + '">' + TZ.esc(label) + ' <abbr title="' + TZ.esc(TZ.t('err_required')) + '">*</abbr></label>' +
+      '<div class="phone-in" dir="ltr"><span class="dial"><span class="dial-chip" aria-hidden="true"><span class="dial-flag">' + TZ.phoneLabel(r.code).flag + '</span><span class="dial-code">+' + r.dial + '</span>' + TZ.icon('chevron', 'chev') + '</span>' +
+      '<select id="f-dial" name="dial" aria-label="' + TZ.esc(TZ.t('f_dial')) + '">' +
+      TZ.phones.map(function (p) { var l = TZ.phoneLabel(p.code); return '<option value="' + p.code + '"' + (p.code === r.code ? ' selected' : '') + '>' + l.flag + ' ' + TZ.esc(l.name) + ' (+' + p.dial + ')</option>'; }).join('') +
+      '</select></span>' +
+      '<input id="f-' + name + '" name="' + name + '" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="' + TZ.esc(r.example) + '" required></div>' +
+      '<span class="field-hint" id="hint-' + name + '">' + TZ.esc(TZ.t('phone_eg', { example: TZ.ltrText('+' + r.dial + ' ' + r.example) })) + '</span>' +
+      '<span class="field-err" id="err-' + name + '"></span></div>';
+  };
+  /* Keeps only digits, takes the country code out if it was pasted with it, drops a leading 0, groups the digits. */
+  TZ.phoneTidy = function (value, code) {
+    var raw = String(value || ''), d = raw.replace(/\D/g, ''), r = TZ.phoneRule(code), found = null;
+    if (/^\s*(\+|00)/.test(raw)) {
+      if (d.indexOf('00') === 0) d = d.slice(2);
+      TZ.phones.slice().sort(function (a, b) { return b.dial.length - a.dial.length; }).some(function (p) { if (d.indexOf(p.dial) === 0) { found = p; return true; } return false; });
+      if (found) { d = d.slice(found.dial.length); r = found; }
+    } else if (d.length > r.len && d.indexOf(r.dial) === 0) {
+      d = d.slice(r.dial.length);
+    }
+    d = d.replace(/^0+/, '').slice(0, r.len);
+    var out = [], i = 0;
+    r.groups.forEach(function (g) { if (i < d.length) { out.push(d.slice(i, i + g)); i += g; } });
+    if (i < d.length) out.push(d.slice(i));
+    return { code: r.code, digits: d, text: out.join(' '), ok: d.length === r.len && r.start.test(d), full: '+' + r.dial + ' ' + d, rule: r };
+  };
+  /* Wires a phone field: tidy as they type, follow the picker, say what is wrong when they leave the box. */
+  TZ.bindPhone = function (box, showErr) {
+    var sel = box.querySelector('select[name=dial]'), inp = box.querySelector('input[type=tel]');
+    if (!sel || !inp) return;
+    var name = inp.name;
+    var paint = function () {
+      var r = TZ.phoneRule(sel.value);
+      inp.placeholder = r.example;
+      box.querySelector('.dial-code').textContent = '+' + r.dial;
+      box.querySelector('.dial-flag').textContent = TZ.phoneLabel(r.code).flag;
+      var h = box.querySelector('#hint-' + name); if (h) h.textContent = TZ.t('phone_eg', { example: TZ.ltrText('+' + r.dial + ' ' + r.example) });
+    };
+    inp.addEventListener('input', function () {
+      var t = TZ.phoneTidy(inp.value, sel.value);
+      if (t.code !== sel.value) { sel.value = t.code; paint(); }
+      if (inp.value !== t.text) inp.value = t.text;
+      if (t.ok && showErr) showErr(name, '');
+    });
+    inp.addEventListener('blur', function () {
+      var t = TZ.phoneTidy(inp.value, sel.value);
+      if (inp.value && !t.ok && showErr) showErr(name, TZ.t('err_phone_cc', { country: TZ.phoneLabel(t.code).name, example: TZ.ltrText('+' + t.rule.dial + ' ' + t.rule.example) }));
+    });
+    sel.addEventListener('change', function () { sel.dataset.touched = '1'; paint(); if (inp.value) inp.dispatchEvent(new Event('input')); });
+    paint();
+    if (inp.value) inp.value = TZ.phoneTidy(inp.value, sel.value).text;
+  };
+
   /* ---------- shared components ---------- */
   TZ.sourMeter = function (level, big) {
     if (!level) return '';

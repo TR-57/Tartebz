@@ -170,7 +170,7 @@ bdi { unicode-bidi: isolate; }
 .pay-opt.disabled { opacity: .5; }
 .quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .phone { display: flex; gap: 8px; direction: ltr; }
-.phone .cc { min-width: 74px; display: grid; place-items: center; border: 1px solid #d9d4c7; border-radius: 12px; background: var(--grey-s); font-weight: 700; }
+.phone .cc { flex: none; width: 128px; min-height: 46px; padding: 0 8px; border: 1px solid #d9d4c7; border-radius: 12px; background: var(--grey-s); font-weight: 700; }
 .phone input { flex: 1; }
 .done-card { text-align: center; padding: 26px 16px; }
 .done-card .big { width: 74px; height: 74px; border-radius: 50%; background: var(--green-s); color: var(--green); display: grid; place-items: center; margin: 0 auto 10px; }

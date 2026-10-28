@@ -92,6 +92,8 @@ Best-seller badge: gradient `#FFD700 → #FFA500`, text `#7A4A00`, orange glow.
 ### Typography
 - **Thmanyah Sans** for headings and body (Arabic). Base size **18px**. Headings weight 800.
 - Older design used "Right Grotesk", Verdana 900 and a custom font "mos" on paragraphs. All replaced.
+- **New site:** Alexandria (open licence). Thmanyah Sans's licence allows personal use only and forbids serving the font files
+  from a website or CDN, so the new site cannot use it without a commercial licence from Thmanyah (Ask@thmanyah.com).
 
 ### Shape and effects
 - Radius: cards **18px**, inputs/images **12px**, buttons/badges **999px (pill)**.

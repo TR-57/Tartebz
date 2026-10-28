@@ -459,12 +459,17 @@
    "err_phone": {
     "en": "Enter a valid phone number",
     "ar": "أدخل رقم هاتف صحيح",
-    "where": "assets/js/pages.js"
+    "where": ""
+   },
+   "err_phone_cc": {
+    "en": "This {country} mobile number doesn’t look right. Example: {example}",
+    "ar": "رقم جوال {country} غير صحيح. مثال: {example}",
+    "where": "assets/js/app.js, assets/js/pages.js"
    },
    "err_required": {
     "en": "This field is required",
     "ar": "هذا الحقل مطلوب",
-    "where": "assets/js/pages.js"
+    "where": "assets/js/app.js, assets/js/pages.js"
    },
    "f_addr1": {
     "en": "Street / Area",
@@ -496,9 +501,19 @@
     "ar": "الدولة / المنطقة",
     "where": "assets/js/pages.js"
    },
+   "f_dial": {
+    "en": "Country code",
+    "ar": "رمز الدولة",
+    "where": "assets/js/app.js"
+   },
    "f_email": {
     "en": "Email",
     "ar": "البريد الإلكتروني",
+    "where": "assets/js/pages.js"
+   },
+   "f_email_opt": {
+    "en": "Email (optional)",
+    "ar": "البريد الإلكتروني (اختياري)",
     "where": "assets/js/pages.js"
    },
    "f_first": {
@@ -517,8 +532,8 @@
     "where": "assets/js/pages.js"
    },
    "f_phone": {
-    "en": "Phone",
-    "ar": "الهاتف",
+    "en": "Mobile (WhatsApp)",
+    "ar": "رقم الجوال (واتساب)",
     "where": "assets/js/pages.js"
    },
    "f_state": {
@@ -966,6 +981,11 @@
     "ar": "كمّل الدفع",
     "where": "assets/js/app.js, assets/js/pages.js"
    },
+   "phone_eg": {
+    "en": "Example: {example}",
+    "ar": "مثال: {example}",
+    "where": "assets/js/app.js"
+   },
    "place_order": {
     "en": "Place order",
     "ar": "تأكيد الطلب",
@@ -1014,6 +1034,11 @@
    "related": {
     "en": "You may also like",
     "ar": "قد يعجبك أيضاً",
+    "where": "assets/js/pages.js"
+   },
+   "remember_me": {
+    "en": "Remember my details on this device for next time",
+    "ar": "احفظ بياناتي على هذا الجهاز للطلب القادم",
     "where": "assets/js/pages.js"
    },
    "reset_filters": {
@@ -2155,7 +2180,8 @@
    "Ticked as prepared.": "عُلّم كمجهّز.",
    "Tick removed (not prepared).": "أُزيلت علامة التجهيز.",
    "Payment link sent by email.": "أُرسل رابط الدفع بالإيميل.",
-   "Payment link sent on WhatsApp.": "أُرسل رابط الدفع على واتساب."
+   "Payment link sent on WhatsApp.": "أُرسل رابط الدفع على واتساب.",
+   "Enter the phone number with its country code.": "أدخل رقم الهاتف مع رمز الدولة."
   }
  }
 }

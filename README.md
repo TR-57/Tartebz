@@ -43,7 +43,7 @@ assets/css/style.css  all styles, design tokens at the top
 - **Text:** every string is in `TZ.i18n.ar` and `TZ.i18n.en` in `data.js`.
 - **Real product photos:** add `image: 'assets/img/products/<slug>.webp'` to a product. It replaces the drawn pack everywhere.
 - **Real logo:** set `TZ.store.logo = 'assets/img/logo.png'` in `data.js`.
-- **Brand font:** put the Thmanyah Sans `.woff2` files in `assets/fonts/` and uncomment the `url()` lines at the top of `style.css`. Until then it falls back to Alexandria.
+- **Font:** Alexandria (open licence, self-hosted in `assets/fonts/`). The old site used Thmanyah Sans, whose licence allows personal use only — not serving it from a website. With a commercial licence from Thmanyah, see the note at the top of `style.css`.
 
 ## Not connected yet
 The storefront pages are still front end only: checkout validates the form and hands the order off to WhatsApp. They get connected to the custom backend below (no WordPress or WooCommerce) in Phases 2–4.
