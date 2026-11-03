@@ -56,3 +56,9 @@ Run it any time: `cd tartebz-app/backend && php artisan store:doctor`. Every lin
 - Hostinger's own CDN must be **off** if you use Cloudflare (see `cloudflare.md`).
 - Photos in `public_html/uploads` are never touched by deploys. Back them up with hPanel → Files → Backups.
 - Roll back a bad update: deploy.sh prints the previous version; run `git checkout <it> && bash deploy/hostinger/deploy.sh`.
+
+## Maintenance mode
+Admin → Settings → **Maintenance** (managers and owners): one switch closes the shop for customers, who see a "back soon"
+page in Arabic and English (answered as 503, so Google keeps the pages). New orders pause; the admin, the orders board,
+Tap payment updates and customers' order pages keep working, and signed-in team members still see the whole shop.
+The admin shows a red "Shop closed" flag while it is on. If the admin cannot be reached: `php artisan store:maintenance off`.

@@ -797,6 +797,12 @@
       welcomeBack();
       if (TZ.cart.count() || Object.keys(TZ.holds.mine).length) TZ.holds.sync(true); // a page load counts as activity
       if (TZ.isLive) pendingBar();
+      if (TZ.maintenance) {
+        var mb = doc.createElement('div');
+        mb.className = 'maint-bar'; mb.setAttribute('role', 'status');
+        mb.innerHTML = TZ.esc(TZ.t('maint_team')) + ' <a href="/admin/#/maintenance">' + TZ.esc(TZ.t('maint_open')) + '</a>';
+        doc.body.appendChild(mb);
+      }
     };
     /* Wait for the live shop data (see live.js); fall back to the built-in data if it never comes. */
     if (TZ.live && TZ.live.ready) TZ.live.ready.then(start, start); else start();

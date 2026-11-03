@@ -37,6 +37,7 @@ rsync -a --delete admin/ "$PUBLIC/admin/"
 cp -f deploy/hostinger/htaccess.admin "$PUBLIC/admin/.htaccess"
 cp -f deploy/hostinger/htaccess.public_html "$PUBLIC/.htaccess"
 cp -f deploy/hostinger/htaccess.uploads "$PUBLIC/uploads/.htaccess"
+"$PHP" backend/artisan store:maintenance sync   # keeps the "back soon" page in step with Admin › Maintenance
 sed "s#__APP_DIR__#$APP_DIR#" deploy/hostinger/api.php.template > "$PUBLIC/api.php"
 # Cloudflare: clear its copy of the pages so the new version shows at once (optional – see docs/cloudflare.md).
 if [ -n "${CF_ZONE_ID:-}" ] && [ -n "${CF_API_TOKEN:-}" ]; then

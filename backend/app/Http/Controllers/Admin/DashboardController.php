@@ -27,6 +27,7 @@ class DashboardController extends Controller
             'mailFailed' => DB::table('mail_outbox')->where('status', 'failed')->count(),
         ];
         $setup = [
+            ['ok' => ! \App\Support\Maintenance::on(), 'label' => 'Maintenance mode is ON – customers see the “back soon” page', 'hint' => 'Settings > Maintenance – switch it off to open the shop.'],
             ['ok' => Outbox::configured(), 'label' => 'Email sending (SMTP)', 'hint' => 'Settings > Email – until then emails are only written to the log.'],
             ['ok' => DB::table('admins')->where('role', 'owner')->where('active', 1)->exists(), 'label' => 'At least one active owner account', 'hint' => 'Staff > Add a person'],
             ['ok' => \App\Support\Tap::enabled(), 'label' => 'Card payments (Tap)', 'hint' => 'Settings > Payments – paste the Tap keys, test, then switch to live.'],

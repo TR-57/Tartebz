@@ -70,6 +70,7 @@
       TZ.countries.forEach(function (c) { c.ship = TZ.shipping.flat[c.code] != null ? 'flat' : 'ubex'; });
     }
     if (d.payments) TZ.payments = d.payments;
+    TZ.maintenance = !!d.maintenance; // only signed-in team members get past the "back soon" page
     if (d.shop) {
       TZ.shop = d.shop;
       TZ.shop.whatsapp = String(d.shop.whatsapp || TZ.store.phoneRaw).replace(/\D/g, '');

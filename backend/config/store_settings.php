@@ -103,6 +103,9 @@ return [
         ],
     ],
 
+    // Maintenance mode (Admin › Maintenance): customers see a "back soon" page; the team keeps working.
+    'maintenance' => ['on' => false, 'message' => '', 'messageAr' => '', 'since' => null, 'by' => ''],
+
     // Phone / computer notifications for new orders (Web Push). The key pair is made on first use; the private key is sealed.
     'push' => ['publicKey' => '', 'privateKey' => ''],
 
@@ -148,9 +151,4 @@ return [
         'notifyEmail' => '',
     ],
 
-    'maintenance' => [
-        'message_en' => '', 'message_ar' => '',
-        'back_en' => '', 'back_ar' => '',
-        'whatsapp' => '',
-    ],
 ];

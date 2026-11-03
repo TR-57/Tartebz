@@ -12,6 +12,7 @@ async function boot() {
   try {
     const me = await api('me');
     state.admin = me.admin;
+    state.maintenance = !!me.maintenance;
   } catch (e) { state.admin = null; }
   if (!state.admin) return renderLogin();
   renderShell();
@@ -49,6 +50,7 @@ function renderLogin(notice = '') {
     try {
       const r = await busy(btn, () => api('login', { method: 'POST', body: formData(form) }));
       state.admin = r.admin;
+      state.maintenance = !!r.maintenance;
       if (!location.hash || location.hash === '#') location.hash = '#/';
       renderShell();
     } catch (err) { showErrors(form, err); }
@@ -137,6 +139,7 @@ function renderShell() {
       <header class="appbar">
         <button class="iconbtn menu-btn" id="menubtn" aria-label="Menu" aria-controls="side">${icon('menu')}</button>
         ${can('staff') ? `<form class="search" id="gsearch" role="search">${icon('search')}<input type="search" name="q" placeholder="Search orders by number, name, email or phone" aria-label="Search orders by number, name, email or phone"></form>` : '<span class="spacer"></span>'}
+        <a class="maint-flag" id="maintflag" href="#/maintenance"${state.maintenance ? '' : ' hidden'}>${icon('tool')}<span>Shop closed (maintenance)</span></a>
         ${langToggle()}
         ${can('staff') ? `<a class="iconbtn" href="#/enquiries?status=new" title="New enquiries" aria-label="New enquiries">${icon('bell')}<span class="dot" data-badge="bell" hidden></span></a>` : ''}
         <a class="avatar" href="#/account" title="${esc(a.name)}" data-noi18n aria-label="${esc(window.AdminI18n.t('Your account'))}"><span data-noi18n>${esc((a.name || '?').trim().charAt(0).toUpperCase())}</span></a>
@@ -158,6 +161,7 @@ function renderShell() {
   route();
   refreshBadges();
 }
+document.addEventListener('admin:maintenance', (e) => { state.maintenance = !!e.detail; const f = document.getElementById('maintflag'); if (f) f.hidden = !e.detail; });
 
 export async function refreshBadges() {
   if (!can('staff')) return;

@@ -8,3 +8,6 @@
 *.sql.zip
 *.dump
 *.bak
+
+# Written while maintenance mode is on (Admin › Maintenance)
+/maintenance-on.html

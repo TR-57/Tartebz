@@ -1191,3 +1191,6 @@ body.has-iab .site-header { top: var(--iab-h); }
 .field-err:not(:empty) ~ .field-hint, .phone-field:has(.field-err:not(:empty)) .field-hint { display: none; }
 .remember { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; font-size: .92rem; cursor: pointer; }
 .remember input { width: 20px; height: 20px; accent-color: var(--red); }
+.maint-bar { position: fixed; z-index: 95; left: 0; right: 0; bottom: 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: #1F2024; color: #fff;
+  font-size: .88rem; font-weight: 700; text-align: center; }
+.maint-bar a { color: #FFD700; }

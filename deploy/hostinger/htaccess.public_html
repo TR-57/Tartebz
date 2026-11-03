@@ -11,6 +11,17 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 # The app's own files never leave the server
 RewriteRule (^|/)\.(?!well-known) - [F]
 
+# Maintenance mode (Admin › Maintenance writes maintenance-on.html here while it is on): visitors get the "back soon" page
+# with 503, so Google waits instead of dropping pages. Not affected: the API (Tap notifications), the admin, the orders board,
+# files the page needs, customers coming back from paying (?order=…), and signed-in team members (admin cookie).
+ErrorDocument 503 /maintenance-on.html
+RewriteCond %{DOCUMENT_ROOT}/maintenance-on.html -f
+RewriteCond %{REQUEST_URI} !^/(api|admin|staff|assets|uploads|img|\.well-known)(/|$)
+RewriteCond %{REQUEST_URI} !^/(maintenance-on\.html|staff-sw\.js|staff\.webmanifest|api\.php|favicon\.ico)$
+RewriteCond %{QUERY_STRING} !(^|&)order=[a-f0-9]{40}
+RewriteCond %{HTTP_COOKIE} !(^|;\s*)tz_adm=[a-f0-9]{64}
+RewriteRule ^ - [R=503,L]
+
 # API -> Laravel (lives outside public_html, see api.php)
 RewriteRule ^api(/|$) api.php [END,QSA]
 

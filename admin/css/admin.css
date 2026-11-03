@@ -372,3 +372,10 @@ table.vt .input { min-width: 90px; padding: 6px 8px; }
 .refunds li { border-inline-start: 3px solid var(--line); padding-inline-start: 10px; }
 .refunds li .btn { margin-top: 6px; }
 .timeline li.ev-refunded { border-color: var(--green); } .timeline li.ev-refund_failed, .timeline li.ev-refund_unknown, .timeline li.ev-oversold, .timeline li.ev-paid_after_cancel, .timeline li.ev-payment_extra { border-color: var(--danger); }
+
+/* Maintenance */
+.maint-card.is-on { border: 2px solid var(--danger); background: #FFF7F6; }
+.ticks { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.ticks li { position: relative; padding-inline-start: 24px; }
+.ticks li::before { content: '✓'; position: absolute; inset-inline-start: 0; color: var(--green, #138A43); font-weight: 800; }
+.maint-flag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; background: var(--danger); color: #fff; font-weight: 800; font-size: 12.5px; text-decoration: none; }

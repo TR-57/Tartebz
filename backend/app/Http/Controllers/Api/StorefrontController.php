@@ -67,6 +67,7 @@ class StorefrontController extends Controller
                 return ['countries' => $sh['countries'], 'flat' => (object) array_column($sh['flat'], 'price', 'country'),
                     'table' => $sh['table'], 'extraPerHalfKg' => (float) $sh['extraPerHalfKg']];
             })(),
+            'maintenance' => \App\Support\Maintenance::on(),
             'payments' => \App\Http\Controllers\Api\CheckoutController::methods() + ['testMode' => \App\Support\Tap::enabled() && \App\Support\Tap::mode() === 'test'],
             'baseCurrency' => Currency::base(),
             'currencies' => Currency::forStorefront(),

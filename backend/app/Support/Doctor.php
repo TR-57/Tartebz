@@ -81,6 +81,9 @@ class Doctor
         $add(self::cronRecent() ? 'ok' : 'warn', 'Scheduled tasks ran in the last 15 minutes',
             'hPanel › Advanced › Cron Jobs › every minute: '.PHP_BINARY.' '.base_path('artisan').' schedule:run');
 
+        $add(Maintenance::on() ? 'warn' : 'ok', Maintenance::on() ? 'Maintenance mode is ON – customers see the "back soon" page' : 'Shop is open (maintenance mode off)',
+            'Admin › Settings › Maintenance, or: php artisan store:maintenance off');
+
         // Services
         $add(Outbox::configured() ? 'ok' : 'warn', 'Email sending (SMTP)', 'Admin › Settings › Email (Hostinger mailbox: smtp.hostinger.com, port 465).');
         if (Tap::enabled()) {

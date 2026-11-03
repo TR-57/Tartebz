@@ -27,7 +27,8 @@ class AuthController extends Controller
     {
         $a = AdminAuth::resolve($r);
 
-        return $this->ok(['admin' => $a ? ['id' => $a->id, 'name' => $a->name, 'email' => $a->email, 'role' => $a->role] : null]);
+        return $this->ok(['admin' => $a ? ['id' => $a->id, 'name' => $a->name, 'email' => $a->email, 'role' => $a->role] : null,
+            'maintenance' => $a ? \App\Support\Maintenance::on() : null]);
     }
 
     public function login(Request $r)
@@ -59,7 +60,8 @@ class AuthController extends Controller
         $token = AuthSessions::start(AuthSessions::ADMIN, $admin->id, $r);
         Audit::log($r, 'login', 'admin', $admin->id, [], $admin);
 
-        return $this->ok(['admin' => ['id' => $admin->id, 'name' => $admin->name, 'email' => $admin->email, 'role' => $admin->role]])
+        return $this->ok(['admin' => ['id' => $admin->id, 'name' => $admin->name, 'email' => $admin->email, 'role' => $admin->role],
+            'maintenance' => \App\Support\Maintenance::on()])
             ->withCookie(AuthSessions::cookie(AuthSessions::ADMIN, $token));
     }
 
@@ -138,7 +140,8 @@ class AuthController extends Controller
         $t = AuthSessions::start(AuthSessions::ADMIN, $admin->id, $r);
         Audit::log($r, 'password_reset', 'admin', $admin->id, [], $admin);
 
-        return $this->ok(['admin' => ['id' => $admin->id, 'name' => $admin->name, 'email' => $admin->email, 'role' => $admin->role]])
+        return $this->ok(['admin' => ['id' => $admin->id, 'name' => $admin->name, 'email' => $admin->email, 'role' => $admin->role],
+            'maintenance' => \App\Support\Maintenance::on()])
             ->withCookie(AuthSessions::cookie(AuthSessions::ADMIN, $t));
     }
 

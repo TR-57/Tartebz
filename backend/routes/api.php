@@ -31,12 +31,12 @@ Route::get('health', fn () => response()->json(['ok' => true, 'time' => now()->t
 
 // ---- Storefront (public) ----
 Route::get('storefront', [StorefrontController::class, 'index']);
-Route::post('stock-alerts', [StockAlertController::class, 'store']);
-Route::post('cart/hold', [CheckoutController::class, 'hold']);
-Route::post('checkout/quote', [CheckoutController::class, 'quote']);
-Route::post('checkout', [CheckoutController::class, 'place']);
+Route::middleware(\App\Http\Middleware\StoreOpen::class)->post('stock-alerts', [StockAlertController::class, 'store']);
+Route::middleware(\App\Http\Middleware\StoreOpen::class)->post('cart/hold', [CheckoutController::class, 'hold']);
+Route::middleware(\App\Http\Middleware\StoreOpen::class)->post('checkout/quote', [CheckoutController::class, 'quote']);
+Route::middleware(\App\Http\Middleware\StoreOpen::class)->post('checkout', [CheckoutController::class, 'place']);
 Route::get('orders/{token}', [CheckoutController::class, 'show'])->where('token', '[a-f0-9]{40}');
-Route::post('orders/{token}/pay', [CheckoutController::class, 'pay'])->where('token', '[a-f0-9]{40}');
+Route::middleware(\App\Http\Middleware\StoreOpen::class)->post('orders/{token}/pay', [CheckoutController::class, 'pay'])->where('token', '[a-f0-9]{40}');
 // Tap → us (no Origin header; exempt in config/store.php). The charge is always fetched again from Tap.
 Route::post('payments/tap/webhook', [TapWebhookController::class, 'handle']);
 Route::post('i18n/missing', [I18nController::class, 'missing']);
@@ -125,6 +125,9 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::post('orders/{id}/refund', [OrdersController::class, 'refund'])->whereNumber('id');
         Route::post('orders/{id}/refunds/{refundId}/check', [OrdersController::class, 'refundCheck'])->whereNumber(['id', 'refundId']);
         Route::post('orders/{id}/cancel-shipment', [OrdersController::class, 'cancelShipment'])->whereNumber('id');
+        Route::get('maintenance', [\App\Http\Controllers\Admin\MaintenanceController::class, 'index']);
+        Route::put('maintenance', [\App\Http\Controllers\Admin\MaintenanceController::class, 'save']);
+        Route::get('maintenance/preview', [\App\Http\Controllers\Admin\MaintenanceController::class, 'preview']);
         Route::get('website', [WebsiteController::class, 'index']);
         Route::put('website', [WebsiteController::class, 'save']);
     });

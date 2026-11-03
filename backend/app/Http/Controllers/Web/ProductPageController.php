@@ -19,6 +19,9 @@ class ProductPageController extends Controller
 {
     public function show(Request $r, string $slug)
     {
+        if (\App\Support\Maintenance::blocks(request())) {
+            return \App\Support\Maintenance::response();
+        }
         $slug = trim(str_contains($slug, '%') ? rawurldecode($slug) : $slug, '/');
         $lang = $r->query('lang') === 'en' ? 'en' : 'ar';
         $site = config('store.store_url');

@@ -26,6 +26,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RequireRole::class,
         ]);
         // The API answers JSON only: no CORS headers, no cookie encryption (tokens are already random), no CSRF tokens (origin check instead).
+        // Pages Laravel builds (product pages, maintenance) must read the same plain session cookies the API sets.
+        $middleware->encryptCookies(except: ['tz_adm', 'tz_sid']);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $json = fn (array $body, int $status) => response()->json($body, $status, [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

@@ -741,6 +741,16 @@
     "ar": "English",
     "where": "assets/js/app.js"
    },
+   "maint_open": {
+    "en": "Turn maintenance off",
+    "ar": "إيقاف وضع الصيانة",
+    "where": "assets/js/app.js"
+   },
+   "maint_team": {
+    "en": "Maintenance mode is on: customers see the “back soon” page. You see the shop because you are signed in as the team.",
+    "ar": "وضع الصيانة مفعّل: العملاء يرون صفحة «نرجع قريبًا»، وأنت تشوف المتجر لأنك مسجّل دخول كفريق.",
+    "where": "assets/js/app.js"
+   },
    "marquee.0": {
     "en": "🚚 Delivery to all Gulf countries",
     "ar": "🚚 توصيل لكل دول الخليج",
@@ -2181,7 +2191,31 @@
    "Tick removed (not prepared).": "أُزيلت علامة التجهيز.",
    "Payment link sent by email.": "أُرسل رابط الدفع بالإيميل.",
    "Payment link sent on WhatsApp.": "أُرسل رابط الدفع على واتساب.",
-   "Enter the phone number with its country code.": "أدخل رقم الهاتف مع رمز الدولة."
+   "Enter the phone number with its country code.": "أدخل رقم الهاتف مع رمز الدولة.",
+   "Maintenance": "الصيانة",
+   "Maintenance mode": "وضع الصيانة",
+   "Close the shop for a short while – for example while you change prices or add products – without losing anything.": "أغلق المتجر لفترة قصيرة – مثلًا أثناء تعديل الأسعار أو إضافة منتجات – بدون أن تخسر شيئًا.",
+   "ON – the shop is closed": "مفعّل – المتجر مغلق",
+   "Off – the shop is open": "متوقف – المتجر مفتوح",
+   "Switched on": "تم التفعيل",
+   "Customers see the “back soon” page. New orders pause until you switch it off.": "يرى العملاء صفحة «نرجع قريبًا». تتوقف الطلبات الجديدة حتى توقف الصيانة.",
+   "Message for customers": "رسالة للعملاء",
+   "Leave empty to use the text shown in grey. The page also has your WhatsApp and Instagram buttons.": "اتركها فارغة لاستخدام النص الرمادي. الصفحة فيها أيضًا أزرار واتساب وإنستغرام.",
+   "Preview the page": "معاينة الصفحة",
+   "While it is on": "أثناء تفعيلها",
+   "Every shop page shows the “back soon” page. Google is told it is temporary, so the shop keeps its place in search.": "كل صفحات المتجر تعرض صفحة «نرجع قريبًا». يُبلَّغ Google أنها مؤقتة، فيحافظ المتجر على ترتيبه في البحث.",
+   "New orders, stock reservations and back-in-stock requests pause.": "تتوقف الطلبات الجديدة وحجز المخزون وطلبات التنبيه عند التوفر.",
+   "You and your team, signed in, still see and test the whole shop.": "أنت وفريقك (مع تسجيل الدخول) تشاهدون المتجر كاملًا وتجرّبونه.",
+   "The admin, the orders board, Tap payment updates and customers’ order pages keep working.": "لوحة التحكم ولوحة الطلبات وتحديثات الدفع من Tap وصفحات طلبات العملاء تبقى تعمل.",
+   "Locked out of the admin? On the server: php artisan store:maintenance off": "لا تستطيع دخول لوحة التحكم؟ على الخادم: php artisan store:maintenance off",
+   "Close the shop? Customers will see the “back soon” page until you switch maintenance off.": "إغلاق المتجر؟ سيرى العملاء صفحة «نرجع قريبًا» حتى توقف وضع الصيانة.",
+   "Switch on": "تفعيل",
+   "Maintenance mode is on": "وضع الصيانة مفعّل",
+   "The shop is open": "المتجر مفتوح",
+   "Shop closed (maintenance)": "المتجر مغلق (صيانة)",
+   "Maintenance mode is ON – customers see the “back soon” page": "وضع الصيانة مفعّل – العملاء يرون صفحة «نرجع قريبًا»",
+   "Settings > Maintenance – switch it off to open the shop.": "الإعدادات > الصيانة – أوقفها لفتح المتجر.",
+   "Saved, but the web folder could not be written, so visitors may still see the shop. Check the folder permissions (store:doctor).": "تم الحفظ، لكن تعذّرت الكتابة في مجلد الموقع، فقد يرى الزوار المتجر. راجع صلاحيات المجلد (store:doctor)."
   }
  }
 }

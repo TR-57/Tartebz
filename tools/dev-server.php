@@ -10,6 +10,19 @@
 $root = dirname(__DIR__);
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/');
 
+// Maintenance mode, as the Hostinger .htaccess does it.
+if (is_file($root.'/maintenance-on.html')
+    && ! preg_match('#^/(api|admin|staff|assets|uploads|img|\.well-known)(/|$)#', $path)
+    && ! in_array($path, ['/maintenance-on.html', '/staff-sw.js', '/staff.webmanifest'], true)
+    && ! preg_match('/(^|&)order=[a-f0-9]{40}/', (string) ($_SERVER['QUERY_STRING'] ?? ''))
+    && ! preg_match('/^[a-f0-9]{64}$/', (string) ($_COOKIE['tz_adm'] ?? ''))) {
+    http_response_code(503);
+    header('Retry-After: 3600');
+    header('Content-Type: text/html; charset=utf-8');
+    readfile($root.'/maintenance-on.html');
+    return true;
+}
+
 $laravel = function () use ($root) {
     $_SERVER['SCRIPT_FILENAME'] = $root.'/backend/public/index.php';
     $_SERVER['SCRIPT_NAME'] = '/index.php';
