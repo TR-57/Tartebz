@@ -50,7 +50,17 @@
     root.querySelectorAll('[data-icon]').forEach(function (el) { el.innerHTML = TZ.icon(el.getAttribute('data-icon')); });
     root.querySelectorAll('[data-brand-icon]').forEach(function (el) { el.innerHTML = TZ.brandIcon(el.getAttribute('data-brand-icon')); });
     root.querySelectorAll('[data-logo]').forEach(function (el) { el.innerHTML = TZ.logoSVG(el.getAttribute('data-logo')); });
-    root.querySelectorAll('[data-art]').forEach(function (el) { var p = TZ.find(el.getAttribute('data-art')); if (p) el.innerHTML = TZ.productArt(p); });
+    // Decorative product pictures: see-through photos only. A product without one gives its place to one that has.
+    var used = {}, spare = TZ.products.filter(TZ.hasCutout);
+    var slots = [].slice.call(root.querySelectorAll('[data-art]'));
+    slots.forEach(function (el) { var p = TZ.find(el.getAttribute('data-art')); if (p && TZ.hasCutout(p)) used[p.id] = 1; });
+    slots.forEach(function (el) {
+      var p = TZ.find(el.getAttribute('data-art'));
+      if (!p || !TZ.hasCutout(p)) p = spare.filter(function (x) { return !used[x.id]; })[0] || p;
+      if (!p) return;
+      used[p.id] = 1;
+      el.innerHTML = TZ.decoArt(p);
+    });
   };
 
   /* Internal links: clean, site-absolute addresses ('shop.html?cat=x' -> '/shop?cat=x', 'index.html' -> '/'),

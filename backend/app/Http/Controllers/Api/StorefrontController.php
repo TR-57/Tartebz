@@ -97,7 +97,8 @@ class StorefrontController extends Controller
                     'name' => ['en' => $p->name, 'ar' => $p->name_ar ?: $p->name],
                     'flavor' => ['en' => $p->flavor, 'ar' => $p->flavor_ar ?: $p->flavor],
                     'desc' => ['en' => (string) $p->description, 'ar' => (string) ($p->description_ar ?: $p->description)],
-                    'images' => array_map(fn ($u) => ['src' => Thumbs::url($u, 800), 'small' => Thumbs::url($u, 400), 'large' => Thumbs::url($u, 1600), 'original' => $u], $images),
+                    'images' => array_map(fn ($u) => ['src' => Thumbs::url($u, 800), 'small' => Thumbs::url($u, 400), 'large' => Thumbs::url($u, 1600), 'original' => $u]
+                        + (Media::isClear($u) ? ['clear' => true] : []), $images),
                 ];
             })->values(),
         ], 200, $headers, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

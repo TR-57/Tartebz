@@ -195,10 +195,24 @@
     return '<img class="art art-photo ' + (cls || '') + '" src="' + esc(im.src) + '"' + set + ' alt="' + esc(TZ.L(p.name)) + '" loading="lazy" decoding="async">';
   };
 
+  /* The product's photo with a see-through background (no card), or null. For decorative spots: hero, category cards. */
+  TZ.cutout = function (p, cls) {
+    var im = (p.images || []).filter(function (x) { return x.clear; })[0];
+    if (!im) return null;
+    return '<img class="art art-cutout ' + (cls || '') + '" src="' + esc(im.src) + '" srcset="' + esc(im.small) + ' 400w, ' + esc(im.src) + ' 800w"' +
+      ' sizes="(max-width: 600px) 50vw, 360px" alt="' + esc(TZ.L(p.name)) + '" loading="lazy" decoding="async">';
+  };
+  TZ.hasCutout = function (p) { return !!(p && (p.images || []).some(function (x) { return x.clear; })); };
+  /* Decorative spots: the see-through photo, else the drawn pack – never a photo on a white card. */
+  TZ.decoArt = function (p, cls) { return TZ.cutout(p, cls) || TZ.drawnArt(p, cls); };
+
   /* Returns the product visual: a real photo if one is set, otherwise the drawn pack. */
   TZ.productArt = function (p, cls) {
-    var name = TZ.L(p.name);
     if (p.image) return TZ.photo(p, 0, cls);
+    return TZ.drawnArt(p, cls);
+  };
+  TZ.drawnArt = function (p, cls) {
+    var name = TZ.L(p.name);
     var a = p.art, g = id('g'), sh = id('s'), clip = id('c');
     var flavor = TZ.L(p.flavor);
     var draw = { box: box, strips: strips, cup: cup, bag: bag }[a.type] || box;

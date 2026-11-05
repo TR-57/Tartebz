@@ -157,6 +157,40 @@ class Media
         return DB::table('media')->find($id);
     }
 
+    /**
+     * Has the picture a see-through background (PNG / WebP with transparency)? Such photos are shown without a card
+     * in the decorative spots of the shop (hero, category cards). Checked once per file version, then remembered.
+     */
+    public static function isClear(string $url): bool
+    {
+        $path = self::pathFromUrl($url);
+        if ($path === null || ! preg_match('/\.(png|webp)$/i', $path)) {
+            return false;
+        }
+        $abs = self::abs($path);
+        if (! is_file($abs)) {
+            return false;
+        }
+
+        return (bool) \Illuminate\Support\Facades\Cache::rememberForever('clear:'.md5($path.'|'.filemtime($abs)), function () use ($abs) {
+            $img = @imagecreatefromstring((string) file_get_contents($abs));
+            if (! $img) {
+                return false;
+            }
+            $w = imagesx($img);
+            $h = imagesy($img);
+            $clear = 0;
+            // the four corners and the middle of each edge
+            foreach ([[0, 0], [$w - 1, 0], [0, $h - 1], [$w - 1, $h - 1], [intdiv($w, 2), 0], [intdiv($w, 2), $h - 1], [0, intdiv($h, 2)], [$w - 1, intdiv($h, 2)]] as [$x, $y]) {
+                $c = imagecolorsforindex($img, imagecolorat($img, $x, $y));
+                $clear += ($c['alpha'] ?? 0) >= 120 ? 1 : 0;
+            }
+            imagedestroy($img);
+
+            return $clear >= 6;
+        });
+    }
+
     public static function present(object $m): array
     {
         return [

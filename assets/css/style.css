@@ -266,9 +266,12 @@ select:focus-visible, input:focus-visible, textarea:focus-visible { outline: non
 }
 .hero-logo svg { width: 100%; height: auto; filter: drop-shadow(0 30px 50px rgba(0, 0, 0, .45)); }
 .hero-ring { position: absolute; z-index: 1; width: 92%; aspect-ratio: 1; border-radius: 50%; border: 2px dashed rgba(255, 215, 0, .35); animation: spin 40s linear infinite; }
-.hero-pack { position: absolute; z-index: 4; width: 30%; filter: drop-shadow(0 24px 30px rgba(0, 0, 0, .35)); }
-.hero-pack-1 { bottom: -2%; inset-inline-start: -6%; animation: floatTilt 6s ease-in-out infinite; --rot: -10deg; }
-.hero-pack-2 { top: -2%; inset-inline-end: -6%; width: 27%; animation: floatTilt 7s ease-in-out .8s infinite; --rot: 12deg; }
+/* Products float on each side of the logo – see-through photos, no card. */
+.hero-pack { position: absolute; z-index: 4; top: 50%; width: 44%; margin-top: -22%; filter: drop-shadow(0 26px 28px rgba(0, 0, 0, .4)); }
+.hero-pack-1 { left: -13%; animation: sway 6s ease-in-out infinite; --rot: -8deg; }
+.hero-pack-2 { right: -13%; animation: sway 6.5s ease-in-out .9s infinite; --rot: 8deg; }
+.hero-pack .art-cutout { width: 100%; height: auto; }
+@keyframes sway { 0%, 100% { transform: translate(0, 0) rotate(var(--rot)); } 50% { transform: translate(calc(var(--rot) * -1.4px), -14px) rotate(calc(var(--rot) * .4)); } }
 .scroll-cue { position: absolute; z-index: 3; bottom: 74px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: .78rem; font-weight: 700; color: rgba(255, 255, 255, .8); }
 .scroll-cue .mouse { width: 24px; height: 38px; border: 2px solid rgba(255, 255, 255, .7); border-radius: 14px; position: relative; }
 .scroll-cue .mouse::after { content: ""; position: absolute; top: 7px; left: 50%; width: 4px; height: 8px; margin-left: -2px; border-radius: 2px; background: var(--yellow); animation: wheel 1.8s ease-in-out infinite; }
@@ -1205,3 +1208,12 @@ body.has-iab .site-header { top: var(--iab-h); }
 @media (prefers-reduced-motion: reduce) { .hero-logo { animation: none; } .hero-pulse { animation: none; opacity: 0; } }
 /* Product page: show the whole photo (some are wide), not a square crop. */
 .pd-stage .art-photo { object-fit: contain; }
+
+/* See-through product photos in decorative spots: no card, a soft shadow on whatever is behind. */
+.art-cutout { display: block; width: 100%; height: auto; object-fit: contain; background: none; border-radius: 0; filter: drop-shadow(0 16px 18px rgba(0, 0, 0, .28)); }
+.cat-art .art-cutout { filter: drop-shadow(0 12px 14px rgba(0, 0, 0, .3)); }
+@media (max-width: 900px) {
+  .hero-pack { width: 40%; margin-top: -20%; }
+  .hero-pack-1 { left: -12%; } .hero-pack-2 { right: -12%; }
+}
+@media (prefers-reduced-motion: reduce) { .hero-pack-1, .hero-pack-2 { animation: none; transform: rotate(var(--rot)); } }

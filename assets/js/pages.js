@@ -297,9 +297,12 @@
           ? '<img class="hero-logo-img" src="' + e(TZ.store.logoXL || TZ.store.logoLarge || TZ.store.logo) + '" srcset="' + e(TZ.store.logoLarge || TZ.store.logo) + ' 400w, ' + e(TZ.store.logoXL || TZ.store.logoLarge || TZ.store.logo) + ' 800w"' +
             ' sizes="(min-width: 900px) 470px, 76vw" alt="' + e(TZ.L(TZ.store.name)) + '" fetchpriority="high" decoding="async">'
           : TZ.logoSVG()));
-      var packs = [TZ.find('tartebz-fruits'), TZ.find('electric-sour-strips')].concat(TZ.suggestions(2)).filter(Boolean);
-      set('#hero-pack-1', packs[0] ? TZ.productArt(packs[0]) : '');
-      set('#hero-pack-2', packs[1] && packs[1] !== packs[0] ? TZ.productArt(packs[1]) : (packs[2] ? TZ.productArt(packs[2]) : ''));
+      // Two products floating left and right of the logo, see-through photos (no card).
+      var packs = [TZ.find('electric-sour-strips'), TZ.find('tartebz-fruits')].concat(TZ.products.filter(TZ.hasCutout)).filter(TZ.hasCutout);
+      packs = packs.filter(function (p, i) { return packs.indexOf(p) === i; });
+      if (packs.length < 2) packs = packs.concat(TZ.suggestions(2));
+      set('#hero-pack-1', packs[0] ? TZ.decoArt(packs[0]) : '');
+      set('#hero-pack-2', packs[1] ? TZ.decoArt(packs[1]) : '');
 
       set('#marquee', marquee());
       sourPicker();
@@ -312,8 +315,10 @@
           '<span class="cat-ico">' + TZ.icon(c.icon) + '</span>' +
           '<span class="cat-text"><b>' + e(TZ.L(c.name)) + '</b><small>' + e(TZ.L(c.desc)) + '</small><em>' + e(t('cats_count', { n: n })) + '</em></span>' +
           '<span class="cat-art">' + (function () {
-            var cp = TZ.find(catArt[c.id]) || TZ.products.filter(function (p) { return inCat(p, c.id); })[0];
-            return cp ? TZ.productArt(cp) : '';
+            // a see-through photo from this category if there is one, else the drawn pack
+            var inThis = TZ.products.filter(function (p) { return inCat(p, c.id); });
+            var cp = inThis.filter(TZ.hasCutout)[0] || TZ.find(catArt[c.id]) || inThis[0];
+            return cp ? TZ.decoArt(cp) : '';
           })() + '</span>' +
           '<span class="cat-go">' + TZ.icon('arrow', 'flip-rtl') + '</span></a>';
       }).join(''));
