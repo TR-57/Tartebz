@@ -37,7 +37,9 @@ class Orders
                 'currency' => $quote['currency'], 'fx_rate' => $quote['rate'],
                 'subtotal' => $quote['subtotal'], 'shipping' => $quote['shipping'], 'total' => $quote['total'],
                 'charge_currency' => $quote['chargeCurrency'], 'charge_amount' => $quote['chargeAmount'],
-                'weight_grams' => $quote['weightGrams'], 'ip' => $meta['ip'] ?? '', 'user_agent' => mb_substr($meta['ua'] ?? '', 0, 255),
+                'weight_grams' => $quote['weightGrams'], 'ip' => $meta['ip'] ?? '',
+                'shipping_method' => (string) ($quote['method']['id'] ?? ''), 'shipping_method_name' => (string) ($quote['method']['name']['en'] ?? ''),
+                'shipping_method_name_ar' => (string) ($quote['method']['name']['ar'] ?? ''), 'user_agent' => mb_substr($meta['ua'] ?? '', 0, 255),
                 'created_at' => now(), 'updated_at' => now(),
             ]);
             $prefix = (string) (Settings::get('orders')['numberPrefix'] ?? '');
@@ -250,13 +252,30 @@ class Orders
         }
     }
 
+    /** The customer hears the tracking number as soon as the waybill exists (the payment email was the confirmation). */
+    public static function emailTracking(?object $o): void
+    {
+        if (! $o || $o->email === '' || $o->awb === '') {
+            return;
+        }
+        $ar = $o->lang !== 'en';
+        $track = Smsa::TRACK_URL.rawurlencode($o->awb);
+        $subject = $ar ? "رقم تتبّع طلبك {$o->number}" : "Tracking number for order {$o->number}";
+        $body = ($ar
+            ? '<h1 style="margin:0 0 10px;font-size:22px;">نجهّز طلبك للشحن</h1><p>طلبك رقم <b>'.e($o->number).'</b> سيُشحن مع سمسا. رقم الشحنة: <b><bdi>'.e($o->awb).'</bdi></b>. يظهر التتبّع بعد أن تستلم سمسا الطرد.</p>'
+            : '<h1 style="margin:0 0 10px;font-size:22px;">Your order is being packed</h1><p>Order <b>'.e($o->number).'</b> ships with SMSA. Tracking number: <b>'.e($o->awb).'</b>. Tracking shows once SMSA has the parcel.</p>')
+            .EmailLayout::button($ar ? 'تتبّع الشحنة' : 'Track the parcel', $track);
+        Outbox::queue($o->email, $subject, EmailLayout::wrap($ar ? 'ar' : 'en', $subject, $body));
+        self::event($o->id, 'email', 'Customer emailed the tracking number.');
+    }
+
     public static function emailShipped(object $o): void
     {
         if ($o->email === '' || $o->awb === '') {
             return;
         }
         $ar = $o->lang !== 'en';
-        $track = 'https://www.smsaexpress.com/trackingdetails?tracknumbers='.rawurlencode($o->awb);
+        $track = Smsa::TRACK_URL.rawurlencode($o->awb);
         $subject = $ar ? "طلبك {$o->number} في الطريق 🚚" : "Your order {$o->number} is on its way 🚚";
         $body = ($ar
             ? '<h1 style="margin:0 0 10px;font-size:22px;">طلبك في الطريق!</h1><p>شحنّا طلبك رقم <b>'.e($o->number).'</b> مع سمسا. رقم الشحنة: <b><bdi>'.e($o->awb).'</bdi></b></p>'

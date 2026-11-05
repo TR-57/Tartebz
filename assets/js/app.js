@@ -178,23 +178,80 @@
     var msg = [TZ.t('wa_order_intro'), ''].concat(TZ.cart.lines().map(function (l) {
       return '• ' + TZ.L(l.p.name) + ' × ' + l.qty + ' = ' + TZ.money(l.p.price * l.qty);
     })).concat(['', TZ.t('cart_subtotal') + ': ' + TZ.money(TZ.cart.subtotal()),
-      TZ.t('cart_shipping') + ' (' + c.flag + ' ' + TZ.L(c.name) + '): ' + TZ.money(TZ.cart.shipping()),
+      TZ.t('cart_shipping') + ' (' + c.flag + ' ' + TZ.L(c.name) + (TZ.cart.method() ? ' · ' + TZ.L(TZ.cart.method().name) : '') + '): ' + TZ.money(TZ.cart.shipping()),
       TZ.t('cart_total') + ': ' + TZ.money(TZ.cart.total())]).join('\n');
     return 'https://wa.me/' + ((TZ.shop && TZ.shop.whatsapp) || TZ.store.phoneRaw) + '?text=' + encodeURIComponent(msg);
   };
 
   /* ---------- shipping ---------- */
-  TZ.shipCost = function (weightKg, countryObj) {
-    var c = countryObj || TZ.country();
-    if (weightKg <= 0) return 0;
-    var flat = TZ.shipping.flat && TZ.shipping.flat[c.code];
-    if (flat != null) return flat;
-    if (c.ship === 'flat') return TZ.shipping.flatBH;
-    var t = TZ.shipping.ubex;
-    for (var i = 0; i < t.length; i++) { if (weightKg <= t[i][0] + 1e-9) return t[i][1]; }
-    var last = t[t.length - 1];
-    return Math.round((last[1] + Math.ceil((weightKg - last[0]) / 0.5) * (TZ.shipping.extra != null ? TZ.shipping.extra : 1.05)) * 1000) / 1000;
+  /* One delivery method's price – the twin of App\Support\Shipping::price() on the server (keep them in step). */
+  TZ.methodPrice = function (m, kg, subtotal) {
+    var num = function (v) { return v === '' || v == null || isNaN(+v) ? null : +v; };
+    kg = Math.max(0, kg || 0);
+    if (num(m.maxKg) != null && kg > num(m.maxKg)) return null;
+    var step = num(m.stepKg) || 0, per = num(m.perStep) || 0, p;
+    var steps = function (over) { return step > 0 && over > 0 ? Math.ceil(Math.round(over / step * 1e6) / 1e6) : 0; };
+    if (m.pricing === 'formula') p = (num(m.base) || 0) + steps(kg - (num(m.firstKg) || 0)) * per;
+    else if (m.pricing === 'table') {
+      var bands = (m.table || []).slice().sort(function (a, b) { return a[0] - b[0]; });
+      for (var i = 0; i < bands.length; i++) { if (kg <= bands[i][0] + 1e-9) { p = +bands[i][1]; break; } }
+      if (p == null) { var last = bands[bands.length - 1] || [0, 0]; p = +last[1] + steps(kg - last[0]) * per; }
+    } else p = num(m.base) || 0;
+    if (num(m.min) != null && p < num(m.min)) p = num(m.min);
+    if (num(m.max) != null && p > num(m.max)) p = num(m.max);
+    if (num(m.freeOver) != null && subtotal >= num(m.freeOver)) return 0;
+    return Math.round(Math.max(0, p) * 1000) / 1000;
   };
+  /* The methods on offer for a parcel to a country: [{id, name, price, etaMin, etaMax}]. */
+  TZ.shipMethods = function (kg, countryObj, subtotal) {
+    var code = (countryObj || TZ.country()).code, ds = TZ.shipping.destinations || [];
+    var d = ds.filter(function (x) { return (x.countries || []).indexOf(code) > -1; })[0] || ds.filter(function (x) { return (x.countries || []).indexOf('*') > -1; })[0];
+    if (!d) return [];
+    return (d.methods || []).map(function (m) {
+      var price = TZ.methodPrice(m, kg, subtotal || 0);
+      return price == null ? null : { id: m.id, name: m.name, price: price, etaMin: m.etaMin, etaMax: m.etaMax };
+    }).filter(Boolean);
+  };
+  /* The customer's chosen method for a country (kept in this browser), if it is on offer; else the first. */
+  TZ.chosenMethod = function (list, countryObj) {
+    var want = store.get('ship_method_' + (countryObj || TZ.country()).code, '');
+    return list.filter(function (m) { return m.id === want; })[0] || list[0] || null;
+  };
+  TZ.chooseMethod = function (id, countryObj) { store.set('ship_method_' + (countryObj || TZ.country()).code, id); };
+  TZ.etaText = function (m) {
+    if (!m || (m.etaMin == null && m.etaMax == null)) return '';
+    var a = m.etaMin != null ? +m.etaMin : +m.etaMax, b = m.etaMax != null ? +m.etaMax : a;
+    if (!b) return TZ.t('eta_same');
+    return a === b ? TZ.t('eta_day', { a: b }) : TZ.t('eta_days', { a: a, b: b });
+  };
+  /* Delivery price: the chosen method (or the given one); the lowest for a country with methodId 'cheapest'. */
+  TZ.shipCost = function (weightKg, countryObj, methodId, subtotal) {
+    if (weightKg <= 0) return 0;
+    var list = TZ.shipMethods(weightKg, countryObj, subtotal || 0);
+    if (!list.length) return 0;
+    if (methodId === 'cheapest') return Math.min.apply(null, list.map(function (m) { return m.price; }));
+    var m = methodId ? list.filter(function (x) { return x.id === methodId; })[0] : TZ.chosenMethod(list, countryObj);
+    return (m || list[0]).price;
+  };
+
+  /* Delivery method choice (cart, checkout): radio buttons when there is more than one, else nothing. */
+  TZ.methodPicker = function (where) {
+    var list = TZ.shipMethods(TZ.cart.weight(), null, TZ.cart.subtotal());
+    if (list.length < 2) return '';
+    var cur = TZ.chosenMethod(list);
+    return '<fieldset class="ship-methods ship-methods-' + where + '"><legend>' + TZ.esc(TZ.t('ship_method')) + '</legend>' + list.map(function (m) {
+      return '<label class="ship-method' + (cur && cur.id === m.id ? ' is-on' : '') + '"><input type="radio" name="ship_method_' + where + '" value="' + TZ.esc(m.id) + '" data-ship-method' +
+        (cur && cur.id === m.id ? ' checked' : '') + '><span><b>' + TZ.esc(TZ.L(m.name)) + '</b>' + (TZ.etaText(m) ? '<small>' + TZ.esc(TZ.etaText(m)) + '</small>' : '') +
+        '</span><em>' + TZ.esc(TZ.money(m.price)) + '</em></label>';
+    }).join('') + '</fieldset>';
+  };
+  doc.addEventListener('change', function (e) {
+    var r = e.target.closest && e.target.closest('[data-ship-method]');
+    if (!r) return;
+    TZ.chooseMethod(r.value);
+    renderCart();
+    if (doc.body.getAttribute('data-page') === 'checkout' && TZ.pages && TZ.pages.checkout) TZ.pages.checkout();
+  });
 
   /* ---------- cart ---------- */
   // Lines whose product still has stock stay; whether this customer can keep them is settled by TZ.holds.sync().
@@ -208,7 +265,8 @@
     count: function () { return cart.reduce(function (s, l) { return s + l.qty; }, 0); },
     subtotal: function () { return cart.reduce(function (s, l) { return s + TZ.find(l.id).price * l.qty; }, 0); },
     weight: function () { return cart.reduce(function (s, l) { return s + TZ.find(l.id).weight * l.qty; }, 0); },
-    shipping: function () { return TZ.shipCost(TZ.cart.weight()); },
+    shipping: function () { return TZ.shipCost(TZ.cart.weight(), null, null, TZ.cart.subtotal()); },
+    method: function () { return TZ.chosenMethod(TZ.shipMethods(TZ.cart.weight(), null, TZ.cart.subtotal())); },
     total: function () { return TZ.cart.subtotal() + TZ.cart.shipping(); },
     /* Returns how many were really added (0 when no more can be had). */
     add: function (id, qty) {
@@ -580,7 +638,8 @@
       TZ.holdTimer() +
       '<label class="ship-to">' + TZ.icon('truck') + '<span>' + TZ.esc(TZ.t('ship_to_label')) + '</span><span class="select-wrap"><select data-country>' + TZ.countryOptions() + '</select>' + TZ.icon('chevron', 'chev') + '</span></label>' +
       '<dl class="totals"><div><dt>' + TZ.esc(TZ.t('cart_subtotal')) + '</dt><dd>' + TZ.esc(TZ.money(TZ.cart.subtotal())) + '</dd></div>' +
-      '<div><dt>' + TZ.esc(TZ.t('cart_shipping')) + '<small>' + TZ.esc(c.ship === 'flat' ? TZ.t('cart_ship_note_flat') : TZ.t('cart_ship_note_ubex', { w: w })) + '</small></dt><dd>' + TZ.esc(TZ.money(TZ.cart.shipping())) + '</dd></div>' +
+      TZ.methodPicker('cart') +
+      '<div><dt>' + TZ.esc(TZ.t('cart_shipping')) + '<small>' + TZ.esc(TZ.cart.method() ? TZ.t('ship_note', { m: TZ.L(TZ.cart.method().name), w: w }) : TZ.t('ship_none')) + '</small></dt><dd>' + TZ.esc(TZ.money(TZ.cart.shipping())) + '</dd></div>' +
       '<div class="grand"><dt>' + TZ.esc(TZ.t('cart_total')) + '</dt><dd>' + TZ.esc(TZ.money(TZ.cart.total())) + '</dd></div></dl>' +
       (TZ.delivery(c) ? '<p class="cart-eta">' + TZ.deliveryChip(c) + '</p>' : '') +
       '<a class="btn btn-primary btn-block btn-lg" href="' + TZ.url('checkout.html') + '">' + TZ.esc(TZ.t('cart_checkout')) + TZ.icon('arrow', 'flip-rtl') + '</a>' +

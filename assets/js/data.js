@@ -19,12 +19,12 @@ TZ.store = {
 
 /* Country → currency. rate = multiplier on the BHD price (from real past orders). */
 TZ.countries = [
-  { code: 'BH', cur: 'BHD', rate: 1,    dec: 3, sym: { ar: 'د.ب', en: 'BHD' }, name: { ar: 'البحرين', en: 'Bahrain' }, flag: '🇧🇭', ship: 'flat' },
-  { code: 'SA', cur: 'SAR', rate: 10,   dec: 2, sym: { ar: 'ر.س', en: 'SAR' }, name: { ar: 'السعودية', en: 'Saudi Arabia' }, flag: '🇸🇦', ship: 'ubex' },
-  { code: 'AE', cur: 'AED', rate: 10,   dec: 2, sym: { ar: 'د.إ', en: 'AED' }, name: { ar: 'الإمارات', en: 'UAE' }, flag: '🇦🇪', ship: 'ubex' },
-  { code: 'QA', cur: 'QAR', rate: 10,   dec: 2, sym: { ar: 'ر.ق', en: 'QAR' }, name: { ar: 'قطر', en: 'Qatar' }, flag: '🇶🇦', ship: 'ubex' },
-  { code: 'KW', cur: 'KWD', rate: 0.82, dec: 3, sym: { ar: 'د.ك', en: 'KWD' }, name: { ar: 'الكويت', en: 'Kuwait' }, flag: '🇰🇼', ship: 'ubex' },
-  { code: 'OM', cur: 'OMR', rate: 1.1,  dec: 3, sym: { ar: 'ر.ع', en: 'OMR' }, name: { ar: 'عُمان', en: 'Oman' }, flag: '🇴🇲', ship: 'ubex' }
+  { code: 'BH', cur: 'BHD', rate: 1,    dec: 3, sym: { ar: 'د.ب', en: 'BHD' }, name: { ar: 'البحرين', en: 'Bahrain' }, flag: '🇧🇭' },
+  { code: 'SA', cur: 'SAR', rate: 10,   dec: 2, sym: { ar: 'ر.س', en: 'SAR' }, name: { ar: 'السعودية', en: 'Saudi Arabia' }, flag: '🇸🇦' },
+  { code: 'AE', cur: 'AED', rate: 10,   dec: 2, sym: { ar: 'د.إ', en: 'AED' }, name: { ar: 'الإمارات', en: 'UAE' }, flag: '🇦🇪' },
+  { code: 'QA', cur: 'QAR', rate: 10,   dec: 2, sym: { ar: 'ر.ق', en: 'QAR' }, name: { ar: 'قطر', en: 'Qatar' }, flag: '🇶🇦' },
+  { code: 'KW', cur: 'KWD', rate: 0.82, dec: 3, sym: { ar: 'د.ك', en: 'KWD' }, name: { ar: 'الكويت', en: 'Kuwait' }, flag: '🇰🇼' },
+  { code: 'OM', cur: 'OMR', rate: 1.1,  dec: 3, sym: { ar: 'ر.ع', en: 'OMR' }, name: { ar: 'عُمان', en: 'Oman' }, flag: '🇴🇲' }
 ];
 
 /* Mobile numbers: the customer picks the country code, then types the rest.
@@ -39,11 +39,16 @@ TZ.phones = [
 TZ.phoneNames = { EG: { ar: 'مصر', en: 'Egypt', flag: '🇪🇬' }, JO: { ar: 'الأردن', en: 'Jordan', flag: '🇯🇴' },
   GB: { ar: 'بريطانيا', en: 'UK', flag: '🇬🇧' }, US: { ar: 'أمريكا', en: 'USA', flag: '🇺🇸' } };
 
-/* Shipping in BHD. Bahrain is a flat rate; the rest of the GCC uses the UBEX weight table (kg → BHD). */
+/* Delivery methods per destination (Admin › Shipping rates; the live list comes from /api/storefront).
+   These are the built-in defaults: Bahrain flat 1.500, the rest of the GCC by air with SMSA by weight. Money in BHD. */
 TZ.shipping = {
-  flatBH: 1.5,
-  ubex: [[0.5,3.8],[1,4.2],[1.5,5.1],[2,6.1],[2.5,7.3],[3,8.7],[3.5,9.6],[4,12.1],[4.5,12.2],[5,13.8],
-         [5.5,14.9],[6,15.9],[6.5,17],[7,18.1],[7.5,19.1],[8,20.2],[8.5,21.2],[9,22.3],[9.5,23.3],[10,24.4]]
+  countries: ['BH', 'SA', 'AE', 'QA', 'KW', 'OM'],
+  destinations: [
+    { countries: ['BH'], methods: [{ id: 'bh-home', name: { en: 'Home delivery', ar: 'توصيل للمنزل' }, pricing: 'flat', base: 1.5, etaMin: 1, etaMax: 1 }] },
+    { countries: ['SA', 'AE', 'QA', 'KW', 'OM'], methods: [{ id: 'gcc-air', name: { en: 'By air (SMSA)', ar: 'شحن جوي (سمسا)' }, pricing: 'table',
+      table: [[0.5,3.8],[1,4.2],[1.5,5.1],[2,6.1],[2.5,7.3],[3,8.7],[3.5,9.6],[4,12.1],[4.5,12.2],[5,13.8],
+              [5.5,14.9],[6,15.9],[6.5,17],[7,18.1],[7.5,19.1],[8,20.2],[8.5,21.2],[9,22.3],[9.5,23.3],[10,24.4]], stepKg: 0.5, perStep: 1.05, etaMin: 2, etaMax: 4 }] }
+  ]
 };
 
 /* "Best sellers" is a collection, not a category: it lists the products marked best seller. */
@@ -139,7 +144,7 @@ TZ.i18n = {
     cart_empty_title: 'سلتك فاضية', cart_empty_text: 'ضيف نكهتك المفضلة وخلّنا نوصلها لك.',
     cart_subtotal: 'المجموع الفرعي', cart_shipping: 'التوصيل', cart_total: 'الإجمالي',
     cart_checkout: 'إتمام الطلب', cart_continue: 'متابعة التسوق', cart_remove: 'حذف',
-    cart_ship_note_flat: 'سعر ثابت داخل البحرين', cart_ship_note_ubex: 'حسب الوزن ({w} كجم)، الشحن عبر سمسا إكسبريس',
+    cart_ship_note_flat: 'سعر ثابت داخل البحرين', cart_ship_note_ubex: 'حسب الوزن ({w} كجم)، الشحن عبر سمسا إكسبريس', ship_method: 'طريقة التوصيل', ship_note: '{m} · {w} كجم', ship_none: 'لا يوجد توصيل لهذا الوزن إلى هذه الدولة – اطلب عبر واتساب', eta_days: '{a}–{b} أيام', eta_day: 'خلال {a} يوم', eta_same: 'نفس اليوم',
     added: 'أُضيف «{name}» إلى السلة', view_cart: 'عرض السلة',
     staff_signin: 'دخول فريق العمل',
     maint_team: 'وضع الصيانة مفعّل: العملاء يرون صفحة «نرجع قريبًا»، وأنت تشوف المتجر لأنك مسجّل دخول كفريق.', maint_open: 'إيقاف وضع الصيانة',
@@ -192,7 +197,7 @@ TZ.i18n = {
     home: 'الرئيسية', weight: 'الوزن', kg: 'كجم', flavor: 'النكهة',
     secure_pay: 'دفع آمن (بطاقة / بنفت)', gcc_delivery: 'توصيل لـ6 دول خليجية', natural: 'مكونات مختارة بعناية',
     tab_desc: 'الوصف', tab_ship: 'الشحن والتوصيل',
-    ship_tab_text: 'داخل البحرين بسعر ثابت، ولباقي دول الخليج عبر سمسا إكسبريس حسب وزن الطلب. أسعار التوصيل لهذا المنتج وحده:',
+    ship_tab_text: 'التوصيل داخل البحرين ولكل دول الخليج عبر سمسا إكسبريس. أقل سعر توصيل لهذا المنتج وحده:',
     related: 'قد يعجبك أيضاً', not_found: 'المنتج غير موجود', back_to_shop: 'الرجوع للمنتجات',
     prices_in: 'الأسعار بـ{cur}', change: 'تغيير',
 
@@ -303,7 +308,7 @@ TZ.i18n = {
     cart_empty_title: 'Your cart is empty', cart_empty_text: 'Add your favourite flavour and we’ll deliver it to you.',
     cart_subtotal: 'Subtotal', cart_shipping: 'Delivery', cart_total: 'Total',
     cart_checkout: 'Checkout', cart_continue: 'Continue shopping', cart_remove: 'Remove',
-    cart_ship_note_flat: 'Flat rate inside Bahrain', cart_ship_note_ubex: 'By weight ({w} kg), shipped with SMSA Express',
+    cart_ship_note_flat: 'Flat rate inside Bahrain', cart_ship_note_ubex: 'By weight ({w} kg), shipped with SMSA Express', ship_method: 'Delivery method', ship_note: '{m} · {w} kg', ship_none: 'No delivery to this country for this weight – order on WhatsApp', eta_days: '{a}–{b} days', eta_day: 'within {a} day', eta_same: 'Same day',
     added: '“{name}” added to your cart', view_cart: 'View cart',
     staff_signin: 'Team sign-in',
     maint_team: 'Maintenance mode is on: customers see the “back soon” page. You see the shop because you are signed in as the team.', maint_open: 'Turn maintenance off',
@@ -356,7 +361,7 @@ TZ.i18n = {
     home: 'Home', weight: 'Weight', kg: 'kg', flavor: 'Flavour',
     secure_pay: 'Secure payment (card / Benefit)', gcc_delivery: 'Delivery to 6 Gulf countries', natural: 'Carefully chosen ingredients',
     tab_desc: 'Description', tab_ship: 'Shipping & delivery',
-    ship_tab_text: 'Flat rate inside Bahrain; the rest of the Gulf ships with SMSA Express based on order weight. Delivery for this item on its own:',
+    ship_tab_text: 'Delivery inside Bahrain and across the Gulf with SMSA Express. Lowest delivery price for this item on its own:',
     related: 'You may also like', not_found: 'Product not found', back_to_shop: 'Back to shop',
     prices_in: 'Prices in {cur}', change: 'Change',
 

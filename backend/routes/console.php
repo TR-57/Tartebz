@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 
 // Hostinger cron (every minute): php artisan schedule:run
 Schedule::command('store:sync-payments')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('store:smsa')->everyMinute()->withoutOverlapping(10);

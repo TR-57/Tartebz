@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
-/** Orders, Tap card payments (faked Tap API) and SMSA shipments (faked SMSA API). */
+/** Orders and Tap card payments (faked Tap API). SMSA: SmsaTest. */
 class CheckoutPaymentsTest extends TestCase
 {
     private int $productId;
@@ -150,35 +150,6 @@ class CheckoutPaymentsTest extends TestCase
         $this->postJson('/api/admin/payments/test', ['mode' => 'live'])->assertOk()->assertJsonPath('connected', true);
         $keyOk = false;
         $this->postJson('/api/admin/payments/test', ['mode' => 'live'])->assertOk()->assertJsonPath('connected', false);
-    }
-
-    public function test_smsa_shipment_label_and_tracking(): void
-    {
-        $this->fakeTap('CAPTURED', 7.5);
-        $token = $this->postJson('/api/checkout', $this->customer())->json('order.token');
-        $this->getJson('/api/orders/'.$token)->assertJsonPath('order.status', 'paid');
-        $id = DB::table('orders')->where('token', $token)->value('id');
-
-        $this->actingAsAdmin($this->makeAdmin('owner'));
-        $this->postJson("/api/admin/orders/$id/ship")->assertStatus(409)->assertJsonPath('error.code', 'smsa_not_set');
-        $this->putJson('/api/admin/shipping', ['enabled' => true, 'mode' => 'test', 'testKey' => 'smsa-sandbox-key',
-            'shipper' => ['name' => 'Tartebz Sweets', 'phone' => '+973 3753 3757', 'country' => 'BH', 'city' => 'Riffa', 'address1' => 'Al-Ajeera Street, West Riffa']])
-            ->assertOk()->assertJsonPath('smsa.testKey.set', true)->assertJsonPath('smsa.problems', []);
-
-        Http::fake([
-            'ecomapis-sandbox.azurewebsites.net/api/shipment/b2c/new' => Http::response(['sawb' => 'S1', 'waybills' => [['awb' => '231200000001', 'awbFile' => base64_encode('%PDF-1.4 label')]]]),
-            'ecomapis-sandbox.azurewebsites.net/api/track/single/*' => Http::response(['AWB' => '231200000001', 'isDelivered' => true,
-                'Scans' => [['ScanType' => 'DL', 'ScanDescription' => 'Delivered', 'City' => 'Riffa'], ['ScanType' => 'PU', 'ScanDescription' => 'Picked up']]]),
-            'ecomapis-sandbox.azurewebsites.net/api/lookUp/ServiceTypes' => Http::response([['serviceCode' => 'EDDL', 'serviceName' => 'Express delivery']]),
-        ]);
-        $this->postJson('/api/admin/shipping/test', ['mode' => 'test'])->assertOk()->assertJsonPath('connected', true)->assertJsonPath('services.0.code', 'EDDL');
-        $this->postJson("/api/admin/orders/$id/ship")->assertOk()->assertJsonPath('order.awb', '231200000001')->assertJsonPath('order.hasLabel', true);
-        Http::assertSent(fn ($req) => str_ends_with($req->url(), '/api/shipment/b2c/new') && $req->hasHeader('apikey', 'smsa-sandbox-key')
-            && $req['ConsigneeAddress']['ContactName'] === 'Sara Ali' && $req['ConsigneeAddress']['ContactPhoneNumber'] === '97333334444'
-            && $req['Weight'] == 1.0 && $req['DeclaredValue'] == 6.0 && $req['WaybillType'] === 'PDF');
-        $this->get("/api/admin/orders/$id/label")->assertOk()->assertHeader('Content-Type', 'application/pdf');
-        $this->postJson("/api/admin/orders/$id/ship")->assertStatus(409);
-        $this->postJson("/api/admin/orders/$id/track")->assertOk()->assertJsonPath('order.status', 'delivered')->assertJsonPath('order.trackingStatus', 'Delivered – Riffa');
     }
 
     public function test_sync_job_catches_payments_whose_notification_was_lost(): void

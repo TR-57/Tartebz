@@ -61,12 +61,19 @@ class StorefrontController extends Controller
                     'delivery' => array_values($sf['delivery']),
                 ];
             })(),
-            'shipping' => (function () {
-                $sh = Settings::get('shipping');
-
-                return ['countries' => $sh['countries'], 'flat' => (object) array_column($sh['flat'], 'price', 'country'),
-                    'table' => $sh['table'], 'extraPerHalfKg' => (float) $sh['extraPerHalfKg']];
-            })(),
+            // Delivery methods per destination; the storefront prices them exactly like App\Support\Shipping::price().
+            'shipping' => [
+                'countries' => \App\Support\Shipping::countries(),
+                'destinations' => array_values(array_map(fn ($d) => [
+                    'countries' => array_values(array_map('strtoupper', (array) ($d['countries'] ?? []))),
+                    'methods' => array_values(array_map(fn ($m) => [
+                        'id' => (string) $m['id'], 'name' => \App\Support\Shipping::names($m), 'pricing' => $m['pricing'] ?? 'flat',
+                        'base' => $m['base'] ?? 0, 'firstKg' => $m['firstKg'] ?? 0, 'stepKg' => $m['stepKg'] ?? 0, 'perStep' => $m['perStep'] ?? 0,
+                        'table' => array_values((array) ($m['table'] ?? [])), 'min' => $m['min'] ?? null, 'max' => $m['max'] ?? null,
+                        'freeOver' => $m['freeOver'] ?? null, 'maxKg' => $m['maxKg'] ?? null, 'etaMin' => $m['etaMin'] ?? null, 'etaMax' => $m['etaMax'] ?? null,
+                    ], array_filter((array) ($d['methods'] ?? []), fn ($m) => ($m['active'] ?? true) !== false))),
+                ], \App\Support\Shipping::destinations())),
+            ],
             'maintenance' => \App\Support\Maintenance::on(),
             'payments' => \App\Http\Controllers\Api\CheckoutController::methods() + ['testMode' => \App\Support\Tap::enabled() && \App\Support\Tap::mode() === 'test'],
             'baseCurrency' => Currency::base(),

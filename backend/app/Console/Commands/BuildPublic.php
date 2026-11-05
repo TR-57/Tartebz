@@ -58,14 +58,15 @@ class BuildPublic extends Command
             $rel = substr($f->getPathname(), strlen($src) + 1);
             $out = $dest.'/'.$rel;
             $ext = strtolower($f->getExtension());
-            if ($ext === 'js') {
+            $vendor = str_starts_with($rel, 'assets/vendor/');   // already built upstream: copied as it is
+            if ($ext === 'js' && ! $vendor) {
                 $code = (string) file_get_contents($f->getPathname());
                 // Files loaded from inside a script get the same version.
                 $code = preg_replace('#(["\'])(/assets/js/[^"\'?]+\.js)\1#', '$1$2?v='.$ver.'$1', $code);
                 $min = (new Minify\JS($code))->minify();
                 $saved += strlen($code) - strlen($min);
                 $this->put($out, $min);
-            } elseif ($ext === 'css') {
+            } elseif ($ext === 'css' && ! $vendor) {
                 $code = (string) file_get_contents($f->getPathname());
                 $min = (new Minify\CSS($code))->minify();
                 $saved += strlen($code) - strlen($min);

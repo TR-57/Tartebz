@@ -60,13 +60,28 @@ return [
     ],
 
     // Delivery prices (BHD). A country with a fixed price pays that; the other delivery countries pay by weight.
+    // Delivery prices (Admin › Settings › Shipping rates): destinations, each with its own methods (by air, by road …).
+    // How a method is priced: see App\Support\Shipping. Money in BHD.
     'shipping' => [
-        'countries' => ['BH', 'SA', 'AE', 'QA', 'KW', 'OM'],
-        'flat' => [['country' => 'BH', 'price' => 1.5]],
-        // [up to kg, BHD] – the old shop's rate card; above the last row: + extraPerHalfKg for every started 0.5 kg
-        'table' => [[0.5, 3.8], [1, 4.2], [1.5, 5.1], [2, 6.1], [2.5, 7.3], [3, 8.7], [3.5, 9.6], [4, 12.1], [4.5, 12.2], [5, 13.8],
-            [5.5, 14.9], [6, 15.9], [6.5, 17], [7, 18.1], [7.5, 19.1], [8, 20.2], [8.5, 21.2], [9, 22.3], [9.5, 23.3], [10, 24.4]],
-        'extraPerHalfKg' => 1.05,
+        'destinations' => [
+            ['id' => 'bh', 'name' => ['en' => 'Bahrain', 'ar' => 'البحرين'], 'countries' => ['BH'], 'methods' => [
+                ['id' => 'bh-home', 'name' => ['en' => 'Home delivery', 'ar' => 'توصيل للمنزل'], 'pricing' => 'flat', 'base' => 1.5,
+                    'firstKg' => 0, 'stepKg' => 0.5, 'perStep' => 0, 'table' => [], 'min' => null, 'max' => null, 'freeOver' => null, 'maxKg' => null,
+                    'etaMin' => 1, 'etaMax' => 1, 'active' => true],
+            ]],
+            ['id' => 'gcc', 'name' => ['en' => 'GCC', 'ar' => 'دول الخليج'], 'countries' => ['SA', 'AE', 'QA', 'KW', 'OM'], 'methods' => [
+                // the old shop's rate card; above 10 kg: + 1.050 for every started 0.5 kg
+                ['id' => 'gcc-air', 'name' => ['en' => 'By air (SMSA)', 'ar' => 'شحن جوي (سمسا)'], 'pricing' => 'table',
+                    'table' => [[0.5, 3.8], [1, 4.2], [1.5, 5.1], [2, 6.1], [2.5, 7.3], [3, 8.7], [3.5, 9.6], [4, 12.1], [4.5, 12.2], [5, 13.8],
+                        [5.5, 14.9], [6, 15.9], [6.5, 17], [7, 18.1], [7.5, 19.1], [8, 20.2], [8.5, 21.2], [9, 22.3], [9.5, 23.3], [10, 24.4]],
+                    'base' => 0, 'firstKg' => 0, 'stepKg' => 0.5, 'perStep' => 1.05, 'min' => null, 'max' => null, 'freeOver' => null, 'maxKg' => null,
+                    'etaMin' => 2, 'etaMax' => 4, 'active' => true],
+                // switched off until its prices are set in the admin
+                ['id' => 'gcc-road', 'name' => ['en' => 'By road (SMSA)', 'ar' => 'شحن بري (سمسا)'], 'pricing' => 'formula', 'table' => [],
+                    'base' => 3, 'firstKg' => 1, 'stepKg' => 0.5, 'perStep' => 0.5, 'min' => null, 'max' => null, 'freeOver' => null, 'maxKg' => null,
+                    'etaMin' => 4, 'etaMax' => 7, 'active' => false],
+            ]],
+        ],
     ],
 
     // Card payments through Tap (tap.company). Keys are sealed; test keys start sk_test_, live keys sk_live_.
@@ -93,10 +108,13 @@ return [
         'testKey' => '', 'liveKey' => '', // sealed
         'testUrl' => 'https://ecomapis-sandbox.azurewebsites.net',
         'liveUrl' => 'https://ecomapis.smsaexpress.com',
-        'serviceCode' => '',              // empty = your account's default (SMSA gives you this, e.g. EDDL)
         'retailId' => '',
-        'contentDescription' => 'Sweets / حلويات',
-        'declaredCurrency' => 'BHD',
+        'methods' => [],                  // delivery-method ids (Shipping rates) whose paid orders get an SMSA waybill by themselves
+        'services' => [],                 // {method id: EIDL (by air) | EIED (by road)} for methods going abroad; inside the sender's country EDDL
+        'dutiesBy' => 'consignee',        // import VAT and duty abroad: consignee (customer, on delivery) | shipper (billed to our SMSA account)
+        'contents' => 'Sweets',           // on every waybill (customs); empty = the order's item names
+        'autoStatus' => true,             // the order becomes Shipped / Delivered from SMSA's tracking
+        'since' => null,                  // automatic waybills only for orders placed after SMSA was switched on
         'shipper' => [
             'name' => 'Tartebz', 'phone' => '', 'country' => 'BH', 'city' => '', 'district' => '',
             'address1' => '', 'address2' => '', 'postalCode' => '',

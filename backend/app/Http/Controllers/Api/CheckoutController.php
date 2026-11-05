@@ -31,7 +31,7 @@ class CheckoutController extends Controller
             throw ApiError::validation(['country' => 'We do not deliver to that country yet.']);
         }
 
-        return $this->ok(['quote' => self::present(Checkout::quote((array) $r->input('items', []), $country, $cart)), 'payments' => self::methods()]);
+        return $this->ok(['quote' => self::present(Checkout::quote((array) $r->input('items', []), $country, $cart, null, $this->str($r, 'shipping_method', 60) ?: null)), 'payments' => self::methods()]);
     }
 
     /** POST /api/checkout {items, country, method: tap|whatsapp, first_name, …} */
@@ -84,12 +84,20 @@ class CheckoutController extends Controller
         $seen = round((float) $r->input('expected_total', -1), 3);
         // One request at a time per product: lock the rows, price the cart against what is free, create the order
         // and move the cart's reservations to it – all before anyone else can take the same pieces.
-        $result = DB::transaction(function () use ($items, $country, $cart, $seen, $c, $method, $ip, $r) {
+        $methodId = $this->str($r, 'shipping_method', 60);
+        $result = DB::transaction(function () use ($items, $country, $cart, $seen, $c, $method, $ip, $r, $methodId) {
             $ids = array_values(array_filter(array_map(fn ($i) => (int) (((array) $i)['id'] ?? 0), $items)));
             DB::table('products')->whereIn('id', $ids ?: [0])->orderBy('id')->lockForUpdate()->get(['id']);
-            $quote = Checkout::quote($items, $country, $cart);
+            $quote = Checkout::quote($items, $country, $cart, null, $methodId ?: null);
             if (! $quote['lines']) {
                 throw new ApiError('empty', 'Your cart is empty or its products are sold out.', 409);
+            }
+            if (! $quote['method']) {
+                throw new ApiError('no_delivery', 'We cannot deliver this order to that country (too heavy for every delivery option). Please order on WhatsApp.', 409);
+            }
+            // The customer chose another method than the one on offer now: show the new price first.
+            if ($methodId && $quote['method']['id'] !== $methodId) {
+                return ['changed' => $quote];
             }
             // Prices or stock changed since the customer looked: show them the new figures before taking money.
             if ($quote['issues'] || ($seen >= 0 && abs($seen - $quote['total']) > 0.0005)) {
@@ -254,6 +262,7 @@ class CheckoutController extends Controller
         return [
             'lines' => $q['lines'], 'issues' => $q['issues'], 'subtotal' => $q['subtotal'], 'shipping' => $q['shipping'], 'total' => $q['total'],
             'weightGrams' => $q['weightGrams'], 'country' => $q['country'], 'currency' => $q['currency'], 'rate' => $q['rate'],
+            'methods' => $q['methods'] ?? [], 'method' => $q['method'] ?? null,
             'chargeCurrency' => $q['chargeCurrency'], 'chargeAmount' => $q['chargeAmount'],
         ];
     }

@@ -33,7 +33,7 @@ class DashboardController extends Controller
             ['ok' => \App\Support\Tap::enabled(), 'label' => 'Card payments (Tap)', 'hint' => 'Settings > Payments – paste the Tap keys, test, then switch to live.'],
             ['ok' => ! \App\Support\Tap::enabled() || \App\Support\Tap::mode() === 'live', 'label' => 'Tap is in TEST mode – no real money is taken', 'hint' => 'Settings > Payments – switch to live when your test order worked.'],
             ['ok' => \App\Support\Doctor::cronRecent(), 'label' => 'Scheduled tasks (cron) are not running', 'hint' => 'hPanel > Advanced > Cron Jobs – add the line from docs/hostinger.md (every minute). Without it, missed card payments and refunds are not re-checked.'],
-            ['ok' => \App\Support\Smsa::enabled(), 'label' => 'SMSA shipping', 'hint' => 'Settings > Shipping – paste the SMSA key, fill in the sender address, test.'],
+            ['ok' => \App\Support\Smsa::enabled(), 'label' => 'SMSA shipping', 'hint' => 'SMSA shipping – paste the SMSA key, fill in the sender address, tick the delivery methods and switch it on.'],
         ];
         // Revenue = paid orders minus what was refunded on them (BHD).
         $paid = fn ($from) => DB::table('orders')->whereIn('payment_status', ['paid', 'refunded'])->where('paid_at', '>=', $from);

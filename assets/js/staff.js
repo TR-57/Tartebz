@@ -31,7 +31,7 @@
       customer: 'Customer', name: 'Full name', phone: 'Mobile (WhatsApp)', dial: 'Country code', bad_phone: 'This {c} mobile number doesn’t look right. Example: {e}', country: 'Country', city: 'City / area', address: 'Address (house, road, block)',
       address2: 'More details (flat, landmark)', notes: 'Notes', email_opt: 'Email (optional)', cust_lang: 'Customer’s language',
       products: 'Products', find: 'Find a product', left: '{n} left', sold_out: 'Sold out', add: 'Add',
-      summary: 'Summary', items: 'Items', weight: 'Weight', subtotal: 'Subtotal', delivery: 'Delivery', total: 'Total', charged: 'Customer pays',
+      summary: 'Summary', ship_method: 'Delivery method', no_method: 'No delivery method takes this order there – check Shipping rates.', items: 'Items', weight: 'Weight', subtotal: 'Subtotal', delivery: 'Delivery', total: 'Total', charged: 'Customer pays',
       payment: 'Payment', pay_link: 'Send a payment link', pay_link_hint: 'The customer pays by card on the website. You send the link on WhatsApp or by email.',
       pay_paid: 'Paid already', pay_paid_hint: 'The money is in (Benefit transfer, cash…). The order is ready to prepare.',
       pay_later: 'Pays later', pay_later_hint: 'Keep it as a WhatsApp order. Mark it paid when the money arrives.',
@@ -68,7 +68,7 @@
       customer: 'العميل', name: 'الاسم الكامل', phone: 'رقم الجوال (واتساب)', dial: 'رمز الدولة', bad_phone: 'رقم جوال {c} غير صحيح. مثال: {e}', country: 'الدولة', city: 'المدينة / المنطقة', address: 'العنوان (منزل، طريق، مجمع)',
       address2: 'تفاصيل إضافية (شقة، علامة مميزة)', notes: 'ملاحظات', email_opt: 'البريد الإلكتروني (اختياري)', cust_lang: 'لغة العميل',
       products: 'المنتجات', find: 'ابحث عن منتج', left: 'متبقي {n}', sold_out: 'نفد', add: 'أضف',
-      summary: 'الملخص', items: 'القطع', weight: 'الوزن', subtotal: 'المجموع الفرعي', delivery: 'التوصيل', total: 'الإجمالي', charged: 'يدفع العميل',
+      summary: 'الملخص', ship_method: 'طريقة التوصيل', no_method: 'لا توجد طريقة توصيل لهذا الطلب إلى هذه الدولة – راجع أسعار الشحن.', items: 'القطع', weight: 'الوزن', subtotal: 'المجموع الفرعي', delivery: 'التوصيل', total: 'الإجمالي', charged: 'يدفع العميل',
       payment: 'الدفع', pay_link: 'إرسال رابط دفع', pay_link_hint: 'يدفع العميل بالبطاقة في الموقع. ترسل له الرابط على واتساب أو بالإيميل.',
       pay_paid: 'مدفوع مسبقًا', pay_paid_hint: 'المبلغ وصل (تحويل بنفت، نقدًا…). الطلب جاهز للتجهيز.',
       pay_later: 'يدفع لاحقًا', pay_later_hint: 'يبقى طلب واتساب. سجّله مدفوعًا عند وصول المبلغ.',
@@ -642,7 +642,7 @@
 
   /* ---------------- new order ---------------- */
   function newOrder() {
-    var N = store.get('draft', null) || { name: '', phone: '', email: '', country: 'BH', dial: '', city: '', address1: '', address2: '', notes: '', lang: 'ar', items: {}, payment: '', how: '' };
+    var N = store.get('draft', null) || { name: '', phone: '', email: '', country: 'BH', dial: '', city: '', address1: '', address2: '', notes: '', lang: 'ar', items: {}, payment: '', how: '', method: '' };
     var quote = null, qT = null, P = S.products, search = '';
     var el = sheet(esc(tr('new_order')), '<p class="muted">…</p>',
       '<div class="sum" id="n-sum" style="margin:0 0 10px"></div><button class="btn btn-red btn-block btn-lg" id="n-create">' + icon('check') + esc(tr('create')) + '</button>',
@@ -693,7 +693,7 @@
       f.addEventListener('change', function (e) {
         if (e.target.name === 'pay') { N.payment = e.target.value; el.querySelector('#n-how').hidden = N.payment !== 'paid'; el.querySelector('#n-pay-err').textContent = ''; }
         if (e.target.name === 'country') {
-          N.country = e.target.value;
+          N.country = e.target.value; N.method = '';
           if (!N.dialTouched && PH[N.country]) { N.dial = N.country; el.querySelector('#n-dial').value = N.country; el.querySelector('#n-phone').placeholder = PH[N.country][3]; }
           requote();
         }
@@ -741,14 +741,19 @@
       var box = el.querySelector('#n-sum');
       if (!items().length) { quote = null; box.innerHTML = '<div class="muted"><span>' + esc(tr('no_items')) + '</span></div>'; return; }
       qT = setTimeout(function () {
-        api('board/quote', { body: { items: items(), country: N.country } }).then(function (r) {
+        api('board/quote', { body: { items: items(), country: N.country, shipping_method: N.method } }).then(function (r) {
           quote = r.quote; if (sheetEl !== el) return;
+          N.method = quote.method ? quote.method.id : '';
           var n = quote.lines.reduce(function (s, l) { return s + l.qty; }, 0);
-          box.innerHTML = '<div><span>' + esc(tr('items')) + ' · ' + esc(tr('weight')) + '</span><span>' + n + ' · <bdi>' + (quote.weightGrams / 1000).toFixed(2) + ' kg</bdi></span></div>' +
+          box.innerHTML = (quote.methods.length > 1 ? '<div class="ship-pick"><span>' + esc(tr('ship_method')) + '</span><select id="n-method">' + quote.methods.map(function (m) {
+              return '<option value="' + esc(m.id) + '"' + (m.id === N.method ? ' selected' : '') + '>' + esc(lang === 'ar' ? m.name.ar : m.name.en) + ' – ' + Number(m.price).toFixed(3) + '</option>';
+            }).join('') + '</select></div>' : '') + (!quote.method ? '<div class="muted">' + esc(tr('no_method')) + '</div>' : '') +
+            '<div><span>' + esc(tr('items')) + ' · ' + esc(tr('weight')) + '</span><span>' + n + ' · <bdi>' + (quote.weightGrams / 1000).toFixed(2) + ' kg</bdi></span></div>' +
             '<div><span>' + esc(tr('subtotal')) + '</span>' + money(quote.subtotal) + '</div>' +
-            '<div><span>' + esc(tr('delivery')) + ' ' + flag(N.country) + '</span>' + money(quote.shipping) + '</div>' +
+            '<div><span>' + esc(tr('delivery')) + ' ' + flag(N.country) + (quote.method ? ' · ' + esc(lang === 'ar' ? quote.method.name.ar : quote.method.name.en) : '') + '</span>' + money(quote.shipping) + '</div>' +
             '<div class="grand"><span>' + esc(tr('total')) + '</span>' + money(quote.total) + '</div>' +
             (quote.chargeCurrency !== 'BHD' ? '<div class="muted small"><span>' + esc(tr('charged')) + '</span>' + money(quote.chargeAmount, quote.chargeCurrency) + '</div>' : '');
+          var ms = box.querySelector('#n-method'); if (ms) ms.onchange = function () { N.method = ms.value; requote(); };
         }, function (e) { box.innerHTML = '<div class="muted">' + esc(e.message) + '</div>'; });
       }, 250);
     }
@@ -758,7 +763,7 @@
       var parts = N.name.trim().split(/\s+/);
       var body = {
         first_name: parts.shift() || '', last_name: parts.join(' '), phone: N.phone ? phTidy(N.phone, dialCC()).full : '', email: N.email, country: N.country, city: N.city,
-        address1: N.address1, address2: N.address2, notes: N.notes, lang: N.lang, items: items(), payment: N.payment, paid_how: N.how,
+        address1: N.address1, address2: N.address2, notes: N.notes, lang: N.lang, items: items(), payment: N.payment, paid_how: N.how, shipping_method: N.method,
         expected_total: quote ? quote.total : -1
       };
       if (!body.items.length) { el.querySelector('#n-items-err').textContent = tr('no_items'); el.querySelector('[data-f=items]').scrollIntoView({ behavior: 'smooth' }); return; }

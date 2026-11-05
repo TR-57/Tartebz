@@ -58,7 +58,7 @@ class BoardController extends Controller
             throw ApiError::validation(['country' => 'We do not deliver to that country.']);
         }
 
-        return $this->ok(['quote' => CheckoutController::present(Checkout::quote((array) $r->input('items', []), $country))]);
+        return $this->ok(['quote' => CheckoutController::present(Checkout::quote((array) $r->input('items', []), $country, null, null, $this->str($r, 'shipping_method', 60) ?: null))]);
     }
 
     /**
@@ -119,12 +119,19 @@ class BoardController extends Controller
         $items = (array) $r->input('items', []);
         $seen = round((float) $r->input('expected_total', -1), 3);
         $method = $payment === 'link' ? 'tap' : 'whatsapp';
-        $result = DB::transaction(function () use ($items, $country, $seen, $c, $method, $admin, $r) {
+        $methodId = $this->str($r, 'shipping_method', 60);
+        $result = DB::transaction(function () use ($items, $country, $seen, $c, $method, $admin, $r, $methodId) {
             $ids = array_values(array_filter(array_map(fn ($i) => (int) (((array) $i)['id'] ?? 0), $items)));
             DB::table('products')->whereIn('id', $ids ?: [0])->orderBy('id')->lockForUpdate()->get(['id']);
-            $quote = Checkout::quote($items, $country);
+            $quote = Checkout::quote($items, $country, null, null, $methodId ?: null);
             if (! $quote['lines']) {
                 throw ApiError::validation(['items' => 'Add at least one product that is in stock.']);
+            }
+            if (! $quote['method']) {
+                throw ApiError::validation(['shipping_method' => 'No delivery method takes this order to that country (check the weight limits in Shipping rates).']);
+            }
+            if ($methodId && $quote['method']['id'] !== $methodId) {
+                return ['changed' => $quote];
             }
             if ($quote['issues'] || ($seen >= 0 && abs($seen - $quote['total']) > 0.0005)) {
                 return ['changed' => $quote];
@@ -183,6 +190,13 @@ class BoardController extends Controller
     {
         $o = DB::table('orders')->find($id) ?? throw ApiError::notFound('That order does not exist.');
         $lang = in_array($r->query('lang'), ['ar', 'en'], true) ? $r->query('lang') : ($o->lang === 'en' ? 'en' : 'ar');
+
+        return response()->view('invoice', self::invoiceData($o, $lang), 200, ['Cache-Control' => 'no-store']);
+    }
+
+    /** What the invoice shows for one order. */
+    public static function invoiceData(object $o, string $lang): array
+    {
         $brand = Settings::get('brand');
         $biz = Settings::get('business');
         $logo = $brand['logo'] ? Media::url($brand['logo'], (int) DB::table('media')->where('path', $brand['logo'])->value('version')) : '';
@@ -190,7 +204,7 @@ class BoardController extends Controller
         $rate = $o->charge_currency === 'BHD' ? 1 : (float) $o->fx_rate;
         $money = fn (float $bhd) => $o->charge_currency.' '.number_format(round($bhd * $rate, $dec), $dec);
 
-        return response()->view('invoice', [
+        return [
             'o' => $o, 'ar' => $lang === 'ar', 'lang' => $lang, 'money' => $money,
             'items' => DB::table('order_items')->where('order_id', $o->id)->orderBy('id')->get(),
             'shop' => [
@@ -199,7 +213,47 @@ class BoardController extends Controller
                 'phone' => $biz['phone'], 'email' => $biz['email'], 'logo' => $logo ? Thumbs::url($logo, 400) : '',
             ],
             'refunded' => (float) $o->refunded_amount,
-        ], 200, ['Cache-Control' => 'no-store']);
+        ];
+    }
+
+    /** The invoice – and, for an order going outside the sender's country, its SMSA waybill after it – ready to print. */
+    public function print(Request $r, int $id)
+    {
+        DB::table('orders')->find($id) ?? throw ApiError::notFound('That order does not exist.');
+
+        return $this->printPage($r, [$id]);
+    }
+
+    /** ?ids=1,2,3 – many orders in one print: each invoice, followed by its waybill when it goes abroad. */
+    public function printMany(Request $r)
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', explode(',', (string) $r->query('ids', ''))), fn ($i) => $i > 0)));
+        if (! $ids || count($ids) > 100) {
+            throw ApiError::validation(['ids' => 'Choose 1 to 100 orders.']);
+        }
+
+        return $this->printPage($r, $ids);
+    }
+
+    private function printPage(Request $r, array $ids)
+    {
+        $lang = in_array($r->query('lang'), ['ar', 'en'], true) ? $r->query('lang') : null;
+        $home = \App\Support\Smsa::home();
+        $orders = DB::table('orders')->whereIn('id', $ids)->orderByDesc('id')->get();
+        $docs = [];
+        foreach ($orders as $o) {
+            $sh = \App\Support\Smsa::shipment($o->id);
+            $abroad = strtoupper((string) $o->country) !== $home;
+            $docs[] = self::invoiceData($o, $lang ?? ($o->lang === 'en' ? 'en' : 'ar')) + [
+                'abroad' => $abroad,
+                'label' => $abroad && $sh && $sh->awb !== '' && $sh->status !== 'cancelled' ? '/api/admin/orders/'.$o->id.'/label' : null,
+                'noLabel' => $abroad && (! $sh || $sh->awb === '' || $sh->status === 'cancelled'),
+            ];
+        }
+        $ar = ($lang ?? ($orders->first()->lang ?? 'ar')) !== 'en';
+
+        return response()->view('print', ['docs' => $docs, 'ar' => $ar, 'lang' => $ar ? 'ar' : 'en', 'ids' => implode(',', $orders->pluck('id')->all()),
+            'auto' => $r->boolean('auto')], 200, ['Cache-Control' => 'no-store']);
     }
 
     /**
@@ -255,9 +309,7 @@ class BoardController extends Controller
 
     private function countries(): array
     {
-        $sh = Settings::get('shipping');
-
-        return array_values(array_map(fn ($c) => ['code' => $c, 'dial' => Shipping::DIAL[$c] ?? ''], (array) $sh['countries']));
+        return array_values(array_map(fn ($c) => ['code' => $c, 'dial' => Shipping::DIAL[$c] ?? ''], Shipping::countries()));
     }
 
     private function summary(object $o): array

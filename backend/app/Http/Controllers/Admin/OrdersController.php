@@ -120,7 +120,10 @@ class OrdersController extends Controller
     {
         $o = $this->find($id);
 
-        return $this->ok(['order' => $this->full($o), 'labels' => Orders::LABELS, 'smsa' => ['enabled' => Smsa::enabled(), 'mode' => Smsa::mode(), 'problems' => array_merge(Smsa::consignee($o)[1], Smsa::shipperProblems())]]);
+        return $this->ok(['order' => $this->full($o), 'labels' => Orders::LABELS, 'smsa' => [
+            'enabled' => Smsa::enabled(), 'configured' => Smsa::configured(), 'mode' => Smsa::mode(), 'method' => Smsa::methodOf($o) !== null,
+            'problems' => array_merge(Smsa::consignee($o)[1], Smsa::shipperProblems()),
+        ]]);
     }
 
     /** {status: processing|shipped|delivered|paid} – the hand-moved steps. */
@@ -266,90 +269,103 @@ class OrdersController extends Controller
         return $this->ok(['order' => $this->full(DB::table('orders')->find($id))]);
     }
 
-    /** Books the SMSA shipment and keeps the label. {parcels?, weightKg?} */
+    /** Sends the order to SMSA now, or again after a refusal. {parcels?, weightKg?} */
     public function ship(Request $r, int $id)
     {
-        $o = $this->find($id);
-        if ($o->payment_status !== 'paid') {
-            throw new ApiError('unpaid', 'Ship paid orders only.', 409);
-        }
-        if ($o->awb !== '') {
-            throw new ApiError('has_awb', 'This order already has an SMSA shipment ('.$o->awb.').', 409);
-        }
-        if (! Smsa::enabled()) {
-            throw new ApiError('smsa_not_set', 'SMSA is not switched on: Settings › Shipping – save the API key and switch it on.', 409);
-        }
-        $problems = array_merge(Smsa::consignee($o)[1], Smsa::shipperProblems());
-        if ($problems) {
-            throw new ApiError('fix_address', implode(' ', $problems), 422);
-        }
+        $this->find($id);
         $parcels = max(1, min(25, (int) $r->input('parcels', 1)));
-        $kg = $r->filled('weightKg') ? max(0.1, (float) $r->input('weightKg')) : null;
-        $res = Smsa::createShipment($o, $parcels, $kg);
-        $label = '';
-        if ($res['pdf']) {
-            $dir = storage_path('app/labels');
-            if (! is_dir($dir)) {
-                mkdir($dir, 0775, true);
-            }
-            $label = 'labels/'.$o->number.'-'.preg_replace('/[^A-Za-z0-9]/', '', $res['awb']).'.pdf';
-            file_put_contents(storage_path('app/'.$label), $res['pdf']);
-        }
-        DB::table('orders')->where('id', $id)->update([
-            'carrier' => 'smsa:'.Smsa::mode(), 'awb' => $res['awb'], 'label_path' => $label,
-            'status' => $o->status === 'paid' ? 'processing' : $o->status, 'updated_at' => now(),
-        ]);
-        Orders::event($id, 'shipment', 'SMSA shipment booked ('.(Smsa::mode() === 'live' ? 'live' : 'sandbox').'): '.$res['awb'].'.', ['sawb' => $res['sawb']], $this->admin($r));
-        Audit::log($r, 'order_shipment', 'order', $id, ['awb' => $res['awb'], 'mode' => Smsa::mode()]);
+        $kg = $r->filled('weightKg') ? max(0.1, min(500, (float) $r->input('weightKg'))) : null;
+        $sh = Smsa::create($id, $this->admin($r), $parcels, $kg);
+        Audit::log($r, 'order_shipment', 'order', $id, ['awb' => $sh->awb, 'mode' => $sh->mode]);
 
         return $this->ok(['order' => $this->full(DB::table('orders')->find($id))]);
     }
 
-    public function label(int $id)
+    /** {ids: [..]} – many orders to SMSA; each one says sent, already sent, or why not. */
+    public function shipMany(Request $r)
+    {
+        $ids = $this->ids($r->input('ids'));
+        $sent = $already = 0;
+        $problems = [];
+        foreach ($ids as $id) {
+            $sh = Smsa::shipment($id);
+            if ($sh && ! in_array($sh->status, ['failed', 'cancelled'], true)) {
+                $already++;
+
+                continue;
+            }
+            try {
+                Smsa::create($id, $this->admin($r));
+                $sent++;
+            } catch (ApiError $e) {
+                $problems[] = ['id' => $id, 'number' => (string) DB::table('orders')->where('id', $id)->value('number'), 'message' => $e->getMessage()];
+            }
+        }
+        Audit::log($r, 'order_shipment_bulk', 'order', null, ['sent' => $sent, 'refused' => count($problems)]);
+
+        return $this->ok(['sent' => $sent, 'already' => $already, 'problems' => $problems]);
+    }
+
+    /** The label PDF; ?percentage= prints that share of the goods value on this copy only (never sent to SMSA). */
+    public function label(Request $r, int $id)
     {
         $o = $this->find($id);
-        $file = $o->label_path ? storage_path('app/'.$o->label_path) : '';
-        if (! $file || ! is_file($file)) {
-            throw ApiError::notFound('No label saved for this order.');
+        $pct = $r->query('percentage', 100);
+        $value = Smsa::printedDeclaredValue($o, $pct);
+        $pdf = Smsa::label($id);
+        if ((float) $pct < 100) {
+            $pdf = Smsa::withPrintedValue($pdf, $value);
         }
 
-        return response()->file($file, ['Content-Type' => 'application/pdf', 'Content-Disposition' => 'inline; filename="'.basename($file).'"', 'Cache-Control' => 'private, no-store']);
+        return $this->pdf($pdf, 'smsa-'.$o->number.'.pdf');
+    }
+
+    /** ?ids=1,2,3 – many labels in one PDF. */
+    public function labels(Request $r)
+    {
+        [$pdf] = Smsa::labels($this->ids(explode(',', (string) $r->query('ids', ''))));
+
+        return $this->pdf($pdf, 'smsa-labels-'.date('Ymd-Hi').'.pdf');
     }
 
     public function track(Request $r, int $id)
     {
-        $o = $this->find($id);
-        if ($o->awb === '' || ! str_starts_with($o->carrier, 'smsa')) {
-            throw new ApiError('no_awb', 'This order has no SMSA shipment.', 409);
+        $this->find($id);
+        $sh = Smsa::shipment($id);
+        if (! $sh || $sh->awb === '' || $sh->status === 'cancelled') {
+            throw new ApiError('no_awb', 'This order has no SMSA waybill yet.', 409);
         }
-        $t = Smsa::track($o->awb, explode(':', $o->carrier)[1] ?? null);
-        $upd = ['tracking_status' => mb_substr($t['status'], 0, 200), 'tracking_at' => now(), 'updated_at' => now()];
-        if ($t['delivered'] && $o->status !== 'delivered') {
-            $upd += ['status' => 'delivered', 'delivered_at' => now()];
-            Orders::event($id, 'status', 'Delivered (SMSA tracking).');
-        } elseif ($t['scans'] && in_array($o->status, ['paid', 'processing'], true) && count($t['scans']) > 1) {
-            $upd += ['status' => 'shipped', 'shipped_at' => $o->shipped_at ?? now()];
-            Orders::event($id, 'status', 'Shipped (SMSA picked it up).');
-            Orders::emailShipped((object) ((array) $o));
-        }
-        DB::table('orders')->where('id', $id)->update($upd);
+        Smsa::track($sh);
 
-        return $this->ok(['order' => $this->full(DB::table('orders')->find($id)), 'scans' => $t['scans']]);
+        return $this->ok(['order' => $this->full(DB::table('orders')->find($id))]);
     }
 
     public function cancelShipment(Request $r, int $id)
     {
         $o = $this->find($id);
-        if ($o->awb === '') {
-            throw new ApiError('no_awb', 'This order has no SMSA shipment.', 409);
+        Smsa::cancel($id, $this->admin($r));
+        if (in_array($o->status, ['shipped', 'processing'], true)) {
+            DB::table('orders')->where('id', $id)->update(['status' => 'paid', 'shipped_at' => null, 'updated_at' => now()]);
         }
-        Smsa::cancel($o->awb);
-        DB::table('orders')->where('id', $id)->update(['awb' => '', 'carrier' => '', 'label_path' => '', 'tracking_status' => '',
-            'status' => in_array($o->status, ['shipped', 'processing'], true) ? 'paid' : $o->status, 'updated_at' => now()]);
-        Orders::event($id, 'shipment_cancelled', 'SMSA shipment '.$o->awb.' cancelled.', [], $this->admin($r));
         Audit::log($r, 'order_shipment_cancelled', 'order', $id, ['awb' => $o->awb]);
 
         return $this->ok(['order' => $this->full(DB::table('orders')->find($id))]);
+    }
+
+    private function ids(mixed $in): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', (array) $in), fn ($i) => $i > 0)));
+        if (! $ids || count($ids) > 200) {
+            throw ApiError::validation(['ids' => 'Choose 1 to 200 orders.']);
+        }
+
+        return $ids;
+    }
+
+    private function pdf(string $body, string $name)
+    {
+        return response($body, 200, ['Content-Type' => 'application/pdf', 'Content-Disposition' => 'inline; filename="'.preg_replace('/[^A-Za-z0-9._-]/', '', $name).'"',
+            'Cache-Control' => 'private, no-store']);
     }
 
     /* ---------------------------------------------------------------- */
@@ -384,7 +400,9 @@ class OrdersController extends Controller
             'weightGrams' => (int) $o->weight_grams, 'tapChargeId' => $o->tap_charge_id, 'tapStatus' => $o->tap_status, 'tapMode' => $o->tap_mode,
             'paidAt' => $o->paid_at, 'carrier' => $o->carrier, 'hasLabel' => $o->label_path !== '', 'trackingStatus' => $o->tracking_status,
             'trackingAt' => $o->tracking_at, 'shippedAt' => $o->shipped_at, 'deliveredAt' => $o->delivered_at,
-            'trackingUrl' => $o->awb ? 'https://www.smsaexpress.com/trackingdetails?tracknumbers='.rawurlencode($o->awb) : null,
+            'trackingUrl' => $o->awb ? Smsa::TRACK_URL.rawurlencode($o->awb) : null,
+            'shipment' => Smsa::view(Smsa::shipment($o->id)), 'abroad' => strtoupper((string) $o->country) !== Smsa::home(),
+            'shippingMethod' => $o->shipping_method, 'shippingMethodName' => ['en' => (string) $o->shipping_method_name, 'ar' => (string) ($o->shipping_method_name_ar ?: $o->shipping_method_name)],
             'heldUntil' => $o->paid_at || in_array($o->status, ['cancelled', 'refunded'], true) ? null : \App\Support\Holds::orderHeldUntil($o->id),
             'refundedAmount' => (float) $o->refunded_amount, 'refundedBhd' => (float) $o->refunded_bhd,
             'refundable' => $o->paid_at && $o->payment_status === 'paid' ? Refunds::refundable($o) : 0,

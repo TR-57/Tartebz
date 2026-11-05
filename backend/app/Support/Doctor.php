@@ -91,7 +91,7 @@ class Doctor
         } else {
             $add('warn', 'Card payments (Tap) are off', 'Admin › Settings › Payments – paste the keys, test, switch on.');
         }
-        $add(Smsa::enabled() ? 'ok' : 'warn', 'SMSA shipping', 'Admin › Settings › Shipping – paste the SMSA key and sender address.');
+        $add(Smsa::enabled() ? 'ok' : 'warn', 'SMSA shipping', 'Admin › SMSA shipping – paste the SMSA key, fill in the sender address and switch it on.');
         if (config('store.tap_base_url')) {
             $add('fail', 'TAP_BASE_URL is set (local testing only)', 'Remove TAP_BASE_URL from backend/.env.');
         }

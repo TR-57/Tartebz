@@ -64,11 +64,8 @@
     TZ.store.logoXL = s.logo ? (s.logo.large || s.logo.medium) : '';
     if (d.shipping) {
       // The server's delivery prices: what the cart shows is what checkout charges.
-      TZ.shipping.flat = d.shipping.flat || {};
-      TZ.shipping.ubex = d.shipping.table || TZ.shipping.ubex;
-      TZ.shipping.extra = d.shipping.extraPerHalfKg;
       TZ.shipping.countries = d.shipping.countries || [];
-      TZ.countries.forEach(function (c) { c.ship = TZ.shipping.flat[c.code] != null ? 'flat' : 'ubex'; });
+      TZ.shipping.destinations = d.shipping.destinations || TZ.shipping.destinations;
     }
     if (d.payments) TZ.payments = d.payments;
     TZ.maintenance = !!d.maintenance; // only signed-in team members get past the "back soon" page

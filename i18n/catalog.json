@@ -159,12 +159,12 @@
    "cart_ship_note_flat": {
     "en": "Flat rate inside Bahrain",
     "ar": "سعر ثابت داخل البحرين",
-    "where": "assets/js/app.js, assets/js/pages.js"
+    "where": ""
    },
    "cart_ship_note_ubex": {
     "en": "By weight ({w} kg), shipped with SMSA Express",
     "ar": "حسب الوزن ({w} كجم)، الشحن عبر سمسا إكسبريس",
-    "where": "assets/js/app.js, assets/js/pages.js"
+    "where": ""
    },
    "cart_shipping": {
     "en": "Delivery",
@@ -470,6 +470,21 @@
     "en": "This field is required",
     "ar": "هذا الحقل مطلوب",
     "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "eta_day": {
+    "en": "within {a} day",
+    "ar": "خلال {a} يوم",
+    "where": "assets/js/app.js"
+   },
+   "eta_days": {
+    "en": "{a}–{b} days",
+    "ar": "{a}–{b} أيام",
+    "where": "assets/js/app.js"
+   },
+   "eta_same": {
+    "en": "Same day",
+    "ar": "نفس اليوم",
+    "where": "assets/js/app.js"
    },
    "f_addr1": {
     "en": "Street / Area",
@@ -1096,9 +1111,24 @@
     "ar": "نوصل لك وين ما كنت",
     "where": "index.html"
    },
+   "ship_method": {
+    "en": "Delivery method",
+    "ar": "طريقة التوصيل",
+    "where": "assets/js/app.js"
+   },
+   "ship_none": {
+    "en": "No delivery to this country for this weight – order on WhatsApp",
+    "ar": "لا يوجد توصيل لهذا الوزن إلى هذه الدولة – اطلب عبر واتساب",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "ship_note": {
+    "en": "{m} · {w} kg",
+    "ar": "{m} · {w} كجم",
+    "where": "assets/js/app.js, assets/js/pages.js"
+   },
    "ship_tab_text": {
-    "en": "Flat rate inside Bahrain; the rest of the Gulf ships with SMSA Express based on order weight. Delivery for this item on its own:",
-    "ar": "داخل البحرين بسعر ثابت، ولباقي دول الخليج عبر سمسا إكسبريس حسب وزن الطلب. أسعار التوصيل لهذا المنتج وحده:",
+    "en": "Delivery inside Bahrain and across the Gulf with SMSA Express. Lowest delivery price for this item on its own:",
+    "ar": "التوصيل داخل البحرين ولكل دول الخليج عبر سمسا إكسبريس. أقل سعر توصيل لهذا المنتج وحده:",
     "where": "assets/js/pages.js"
    },
    "ship_text": {

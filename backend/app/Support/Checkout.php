@@ -17,7 +17,7 @@ class Checkout
      * @return array{lines: array, issues: array, subtotal: float, shipping: float, total: float, weightGrams: int,
      *               country: string, currency: string, rate: float, decimals: int, chargeCurrency: string, chargeAmount: float}
      */
-    public static function quote(array $items, string $country, ?string $cart = null, ?int $orderId = null): array
+    public static function quote(array $items, string $country, ?string $cart = null, ?int $orderId = null, ?string $methodId = null): array
     {
         $country = strtoupper($country);
         $want = [];
@@ -63,7 +63,10 @@ class Checkout
             $grams += $w * $qty;
         }
         $subtotal = round($subtotal, 3);
-        $shipping = $lines ? Shipping::cost($grams / 1000, $country) : 0.0;
+        // Delivery: the method the customer chose if it is on offer for this parcel, else the first one (Admin › Shipping rates).
+        $methods = $lines ? Shipping::methods($country, $grams / 1000, $subtotal) : [];
+        $method = $lines ? Shipping::pick($country, $grams / 1000, $subtotal, $methodId) : null;
+        $shipping = $method ? (float) $method['price'] : 0.0;
         $total = round($subtotal + $shipping, 3);
 
         // The customer's currency (by country) and what the card will actually be charged in.
@@ -73,7 +76,7 @@ class Checkout
 
         return [
             'lines' => $lines, 'issues' => $issues, 'subtotal' => $subtotal, 'shipping' => $shipping, 'total' => $total,
-            'weightGrams' => (int) $grams, 'country' => $country,
+            'weightGrams' => (int) $grams, 'country' => $country, 'methods' => $methods, 'method' => $method,
             'currency' => $cur['code'], 'rate' => (float) $cur['rate'], 'decimals' => (int) $cur['decimals'],
             'chargeCurrency' => $charge['code'],
             'chargeAmount' => Currency::fromBase($total, $charge['code']),

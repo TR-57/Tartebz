@@ -85,6 +85,10 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::post('orders/{id}/check-payment', [OrdersController::class, 'refreshPayment'])->whereNumber('id');
         Route::post('orders/{id}/ship', [OrdersController::class, 'ship'])->whereNumber('id');
         Route::get('orders/{id}/label', [OrdersController::class, 'label'])->whereNumber('id');
+        Route::get('orders/labels', [OrdersController::class, 'labels']);
+        Route::post('orders/ship', [OrdersController::class, 'shipMany']);
+        Route::get('orders/{id}/print', [BoardController::class, 'print'])->whereNumber('id');
+        Route::get('orders/print', [BoardController::class, 'printMany']);
         Route::post('orders/{id}/track', [OrdersController::class, 'track'])->whereNumber('id');
         Route::get('orders/{id}/invoice', [BoardController::class, 'invoice'])->whereNumber('id');
         Route::post('orders/{id}/payment-link', [BoardController::class, 'paymentLink'])->whereNumber('id');
@@ -145,6 +149,8 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::post('payments/apple-pay-file', [PaymentsController::class, 'applePayFile']);
         Route::get('shipping', [ShippingController::class, 'index']);
         Route::put('shipping', [ShippingController::class, 'save']);
-        Route::post('shipping/test', [ShippingController::class, 'test']);
+        Route::get('smsa', [\App\Http\Controllers\Admin\SmsaController::class, 'show']);
+        Route::put('smsa', [\App\Http\Controllers\Admin\SmsaController::class, 'save']);
+        Route::post('smsa/test', [\App\Http\Controllers\Admin\SmsaController::class, 'test']);
     });
 });

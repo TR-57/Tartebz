@@ -1217,3 +1217,14 @@ body.has-iab .site-header { top: var(--iab-h); }
   .hero-pack-1 { left: -12%; } .hero-pack-2 { right: -12%; }
 }
 @media (prefers-reduced-motion: reduce) { .hero-pack-1, .hero-pack-2 { animation: none; transform: rotate(var(--rot)); } }
+
+/* ---------- delivery method choice (cart, checkout) ---------- */
+.ship-methods { border: 0; margin: 0 0 6px; padding: 0; display: grid; gap: 8px; }
+.ship-methods legend { font-weight: 800; font-size: .95rem; margin-bottom: 6px; padding: 0; }
+.ship-method { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1.5px solid var(--line); border-radius: var(--radius-sm, 14px); background: #fff; cursor: pointer; }
+.ship-method input { width: 18px; height: 18px; accent-color: var(--red); flex: none; }
+.ship-method span { flex: 1; display: grid; line-height: 1.35; }
+.ship-method small { color: var(--muted, #6a6b72); font-weight: 600; font-size: .82rem; }
+.ship-method em { font-style: normal; font-weight: 800; white-space: nowrap; }
+.ship-method.is-on { border-color: var(--red); background: #FFF6F6; }
+.cart-foot .ship-methods { margin-top: 4px; }
