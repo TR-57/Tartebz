@@ -61,6 +61,7 @@
     }
     TZ.store.logo = s.logo ? s.logo.small : '';
     TZ.store.logoLarge = s.logo ? s.logo.medium : '';
+    TZ.store.logoXL = s.logo ? (s.logo.large || s.logo.medium) : '';
     if (d.shipping) {
       // The server's delivery prices: what the cart shows is what checkout charges.
       TZ.shipping.flat = d.shipping.flat || {};

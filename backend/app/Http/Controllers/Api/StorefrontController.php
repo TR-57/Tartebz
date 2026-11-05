@@ -45,7 +45,7 @@ class StorefrontController extends Controller
         return response()->json(['ok' => true,
             'site' => [
                 'name' => ['en' => $brand['name'], 'ar' => $brand['name_ar'] ?: $brand['name']],
-                'logo' => $logo ? ['url' => $logo, 'small' => Thumbs::url($logo, 200), 'medium' => Thumbs::url($logo, 400)] : null,
+                'logo' => $logo ? ['url' => $logo, 'small' => Thumbs::url($logo, 200), 'medium' => Thumbs::url($logo, 400), 'large' => Thumbs::url($logo, 800)] : null,
                 'email' => $biz['email'], 'phone' => $biz['phone'], 'whatsapp' => $biz['whatsapp'] ?: $biz['phone'], 'cr' => $biz['cr'],
                 'address' => ['en' => $biz['addressLine1'], 'ar' => $biz['addressLine1_ar'] ?: $biz['addressLine1']],
                 'mapsUrl' => $brand['mapsUrl'], 'social' => ['instagram' => $brand['instagram'], 'tiktok' => $brand['tiktok']],

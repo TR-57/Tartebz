@@ -291,7 +291,12 @@
         '<li><span class="val">' + TZ.fruitIcon() + '</span><span class="lbl">' + e(t('stat_flavors')) + '</span></li>');
       countUp($('#hero-stats'));
 
-      set('#hero-logo', TZ.logoSVG());
+      // Big, sharp logo in the middle of the hero, with pulsing rings behind it.
+      set('#hero-logo', '<span class="hero-pulse" aria-hidden="true"></span><span class="hero-pulse p2" aria-hidden="true"></span>' +
+        (TZ.store.logo
+          ? '<img class="hero-logo-img" src="' + e(TZ.store.logoXL || TZ.store.logoLarge || TZ.store.logo) + '" srcset="' + e(TZ.store.logoLarge || TZ.store.logo) + ' 400w, ' + e(TZ.store.logoXL || TZ.store.logoLarge || TZ.store.logo) + ' 800w"' +
+            ' sizes="(min-width: 900px) 470px, 76vw" alt="' + e(TZ.L(TZ.store.name)) + '" fetchpriority="high" decoding="async">'
+          : TZ.logoSVG()));
       var packs = [TZ.find('tartebz-fruits'), TZ.find('electric-sour-strips')].concat(TZ.suggestions(2)).filter(Boolean);
       set('#hero-pack-1', packs[0] ? TZ.productArt(packs[0]) : '');
       set('#hero-pack-2', packs[1] && packs[1] !== packs[0] ? TZ.productArt(packs[1]) : (packs[2] ? TZ.productArt(packs[2]) : ''));

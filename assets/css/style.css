@@ -251,7 +251,14 @@ select:focus-visible, input:focus-visible, textarea:focus-visible { outline: non
 .fruit-ico { width: 50px; height: 50px; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .3)); }
 
 .hero-visual { position: relative; aspect-ratio: 1 / 1; display: grid; place-items: center; animation: zoomIn 1.1s .15s var(--ease) both; }
-.hero-logo { position: relative; z-index: 3; width: min(440px, 78%); animation: heroFloat 5s ease-in-out infinite; }
+.hero-logo { position: relative; z-index: 3; width: min(470px, 84%); aspect-ratio: 1; display: grid; place-items: center; animation: logoPulse 2.8s ease-in-out infinite; }
+.hero-logo-img, .hero-logo > svg { position: relative; z-index: 2; width: 100%; height: 100%; object-fit: contain; border-radius: 50%; filter: drop-shadow(0 30px 50px rgba(0, 0, 0, .45)); }
+/* Rings that grow out of the logo and fade, one after the other. */
+.hero-pulse { position: absolute; inset: 4%; z-index: 1; border-radius: 50%; border: 4px solid rgba(255, 215, 0, .85); box-shadow: 0 0 30px rgba(255, 215, 0, .45);
+  animation: logoRing 2.8s ease-out infinite; pointer-events: none; }
+.hero-pulse.p2 { animation-delay: 1.4s; border-color: rgba(255, 255, 255, .7); }
+@keyframes logoPulse { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.07); } 30% { transform: scale(1); } 45% { transform: scale(1.04); } 60% { transform: scale(1); } }
+@keyframes logoRing { 0% { transform: scale(.92); opacity: .9; } 100% { transform: scale(1.32); opacity: 0; } }
 .hero-logo::before {
   content: ""; position: absolute; inset: -14%; z-index: -1; border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 196, 0, .55), rgba(255, 120, 0, .18) 45%, transparent 70%); filter: blur(8px);
@@ -259,9 +266,9 @@ select:focus-visible, input:focus-visible, textarea:focus-visible { outline: non
 }
 .hero-logo svg { width: 100%; height: auto; filter: drop-shadow(0 30px 50px rgba(0, 0, 0, .45)); }
 .hero-ring { position: absolute; z-index: 1; width: 92%; aspect-ratio: 1; border-radius: 50%; border: 2px dashed rgba(255, 215, 0, .35); animation: spin 40s linear infinite; }
-.hero-pack { position: absolute; z-index: 4; width: 34%; filter: drop-shadow(0 24px 30px rgba(0, 0, 0, .35)); }
-.hero-pack-1 { bottom: 2%; inset-inline-start: -2%; animation: floatTilt 6s ease-in-out infinite; --rot: -10deg; }
-.hero-pack-2 { top: 4%; inset-inline-end: -2%; width: 30%; animation: floatTilt 7s ease-in-out .8s infinite; --rot: 12deg; }
+.hero-pack { position: absolute; z-index: 4; width: 30%; filter: drop-shadow(0 24px 30px rgba(0, 0, 0, .35)); }
+.hero-pack-1 { bottom: -2%; inset-inline-start: -6%; animation: floatTilt 6s ease-in-out infinite; --rot: -10deg; }
+.hero-pack-2 { top: -2%; inset-inline-end: -6%; width: 27%; animation: floatTilt 7s ease-in-out .8s infinite; --rot: 12deg; }
 .scroll-cue { position: absolute; z-index: 3; bottom: 74px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: .78rem; font-weight: 700; color: rgba(255, 255, 255, .8); }
 .scroll-cue .mouse { width: 24px; height: 38px; border: 2px solid rgba(255, 255, 255, .7); border-radius: 14px; position: relative; }
 .scroll-cue .mouse::after { content: ""; position: absolute; top: 7px; left: 50%; width: 4px; height: 8px; margin-left: -2px; border-radius: 2px; background: var(--yellow); animation: wheel 1.8s ease-in-out infinite; }
@@ -1074,7 +1081,7 @@ body.has-iab .site-header { top: var(--iab-h); }
 .hero-visual { --sy: 0px; --sr: 0deg; --tx: 0px; --ty: 0px; }
 .hero-pack-1 { translate: calc(var(--tx) * -1) calc(var(--sy) * -1 - var(--ty)); rotate: calc(var(--sr) * -1); transition: translate .25s ease-out, rotate .25s ease-out; }
 .hero-pack-2 { translate: var(--tx) calc(var(--sy) * .7 + var(--ty)); rotate: var(--sr); transition: translate .25s ease-out, rotate .25s ease-out; }
-.hero-logo { translate: calc(var(--tx) * .35) calc(var(--ty) * .35); transition: translate .3s ease-out; }
+
 
 /* ---------- card -> product page: the photo grows into place (Chrome, Edge, Safari 18+) ---------- */
 @media (prefers-reduced-motion: no-preference) {
@@ -1110,7 +1117,7 @@ body.has-iab .site-header { top: var(--iab-h); }
 }
 @media (prefers-reduced-motion: reduce) {
   .sour .seg.on { transform: none; }
-  .hero-pack-1, .hero-pack-2, .hero-logo { translate: none; rotate: none; }
+  .hero-pack-1, .hero-pack-2 { translate: none; rotate: none; }
 }
 .sour-pick .pcard { color: var(--ink); }
 .sour-pick .section-head p { color: inherit; }
@@ -1194,3 +1201,7 @@ body.has-iab .site-header { top: var(--iab-h); }
 .maint-bar { position: fixed; z-index: 95; left: 0; right: 0; bottom: 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: #1F2024; color: #fff;
   font-size: .88rem; font-weight: 700; text-align: center; }
 .maint-bar a { color: #FFD700; }
+
+@media (prefers-reduced-motion: reduce) { .hero-logo { animation: none; } .hero-pulse { animation: none; opacity: 0; } }
+/* Product page: show the whole photo (some are wide), not a square crop. */
+.pd-stage .art-photo { object-fit: contain; }
