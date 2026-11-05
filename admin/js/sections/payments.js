@@ -57,7 +57,7 @@ export default {
       </div>
       <div class="card"><h2>For your Tap dashboard</h2>
         <p class="muted small">Tap sends payment updates here (the website also sets it on every payment, so usually nothing to do):</p>
-        <p>${ltr(r.webhookUrl)}</p>
+        <p class="wrap-any">${ltr(r.webhookUrl)}</p>
         <p class="muted small">Test cards: see Tap’s developer docs (“Testing cards”). In test mode, Benefit/KNET/mada pages also have a test flow.</p>
       </div>
       <div class="savebar"><button type="submit" class="btn btn-primary" id="save">Save</button></div>

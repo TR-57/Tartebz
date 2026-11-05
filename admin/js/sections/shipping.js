@@ -1,120 +1,172 @@
-import { api, esc, ltr, pill, toggle, field, busy, toast, toastErr, showErrors, clearErrors, icon, confirmBox } from '../core.js';
+import { api, esc, pill, busy, toast, showErrors, clearErrors, icon, confirmBox, money, isAr } from '../core.js';
 
-/* Owner: delivery prices and SMSA Express (API key, sandbox/live, sender address, connection test). */
+/* Owner: Shipping rates. Each destination (a country, a group of countries, or * for everywhere else) offers its own
+   delivery methods – by air, by road, home delivery … – each with its price and delivery time. The same model as
+   Sniper Safety; the server (App\Support\Shipping::price) and the shop (TZ.methodPrice) price them the same way. */
+
+const PRICING = [['flat', 'Fixed price'], ['formula', 'Base price + per extra weight'], ['table', 'Weight table']];
+
+/* The price of one method for a parcel – a twin of App\Support\Shipping::price(). null = not offered (too heavy). */
+function priceOf(m, kg, subtotal) {
+  const num = (v) => (v === '' || v == null || isNaN(+v) ? null : +v);
+  kg = Math.max(0, kg || 0);
+  if (num(m.maxKg) != null && kg > num(m.maxKg)) return null;
+  const step = num(m.stepKg) || 0; const per = num(m.perStep) || 0;
+  const steps = (over) => (step > 0 && over > 0 ? Math.ceil(Math.round((over / step) * 1e6) / 1e6) : 0);
+  let p;
+  if (m.pricing === 'formula') p = (num(m.base) || 0) + steps(kg - (num(m.firstKg) || 0)) * per;
+  else if (m.pricing === 'table') {
+    const bands = (m.table || []).slice().sort((a, b) => a[0] - b[0]);
+    const hit = bands.find((b) => kg <= +b[0] + 1e-9);
+    if (hit) p = +hit[1]; else { const last = bands[bands.length - 1] || [0, 0]; p = +last[1] + steps(kg - last[0]) * per; }
+  } else p = num(m.base) || 0;
+  if (num(m.min) != null && p < num(m.min)) p = num(m.min);
+  if (num(m.max) != null && p > num(m.max)) p = num(m.max);
+  if (num(m.freeOver) != null && subtotal >= num(m.freeOver)) return 0;
+  return Math.round(Math.max(0, p) * 1000) / 1000;
+}
+
+const blankMethod = () => ({ id: '', name: { en: '', ar: '' }, pricing: 'flat', base: 0, firstKg: 1, stepKg: 0.5, perStep: 0, table: [[0.5, 0]], min: null, max: null, freeOver: null, maxKg: null, etaMin: null, etaMax: null, active: true });
+const nv = (v) => (v == null ? '' : v);
+
 export default {
-  key: 'shipping', label: 'Shipping', icon: 'truck', role: 'owner', group: 'settings',
+  key: 'shipping', label: 'Shipping rates', icon: 'truck', role: 'owner', group: 'settings',
   async view(main, route, alive) {
     const r = await api('shipping');
     if (!alive()) return;
-    const s = r.smsa;
-    const rates = r.rates;
-    let flat = rates.flat.map((f) => ({ ...f }));
-    let table = rates.table.map((row) => [...row]);
-    const key = (name, label, saved) => `<div class="field" data-field="${name}"><label for="${name}">${esc(label)}</label>
-      <input id="${name}" name="${name}" type="password" autocomplete="off" dir="ltr" placeholder="${esc(saved.set ? '•••• ' + saved.last4 + ' (saved – type to replace)' : 'API key')}">
-      ${saved.set ? `<label class="mini-check"><input type="checkbox" name="clear${name[0].toUpperCase() + name.slice(1)}"> <span>Remove the saved key</span></label>` : ''}</div>`;
-    const status = s.active ? (s.mode === 'live' ? pill('Live – real shipments', 'green') : pill('Sandbox – test waybills', 'amber')) : pill('Off', 'hidden');
-    const sh = s.shipper;
+    let dests = JSON.parse(JSON.stringify(r.destinations));
+    // Listeners go on a box of this view's own: the page's <main> stays when another section opens.
+    main.innerHTML = '<div class="rates-root"></div>';
+    const root = main.firstElementChild;
 
-    main.innerHTML = `
-      <div class="phead"><div><h1>Shipping</h1><p class="sub">Delivery prices at checkout, and SMSA Express for waybills, labels and tracking.</p></div></div>
-      <div class="steps card"><h2>Going live with SMSA in 4 steps</h2><ol>
-        <li>Ask your SMSA account manager for the eCommerce API keys: one for the sandbox and one for live, and your service code (for example EDDL).</li>
-        <li>Paste the sandbox key, fill in the sender address, keep Sandbox, switch SMSA on, save, and press “Test connection”.</li>
-        <li>Open a paid order (a Tap test order is fine) and book a shipment. You get a test waybill and its label PDF.</li>
-        <li>Paste the live key, test it, choose Live and save. Every shipment after that is a real, billable parcel.</li></ol></div>
-      <form id="sf" novalidate>
-      <div class="grid-2">
-        <div class="card"><div class="card-head"><h2>${icon('truck')} SMSA Express</h2>${status}</div>
-          ${toggle('enabled', 'Book shipments with SMSA from the order page', s.enabled)}
-          <div class="field"><span class="field-label">Mode</span>
-            <div class="seg" role="radiogroup" aria-label="Mode">
-              <label><input type="radio" name="mode" value="test" ${s.mode !== 'live' ? 'checked' : ''}><span>Sandbox</span></label>
-              <label><input type="radio" name="mode" value="live" ${s.mode === 'live' ? 'checked' : ''}><span>Live</span></label></div></div>
-          ${key('testKey', 'Sandbox API key', s.testKey)}
-          <button type="button" class="btn btn-sm" data-test="test">${icon('check')} Test connection (sandbox)</button> <span class="test-res" data-res="test"></span>
-          ${key('liveKey', 'Live API key', s.liveKey)}
-          <button type="button" class="btn btn-sm" data-test="live">${icon('check')} Test connection (live)</button> <span class="test-res" data-res="live"></span>
-          <div id="services"></div>
-          <div class="form-grid" style="margin-top:14px">
-            ${field('serviceCode', 'Service code', s.serviceCode, { dir: 'ltr', hint: 'From SMSA (e.g. EDDL). Empty = your account’s default.' })}
-            ${field('retailId', 'SMSA retail ID (optional)', s.retailId, { dir: 'ltr' })}
-            ${field('contentDescription', 'Contents (on the waybill)', s.contentDescription)}
-            ${field('declaredCurrency', 'Declared value currency', s.declaredCurrency, { options: [['BHD', 'BHD'], ['SAR', 'SAR'], ['AED', 'AED'], ['KWD', 'KWD'], ['QAR', 'QAR'], ['OMR', 'OMR']] })}
-          </div>
-          <details style="margin-top:8px"><summary class="muted small">Server addresses (only change if SMSA tells you to)</summary><div class="form-grid" style="margin-top:8px">
-            ${field('testUrl', 'Sandbox address', s.testUrl, { dir: 'ltr', full: true })}${field('liveUrl', 'Live address', s.liveUrl, { dir: 'ltr', full: true })}</div></details>
+    const num = (name, label, value, o = {}) => `<div class="field${o.cls ? ' ' + o.cls : ''}" data-field="${esc(name)}"><label>${esc(label)}</label>
+      <input class="input" type="number" min="0" step="${o.step || '0.001'}" dir="ltr" data-k="${esc(o.k)}" value="${esc(nv(value))}" ${o.ph ? `placeholder="${esc(o.ph)}"` : ''}>${o.hint ? `<span class="hint">${esc(o.hint)}</span>` : ''}</div>`;
+
+    const methodHtml = (m, di, mi) => {
+      const k = `destinations.${di}.methods.${mi}`;
+      const pr = m.pricing;
+      return `<div class="method card${m.active === false ? ' off' : ''}" data-d="${di}" data-m="${mi}">
+        <div class="method-head">
+          <label class="switch"><input type="checkbox" data-k="active" ${m.active !== false ? 'checked' : ''}><span class="sw" aria-hidden="true"></span><span>${m.active !== false ? 'On' : 'Off'}</span></label>
+          <span class="grow"></span>
+          <button type="button" class="iconbtn" data-act="mup" aria-label="Move up" ${mi === 0 ? 'disabled' : ''}>${icon('up')}</button>
+          <button type="button" class="iconbtn" data-act="mdown" aria-label="Move down" ${mi === dests[di].methods.length - 1 ? 'disabled' : ''}>${icon('down')}</button>
+          <button type="button" class="iconbtn" data-act="mdel" aria-label="Remove method">${icon('close')}</button></div>
+        <div class="form-grid">
+          <div class="field" data-field="${k}.name"><label>Name (English)</label><input class="input" data-k="name.en" value="${esc(m.name.en)}" placeholder="By air" dir="ltr"></div>
+          <div class="field"><label>Name (Arabic)</label><input class="input" data-k="name.ar" value="${esc(m.name.ar)}" placeholder="شحن جوي" dir="rtl"></div>
+          <div class="field full"><label>How it is priced</label><select data-k="pricing">${PRICING.map(([v, l]) => `<option value="${v}"${pr === v ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+          ${pr === 'flat' ? num(`${k}.base`, 'Price (BHD)', m.base, { k: 'base' }) : ''}
+          ${pr === 'formula' ? num(`${k}.base`, 'Base price (BHD)', m.base, { k: 'base' }) + num(`${k}.firstKg`, 'Base price covers up to (kg)', m.firstKg, { k: 'firstKg', step: '0.1' })
+            + num(`${k}.stepKg`, 'Then every (kg)', m.stepKg, { k: 'stepKg', step: '0.1' }) + num(`${k}.perStep`, 'adds (BHD)', m.perStep, { k: 'perStep' }) : ''}
         </div>
-        <div class="card"><h2>Sender (on every waybill)</h2>
-          ${s.problems.length ? `<div class="box warn small">${s.problems.map(esc).join('<br>')}</div>` : ''}
-          <div class="form-grid">
-            ${field('shipper.name', 'Name (at least 5 letters)', sh.name, { full: true })}
-            ${field('shipper.phone', 'Phone', sh.phone, { dir: 'ltr', inputmode: 'tel' })}
-            ${field('shipper.country', 'Country code', sh.country, { dir: 'ltr' })}
-            ${field('shipper.city', 'City', sh.city)}
-            ${field('shipper.district', 'Area / district', sh.district)}
-            ${field('shipper.address1', 'Address (at least 10 characters)', sh.address1, { full: true })}
-            ${field('shipper.address2', 'Address line 2', sh.address2, { full: true })}
-            ${field('shipper.postalCode', 'Postal code', sh.postalCode, { dir: 'ltr' })}
-          </div></div>
-      </div>
-      <div class="card"><h2>Delivery prices (BHD)</h2>
-        <p class="muted small">What the customer pays at checkout. Fixed price per country first; other countries pay by parcel weight.</p>
-        ${field('rates.countries', 'We deliver to (country codes)', rates.countries.join(', '), { dir: 'ltr', hint: 'e.g. BH, SA, AE, QA, KW, OM' })}
-        <h3>Fixed price</h3><div id="flat"></div><button type="button" class="btn btn-sm" id="fadd">${icon('plus')} Add a country</button>
-        <h3 style="margin-top:16px">By weight</h3><div id="table" class="rate-table"></div><button type="button" class="btn btn-sm" id="tadd">${icon('plus')} Add a row</button>
-        ${field('rates.extraPerHalfKg', 'Above the last row: extra for every 0.5 kg', rates.extraPerHalfKg, { type: 'number', step: '0.001', min: 0, dir: 'ltr' })}
-      </div>
-      <div class="savebar"><button type="submit" class="btn btn-primary" id="save">Save</button></div>
-      </form>`;
-
-    const drawFlat = () => {
-      main.querySelector('#flat').innerHTML = flat.map((f, i) => `<div class="rate-row" data-field="rates.flat.${i}">
-        <input class="input" value="${esc(f.country)}" data-f="${i}" data-k="country" dir="ltr" maxlength="2" aria-label="Country" style="width:70px">
-        <input class="input" type="number" step="0.001" min="0" value="${f.price}" data-f="${i}" data-k="price" dir="ltr" aria-label="Price" style="width:110px"> <span class="muted small">BHD</span>
-        <button type="button" class="iconbtn" data-frm="${i}" aria-label="Remove">${icon('close')}</button></div>`).join('');
+        ${pr === 'table' ? `<div class="rate-table" data-field="${k}.table">${(m.table || []).map((row, t) => `<div class="rate-row" data-field="${k}.table.${t}"><span class="muted small">up to</span>
+            <input class="input" type="number" step="0.1" min="0" value="${esc(row[0])}" data-t="${t}" data-c="0" dir="ltr" aria-label="kg" style="width:80px"> <span class="muted small">kg</span>
+            <input class="input" type="number" step="0.001" min="0" value="${esc(row[1])}" data-t="${t}" data-c="1" dir="ltr" aria-label="Price" style="width:100px"> <span class="muted small">BHD</span>
+            <button type="button" class="iconbtn" data-act="trm" data-t="${t}" aria-label="Remove">${icon('close')}</button></div>`).join('')}
+          <button type="button" class="btn btn-sm" data-act="tadd">${icon('plus')} Add a row</button>
+          <div class="form-grid" style="margin-top:8px">${num(`${k}.stepKg`, 'Above the last row: every (kg)', m.stepKg, { k: 'stepKg', step: '0.1' })}${num(`${k}.perStep`, 'adds (BHD)', m.perStep, { k: 'perStep' })}</div></div>` : ''}
+        <details class="method-more" ${m.min != null || m.max != null || m.freeOver != null || m.maxKg != null ? 'open' : ''}><summary class="muted small">Limits and free delivery</summary>
+          <div class="form-grid">${num(`${k}.min`, 'Lowest price (BHD)', m.min, { k: 'min', ph: 'none' })}${num(`${k}.max`, 'Highest price (BHD)', m.max, { k: 'max', ph: 'none' })}
+            ${num(`${k}.freeOver`, 'Free when the order reaches (BHD)', m.freeOver, { k: 'freeOver', ph: 'never' })}${num(`${k}.maxKg`, 'Not offered above (kg)', m.maxKg, { k: 'maxKg', step: '0.1', ph: 'no limit' })}</div></details>
+        <div class="form-grid">${num(`${k}.etaMin`, 'Delivery time: from (days)', m.etaMin, { k: 'etaMin', step: '1' })}${num(`${k}.etaMax`, 'to (days)', m.etaMax, { k: 'etaMax', step: '1' })}</div>
+      </div>`;
     };
-    const drawTable = () => {
-      main.querySelector('#table').innerHTML = table.map((row, i) => `<div class="rate-row" data-field="rates.table.${i}"><span class="muted small">up to</span>
-        <input class="input" type="number" step="0.1" min="0" value="${row[0]}" data-t="${i}" data-c="0" dir="ltr" aria-label="kg" style="width:80px"> <span class="muted small">kg</span>
-        <input class="input" type="number" step="0.001" min="0" value="${row[1]}" data-t="${i}" data-c="1" dir="ltr" aria-label="Price" style="width:100px"> <span class="muted small">BHD</span>
-        <button type="button" class="iconbtn" data-trm="${i}" aria-label="Remove">${icon('close')}</button></div>`).join('');
-    };
-    drawFlat(); drawTable();
-    main.querySelector('#flat').addEventListener('input', (e) => { const i = e.target.dataset.f; if (i != null) flat[+i][e.target.dataset.k] = e.target.dataset.k === 'price' ? +e.target.value : e.target.value.toUpperCase(); });
-    main.querySelector('#flat').addEventListener('click', (e) => { const b = e.target.closest('[data-frm]'); if (b) { flat.splice(+b.dataset.frm, 1); drawFlat(); } });
-    main.querySelector('#table').addEventListener('input', (e) => { const i = e.target.dataset.t; if (i != null) table[+i][+e.target.dataset.c] = +e.target.value; });
-    main.querySelector('#table').addEventListener('click', (e) => { const b = e.target.closest('[data-trm]'); if (b) { table.splice(+b.dataset.trm, 1); drawTable(); } });
-    main.querySelector('#fadd').addEventListener('click', () => { flat.push({ country: '', price: 0 }); drawFlat(); });
-    main.querySelector('#tadd').addEventListener('click', () => { const last = table[table.length - 1] || [0, 0]; table.push([+(last[0] + 0.5).toFixed(1), last[1]]); drawTable(); });
 
-    const form = main.querySelector('#sf');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      clearErrors(form);
-      const v = (n) => form.querySelector(`[name="${n}"]`);
-      const body = {
-        enabled: v('enabled').checked, mode: form.querySelector('[name=mode]:checked').value,
-        testKey: v('testKey').value.trim(), liveKey: v('liveKey').value.trim(),
-        serviceCode: v('serviceCode').value, retailId: v('retailId').value, contentDescription: v('contentDescription').value,
-        declaredCurrency: v('declaredCurrency').value, testUrl: v('testUrl').value, liveUrl: v('liveUrl').value,
-        shipper: Object.fromEntries(['name', 'phone', 'country', 'city', 'district', 'address1', 'address2', 'postalCode'].map((k) => [k, v('shipper.' + k).value])),
-        rates: { countries: v('rates.countries').value.split(/[\s,]+/).filter(Boolean), flat, table, extraPerHalfKg: +v('rates.extraPerHalfKg').value },
-      };
-      ['clearTestKey', 'clearLiveKey'].forEach((k) => { if (v(k)) body[k] = v(k).checked; });
-      if (body.mode === 'live' && body.enabled && !(await confirmBox('Switch SMSA to LIVE? Every shipment you book will be a real, billable parcel.', { ok: 'Go live' }))) return;
-      try { await busy(main.querySelector('#save'), () => api('shipping', { method: 'PUT', body })); toast('Saved'); this.view(main, route, alive); } catch (err) { showErrors(form, err); }
+    const destHtml = (d, di) => `<div class="card dest" data-d="${di}">
+      <div class="card-head"><h2><span data-noi18n>${esc((isAr() ? d.name.ar : d.name.en) || d.name.en || '…')}</span></h2>
+        <span>${(d.countries || []).includes('*') ? pill('Everywhere else', 'blue') : ''}
+          <button type="button" class="iconbtn" data-act="ddel" aria-label="Remove destination">${icon('close')}</button></span></div>
+      <div class="form-grid">
+        <div class="field" data-field="destinations.${di}.name"><label>Name (English)</label><input class="input" data-dk="name.en" value="${esc(d.name.en)}" placeholder="GCC" dir="ltr"></div>
+        <div class="field"><label>Name (Arabic)</label><input class="input" data-dk="name.ar" value="${esc(d.name.ar)}" placeholder="دول الخليج" dir="rtl"></div>
+        <div class="field full" data-field="destinations.${di}.countries"><label>Countries (2-letter codes; * = every other country)</label>
+          <input class="input" data-dk="countries" value="${esc((d.countries || []).join(', '))}" placeholder="SA, AE, QA, KW, OM" dir="ltr"></div></div>
+      <h3>Delivery methods</h3><p class="muted small">The customer chooses one at checkout, in this order. Turn one off to hide it.</p>
+      <div class="methods" data-field="destinations.${di}.methods">${d.methods.map((m, mi) => methodHtml(m, di, mi)).join('')}</div>
+      <button type="button" class="btn btn-sm" data-act="madd">${icon('plus')} Add a delivery method</button></div>`;
+
+    const check = () => {
+      const box = root.querySelector('#pcheck-out');
+      if (!box) return;
+      const kg = +root.querySelector('#pc-kg').value || 0; const sub = +root.querySelector('#pc-sub').value || 0;
+      const cc = root.querySelector('#pc-cc').value.trim().toUpperCase();
+      const d = dests.find((x) => (x.countries || []).includes(cc)) || dests.find((x) => (x.countries || []).includes('*'));
+      if (!d) { box.innerHTML = '<p class="muted">We do not deliver there.</p>'; return; }
+      const rows = d.methods.filter((m) => m.active !== false).map((m) => {
+        const p = priceOf(m, kg, sub);
+        return `<li><span data-noi18n>${esc((isAr() ? m.name.ar : m.name.en) || m.name.en)}</span>: <b data-noi18n>${p == null ? '—' : p === 0 ? '0' : esc(money(p))}</b>${p == null ? ' <span class="muted small">Not offered at this weight</span>' : p === 0 ? ' <span class="muted small">Free</span>' : ''}</li>`;
+      });
+      box.innerHTML = rows.length ? `<ul class="plist">${rows.join('')}</ul>` : '<p class="muted">No method is on.</p>';
+    };
+
+    const draw = () => {
+      root.innerHTML = `
+        <div class="phead"><div><h1>Shipping rates</h1><p class="sub">What the customer pays for delivery, per destination and delivery method (BHD). Choose which methods go through SMSA in SMSA shipping.</p></div>
+          <div class="actions"><a class="btn" href="#/smsa">${icon('truck')} SMSA shipping</a></div></div>
+        <form id="rf" novalidate>
+          <div id="dests">${dests.map(destHtml).join('')}</div>
+          <p><button type="button" class="btn" data-act="dadd">${icon('plus')} Add a destination</button></p>
+          <div class="card"><h2>Price check</h2><div class="form-grid">
+            <div class="field"><label for="pc-cc">Country</label><input id="pc-cc" class="input" value="SA" maxlength="2" dir="ltr"></div>
+            <div class="field"><label for="pc-kg">Parcel weight (kg)</label><input id="pc-kg" class="input" type="number" min="0" step="0.1" value="1" dir="ltr"></div>
+            <div class="field"><label for="pc-sub">Order value (BHD)</label><input id="pc-sub" class="input" type="number" min="0" step="0.5" value="10" dir="ltr"></div></div>
+            <div id="pcheck-out"></div></div>
+          <div class="savebar"><button type="submit" class="btn btn-primary" id="save">Save</button></div>
+        </form>`;
+      check();
+    };
+    draw();
+
+    const at = (el) => { const m = el.closest('[data-m]'); const d = el.closest('[data-d]'); return { di: d ? +d.dataset.d : -1, mi: m ? +m.dataset.m : -1 }; };
+    root.addEventListener('input', (e) => {
+      const el = e.target;
+      if (el.id && el.id.startsWith('pc-')) { check(); return; }
+      const { di, mi } = at(el);
+      if (di < 0) return;
+      if (el.dataset.dk) {
+        const d = dests[di];
+        if (el.dataset.dk === 'countries') d.countries = el.value.split(/[\s,]+/).map((c) => c.trim().toUpperCase()).filter(Boolean);
+        else d.name[el.dataset.dk.split('.')[1]] = el.value;
+      } else if (mi >= 0) {
+        const m = dests[di].methods[mi];
+        if (el.dataset.t != null && el.dataset.c != null) m.table[+el.dataset.t][+el.dataset.c] = el.value === '' ? '' : +el.value;
+        else if (el.dataset.k === 'name.en' || el.dataset.k === 'name.ar') m.name[el.dataset.k.split('.')[1]] = el.value;
+        else if (el.dataset.k && el.dataset.k !== 'active' && el.dataset.k !== 'pricing') m[el.dataset.k] = el.value === '' ? null : +el.value;
+      }
+      check();
     });
-    main.querySelectorAll('[data-test]').forEach((b) => b.addEventListener('click', async () => {
-      const out = main.querySelector(`[data-res="${b.dataset.test}"]`);
-      out.textContent = '…';
+    root.addEventListener('change', (e) => {
+      const el = e.target;
+      const { di, mi } = at(el);
+      if (di < 0 || mi < 0) return;
+      const m = dests[di].methods[mi];
+      if (el.dataset.k === 'pricing') { m.pricing = el.value; if (m.pricing === 'table' && !(m.table || []).length) m.table = [[0.5, 0]]; draw(); }
+      if (el.dataset.k === 'active') { m.active = el.checked; draw(); }
+    });
+    root.addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-act]');
+      if (!b) return;
+      const { di, mi } = at(b);
+      const a = b.dataset.act;
+      if (a === 'dadd') dests.push({ id: '', name: { en: '', ar: '' }, countries: [], methods: [blankMethod()] });
+      else if (a === 'ddel') { if (!(await confirmBox('Remove this destination and its delivery methods?', { ok: 'Remove', danger: true }))) return; dests.splice(di, 1); }
+      else if (a === 'madd') dests[di].methods.push(blankMethod());
+      else if (a === 'mdel') { if (dests[di].methods.length === 1) { toast('Keep at least one delivery method – turn it off instead.', 'err'); return; } dests[di].methods.splice(mi, 1); }
+      else if (a === 'mup' || a === 'mdown') { const list = dests[di].methods; const j = a === 'mup' ? mi - 1 : mi + 1; [list[mi], list[j]] = [list[j], list[mi]]; }
+      else if (a === 'tadd') { const t = dests[di].methods[mi].table; const last = t[t.length - 1] || [0, 0]; t.push([+(+last[0] + 0.5).toFixed(1), last[1]]); }
+      else if (a === 'trm') dests[di].methods[mi].table.splice(+b.dataset.t, 1);
+      else return;
+      draw();
+    });
+    root.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = root.querySelector('#rf');
+      clearErrors(form);
       try {
-        const res = await busy(b, () => api('shipping/test', { method: 'POST', body: { mode: b.dataset.test } }));
-        out.className = 'test-res ' + (res.connected ? 'ok' : 'err'); out.textContent = res.message; out.dataset.mark = res.connected ? '✓' : '✗';
-        if (res.services && res.services.length) {
-          main.querySelector('#services').innerHTML = `<p class="muted small">Your SMSA services:</p><ul class="services">${res.services.map((x) => `<li>${ltr(x.code)} – <span data-noi18n>${esc(x.name)}</span></li>`).join('')}</ul>`;
-        }
-      } catch (err) { out.className = 'test-res err'; out.textContent = err.message; toastErr(err); }
-    }));
+        const res = await busy(root.querySelector('#save'), () => api('shipping', { method: 'PUT', body: { destinations: dests } }));
+        dests = JSON.parse(JSON.stringify(res.destinations)); draw(); toast('Saved');
+      } catch (err) { showErrors(root.querySelector('#rf'), err); }
+    });
   },
 };

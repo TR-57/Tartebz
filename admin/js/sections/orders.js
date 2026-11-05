@@ -27,24 +27,59 @@ export default {
         <div class="actions"><a class="btn" href="/staff" target="_blank" rel="noopener">${icon('bag')} Orders board</a><a class="btn btn-primary" href="/staff#new" target="_blank" rel="noopener">${icon('plus')} New order</a></div></div>
       <div class="tabs" role="tablist">${TABS.map(([k, l]) => `<a href="#/orders?tab=${k}" role="tab" aria-selected="${tab === k}">${esc(l)} <span class="count-pill${k === 'todo' && r.counts[k] ? ' red' : ''}" data-noi18n>${nf(r.counts[k])}</span></a>`).join('')}</div>
       <div class="toolbar"><input class="input grow" type="search" id="oq" value="${esc(q.q || '')}" placeholder="Search by order number, name, phone, email or waybill" aria-label="Search orders"></div>
-      <div class="table-wrap"><table class="t cards"><thead><tr><th>Order</th><th>Customer</th><th>Status</th><th class="num">Total</th><th>Date</th></tr></thead><tbody>
+      <div class="bulkbar" id="obulk" hidden><span><b id="ocount" data-noi18n>0</b> <span>selected</span></span>
+        <button class="btn btn-sm btn-primary" data-bulk="print">${icon('log')} Print invoices (+ SMSA waybills abroad)</button>
+        <button class="btn btn-sm" data-bulk="labels">SMSA labels (one PDF)</button>
+        <button class="btn btn-sm" data-bulk="ship">${icon('truck')} Send to SMSA</button>
+        <button class="btn btn-sm btn-ghost" data-bulk="none">Clear</button></div>
+      <div class="table-wrap"><table class="t cards"><thead><tr><th class="pick"><input type="checkbox" id="oall" aria-label="Select all"></th><th>Order</th><th>Customer</th><th>Status</th><th class="num">Total</th><th>Date</th></tr></thead><tbody>
       ${r.orders.length ? r.orders.map((o) => `<tr class="rowlink" data-href="#/orders/${o.id}">
+        <td class="pick"><input type="checkbox" data-pick="${o.id}" aria-label="Select"></td>
         <td data-label="Order"><a href="#/orders/${o.id}"><b data-noi18n>#${esc(o.number)}</b></a>${o.testMode ? ' ' + pill('Test', 'amber') : ''}
           <div class="muted small"><span>${o.method === 'whatsapp' ? 'WhatsApp' : 'Card (Tap)'}</span>${o.source === 'staff' ? ' · <span>Created by the team</span>' : ''} · <span>${o.items === 1 ? '1 item' : `${nf(o.items)} items`}</span></div></td>
         <td data-label="Customer">${d(o.name)}<div class="muted small">${ltr(o.phone)} · <span data-noi18n>${esc(o.country)}</span></div></td>
         <td data-label="Status">${pill(r.labels[o.status] || o.status, PILL[o.status] || '')}${o.awb ? `<div class="muted small">SMSA ${ltr(o.awb)}</div>` : ''}</td>
         <td data-label="Total" class="num">${amount({ currency: o.currency, fxRate: o.customerTotal ? o.customerTotal / o.total : 0 }, o.total)}</td>
         <td data-label="Date"><span data-noi18n>${esc(fmtDate(o.createdAt))}</span></td></tr>`).join('')
-        : `<tr><td colspan="5"><p class="empty">${q.q ? 'No order matches your search.' : 'No orders here yet.'}</p></td></tr>`}
+        : `<tr><td colspan="6"><p class="empty">${q.q ? 'No order matches your search.' : 'No orders here yet.'}</p></td></tr>`}
       </tbody></table></div>
       ${pages > 1 ? `<div class="pager"><span class="muted" data-noi18n>${nf(r.total)}</span>
         <span>${page > 1 ? `<button class="btn btn-sm" data-page="${page - 1}">Previous</button>` : ''} <span data-noi18n>${page} / ${pages}</span> ${page < pages ? `<button class="btn btn-sm" data-page="${page + 1}">Next</button>` : ''}</span></div>` : ''}`;
     const reload = (obj = {}) => { const nq = { tab, q: q.q || '', page, ...obj }; setQuery(nq); this.view(main, { ...route, query: nq }, alive); };
     main.querySelector('#oq').addEventListener('input', debounce((e) => reload({ q: e.target.value.trim(), page: 1 }), 400));
     main.querySelectorAll('[data-page]').forEach((b) => b.addEventListener('click', () => reload({ page: +b.dataset.page })));
-    main.querySelectorAll('tr.rowlink').forEach((tr) => tr.addEventListener('click', (e) => { if (!e.target.closest('a, button')) go(tr.dataset.href); }));
+    main.querySelectorAll('tr.rowlink').forEach((tr) => tr.addEventListener('click', (e) => { if (!e.target.closest('a, button, .pick')) go(tr.dataset.href); }));
+    bindBulk(main, () => this.view(main, route, alive));
   },
 };
+
+/* Several orders at once: print (invoice, and the SMSA waybill for orders abroad), labels in one PDF, send to SMSA. */
+function bindBulk(main, reload) {
+  const bar = main.querySelector('#obulk');
+  const picks = () => [...main.querySelectorAll('[data-pick]:checked')].map((c) => +c.dataset.pick);
+  const sync = () => { const n = picks().length; bar.hidden = !n; main.querySelector('#ocount').textContent = nf(n); };
+  main.querySelectorAll('[data-pick]').forEach((c) => c.addEventListener('change', sync));
+  const all = main.querySelector('#oall');
+  if (all) all.addEventListener('change', () => { main.querySelectorAll('[data-pick]').forEach((c) => { c.checked = all.checked; }); sync(); });
+  bar.addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-bulk]');
+    if (!b) return;
+    const ids = picks();
+    if (b.dataset.bulk === 'none') { main.querySelectorAll('[data-pick], #oall').forEach((c) => { c.checked = false; }); sync(); return; }
+    if (b.dataset.bulk === 'print') { window.open('/api/admin/orders/print?ids=' + ids.join(','), '_blank', 'noopener'); return; }
+    if (b.dataset.bulk === 'labels') { window.open('/api/admin/orders/labels?ids=' + ids.join(','), '_blank', 'noopener'); return; }
+    if (!(await confirmBox('Send the selected paid orders to SMSA? Each gets its waybill.', { ok: 'Send to SMSA' }))) return;
+    try {
+      const res = await busy(b, () => api('orders/ship', { method: 'POST', body: { ids } }));
+      const lines = [`${nf(res.sent)} sent`, res.already ? `${nf(res.already)} already had a waybill` : ''].filter(Boolean);
+      if (res.problems.length) {
+        modal({ title: 'Sent to SMSA', body: `<p data-noi18n>${esc(lines.join(' · '))}</p><ul class="problems">${res.problems.map((p) => `<li><b data-noi18n>#${esc(p.number)}</b> <span data-noi18n>${esc(p.message)}</span></li>`).join('')}</ul>`,
+          foot: '<button class="btn btn-primary" data-close>OK</button>' });
+      } else toast(lines.join(' · '));
+      reload();
+    } catch (err) { toastErr(err); }
+  });
+}
 
 async function detail(main, route, alive) {
   const id = +route.sub;
@@ -77,7 +112,7 @@ async function detail(main, route, alive) {
           </tbody></table></div>
           <p class="muted small">Charged: <b data-noi18n>${esc(o.chargeCurrency)} ${nf(o.chargeAmount, ['BHD', 'KWD', 'OMR'].includes(o.chargeCurrency) ? 3 : 2)}</b></p>
         </div>
-        <div class="card"><h2>Delivery – SMSA Express</h2>${shipBox(o, r.smsa)}</div>
+        <div class="card"><h2>SMSA shipping</h2>${shipBox(o, r.smsa)}</div>
         <div class="card"><h2>History</h2>
           <form id="nf" class="note-row"><input class="input grow" name="note" placeholder="Add a note for the team (not shown to the customer)" aria-label="Add a note"><button class="btn">Add note</button></form>
           <ul class="timeline">${o.events.map((e) => `<li class="ev-${esc(e.type)}"><span class="muted small"><span data-noi18n>${esc(fmtDate(e.at))}</span>${e.by ? ` · ${d(e.by)}` : ''}</span><div>${e.type === 'note' ? d(e.message) : esc(e.message)}</div></li>`).join('')}</ul>
@@ -100,7 +135,7 @@ async function detail(main, route, alive) {
             <button class="btn btn-sm" id="chk">${icon('check')} Check payment with Tap</button>` : ''}
           ${!paid && !closed && manager ? `<button class="btn btn-sm" id="mpaid">Mark as paid…</button>` : ''}
           ${refundsBox(o, manager)}
-          <p style="margin-top:10px"><a class="btn btn-sm" href="/api/admin/orders/${o.id}/invoice" target="_blank" rel="noopener">${icon('log')} Print invoice</a></p>
+          <p class="btn-row" style="margin-top:10px"><a class="btn btn-sm btn-primary" href="/api/admin/orders/${o.id}/print" target="_blank" rel="noopener">${icon('log')} ${o.abroad && o.shipment && o.shipment.awb && o.shipment.status !== 'cancelled' ? 'Print invoice + SMSA waybill' : 'Print invoice'}</a></p>
           <p class="muted small" style="margin-top:10px">Customer’s order page: <a href="${esc(o.customerUrl)}" target="_blank" rel="noopener">open</a></p>
         </div>
         ${!closed && manager ? `<div class="card"><button class="btn btn-danger btn-sm" id="cancel">${icon('close')} Cancel order</button>
@@ -205,37 +240,87 @@ function bindRefunds(main, o, id, act, reload) {
   }));
 }
 
+/* SMSA (as in Sniper Safety): the waybill, its label, tracking – or why SMSA refused it, and "Try again". */
+const SMSA_STATUS = { created: ['Waiting for SMSA pickup', 'amber'], moving: ['On the way with SMSA', 'blue'], delivered: ['Delivered by SMSA', 'green'], failed: ['Refused by SMSA', 'red'], cancelled: ['Waybill cancelled', 'hidden'] };
+const SERVICE = { EIDL: 'By air (EIDL)', EIED: 'By road (EIED)', EDDL: 'Inside Bahrain (EDDL)' };
+
 function shipBox(o, smsa) {
-  if (o.awb) {
-    return `<p><b>SMSA ${ltr(o.awb)}</b> ${o.carrier.endsWith(':test') ? pill('Sandbox', 'amber') : ''}</p>
-      ${o.trackingStatus ? `<p>${icon('truck')} <span data-noi18n>${esc(o.trackingStatus)}</span> <span class="muted small" data-noi18n>${esc(fmtDate(o.trackingAt))}</span></p>` : ''}
-      <div class="btn-row">${o.hasLabel ? `<a class="btn btn-primary btn-sm" href="/api/admin/orders/${o.id}/label" target="_blank" rel="noopener">${icon('log')} Print label (PDF)</a>` : ''}
-        <button class="btn btn-sm" id="track">${icon('truck')} Update tracking</button>
-        <a class="btn btn-sm" href="${esc(o.trackingUrl)}" target="_blank" rel="noopener">SMSA tracking page</a>
-        ${can('manager') && !['delivered'].includes(o.status) ? '<button class="btn btn-sm btn-ghost" id="cship">Cancel shipment</button>' : ''}</div>`;
+  const sh = o.shipment;
+  const live = sh && sh.awb && sh.status !== 'cancelled';
+  const paid = o.paymentStatus === 'paid' && !['cancelled', 'refunded'].includes(o.status);
+  const canSend = paid && (!sh || ['failed', 'cancelled'].includes(sh.status));
+  const st = sh ? SMSA_STATUS[sh.status] || [sh.status, ''] : null;
+  let h = '';
+  if (o.shippingMethodName && o.shippingMethodName.en) h += `<p class="muted small"><span>Delivery method</span>: <span data-noi18n>${esc(isAr() ? o.shippingMethodName.ar : o.shippingMethodName.en)}</span></p>`;
+  if (live) {
+    h += `<p><span class="muted small">Waybill</span> <b>${ltr(sh.awb)}</b> ${pill(st[0], st[1])} ${sh.mode === 'test' ? pill('Sandbox', 'amber') : ''}</p>
+      <p class="muted small"><span>${esc(SERVICE[sh.service] || sh.service || '')}</span>${sh.dutiesBy ? ` · <span>Import VAT and duty:</span> <b>${sh.dutiesBy === 'shipper' ? 'we pay (billed to our SMSA account)' : 'the customer pays on delivery'}</b>` : ''}</p>`;
   }
-  if (o.paymentStatus !== 'paid' || ['cancelled', 'refunded'].includes(o.status)) return '<p class="muted">The shipment can be booked once the order is paid.</p>';
-  if (!smsa.enabled) return '<p class="muted">SMSA is not switched on. Settings › Shipping: paste the API key, test, switch on.</p>';
-  return `${smsa.problems.length ? `<div class="box warn small">${smsa.problems.map(esc).join('<br>')}</div>` : ''}
-    <p class="muted small">${smsa.mode === 'live' ? 'Live: this books a real, billable SMSA parcel.' : 'Sandbox: a test waybill, no courier comes.'}</p>
-    <div class="form-grid ship-form">
-      <div class="field"><label for="parcels">Boxes</label><input id="parcels" type="number" min="1" max="25" value="1" dir="ltr"></div>
-      <div class="field"><label for="kg">Weight (kg)</label><input id="kg" type="number" min="0.1" step="0.1" value="${(Math.max(100, o.weightGrams) / 1000).toFixed(1)}" dir="ltr"></div>
-    </div>
-    <button class="btn btn-primary" id="ship" ${smsa.problems.length ? 'disabled' : ''}>${icon('truck')} Book SMSA shipment and get the label</button>`;
+  if (sh && sh.status === 'failed') h += `<div class="box warn small"><b>${esc(st[0])}</b> <span data-noi18n>${esc(sh.error)}</span>${sh.attempts > 1 ? ` <span class="muted" data-noi18n>(${nf(sh.attempts)}×)</span>` : ''}</div>`;
+  if (!sh || sh.status === 'cancelled') {
+    h += `<p class="muted">${!paid ? 'The waybill is created once the order is paid.'
+      : smsa.enabled && smsa.method ? 'The waybill is being created – it appears here within a minute.'
+        : smsa.configured ? 'Not sent to SMSA yet. Send it by hand below.' : 'SMSA is not set up. Admin › SMSA shipping: paste the API key and the sender address.'}</p>`;
+  }
+  if (live && sh.scans && sh.scans.length) {
+    h += `<ul class="scans">${sh.scans.slice(0, 8).map((x) => `<li><span class="muted small" data-noi18n>${esc(fmtDate(x.at))}</span> <span data-noi18n>${esc(x.what)}</span>${x.city ? ` <span class="muted small" data-noi18n>${esc(x.city)}</span>` : ''}</li>`).join('')}</ul>`;
+  } else if (live && sh.lastScan) {
+    h += `<p>${icon('truck')} <span data-noi18n>${esc(sh.lastScan)}</span></p>`;
+  }
+  if (canSend && smsa.configured) {
+    h += `${smsa.problems.length ? `<div class="box warn small">${smsa.problems.map(esc).join('<br>')}</div>` : ''}
+      <details class="ship-more"><summary class="muted small">Boxes and weight</summary><div class="form-grid ship-form">
+        <div class="field"><label for="parcels">Boxes</label><input id="parcels" type="number" min="1" max="25" value="1" dir="ltr"></div>
+        <div class="field"><label for="kg">Weight (kg)</label><input id="kg" type="number" min="0.1" step="0.1" value="${(Math.max(100, o.weightGrams) / 1000).toFixed(1)}" dir="ltr"></div></div></details>
+      <p class="muted small">${smsa.mode === 'live' ? 'Live: this creates a real, billable SMSA parcel.' : 'Sandbox: a test waybill, no courier comes.'}</p>`;
+  }
+  h += `<div class="btn-row">
+    ${live ? `<button class="btn btn-primary btn-sm" id="slabel">${icon('log')} Print SMSA label</button>
+      <button class="btn btn-sm" id="track">${icon('truck')} Refresh tracking</button>
+      <a class="btn btn-sm" href="${esc(sh.trackUrl)}" target="_blank" rel="noopener">SMSA tracking page</a>` : ''}
+    ${canSend && smsa.configured ? `<button class="btn btn-sm${live ? '' : ' btn-primary'}" id="ship" ${smsa.problems.length ? 'disabled' : ''}>${icon('truck')} ${sh && sh.status === 'failed' ? 'Try again' : 'Send to SMSA now'}</button>` : ''}
+    ${live && can('manager') && ['created'].includes(sh.status) ? '<button class="btn btn-sm btn-ghost" id="cship">Cancel waybill</button>' : ''}</div>`;
+  return h;
+}
+
+/* The label as SMSA made it, or with a share of the goods value printed on this copy only (never sent to SMSA). */
+export function labelModal(id, subtotal) {
+  modal({
+    title: 'Print SMSA label',
+    body: `<form id="lvf" class="form-grid" novalidate>
+      <div class="field full"><span class="field-label">Declared value on the label</span><div class="seg" role="radiogroup" aria-label="Declared value on the label">
+        <label><input type="radio" name="lv" value="100" checked><span>Full value</span></label>
+        <label><input type="radio" name="lv" value="custom"><span>Part of the value</span></label></div></div>
+      <div class="field" data-field="percentage"><label for="lvp">Percentage of the goods value</label><input id="lvp" type="number" min="0" max="100" step="1" value="50" dir="ltr" disabled>
+        <span class="hint">Printed on this copy only. SMSA keeps the full value (<span data-noi18n>${esc(money(subtotal))}</span>).</span></div></form>`,
+    foot: '<button class="btn" data-close>Cancel</button><button class="btn btn-primary" id="lvok">Open the label</button>',
+    onOpen: (el, close) => {
+      const pct = el.querySelector('#lvp');
+      el.querySelectorAll('[name=lv]').forEach((r) => r.addEventListener('change', () => { pct.disabled = el.querySelector('[name=lv]:checked').value !== 'custom'; }));
+      el.querySelector('#lvok').addEventListener('click', () => {
+        const custom = el.querySelector('[name=lv]:checked').value === 'custom';
+        const v = custom ? Math.max(0, Math.min(100, +pct.value || 0)) : 100;
+        window.open(`/api/admin/orders/${id}/label${v < 100 ? '?percentage=' + v : ''}`, '_blank', 'noopener');
+        close();
+      });
+    },
+  });
 }
 
 function bindShip(main, o, smsa, act) {
   const ship = main.querySelector('#ship');
   if (ship) ship.addEventListener('click', async () => {
-    if (smsa.mode === 'live' && !(await confirmBox('Book a real SMSA shipment for this order?', { ok: 'Book shipment' }))) return;
-    act(ship, 'ship', { parcels: +main.querySelector('#parcels').value || 1, weightKg: +main.querySelector('#kg').value || null }, 'Shipment booked');
+    if (smsa.mode === 'live' && !(await confirmBox('Create a real SMSA waybill for this order?', { ok: 'Send to SMSA' }))) return;
+    const parcels = main.querySelector('#parcels'); const kg = main.querySelector('#kg');
+    act(ship, 'ship', { parcels: parcels ? +parcels.value || 1 : 1, weightKg: kg ? +kg.value || null : null }, 'Sent to SMSA');
   });
+  const lb = main.querySelector('#slabel');
+  if (lb) lb.addEventListener('click', () => labelModal(o.id, o.subtotal - o.discount));
   const tr = main.querySelector('#track');
   if (tr) tr.addEventListener('click', () => act(tr, 'track', {}, 'Tracking updated'));
   const cs = main.querySelector('#cship');
   if (cs) cs.addEventListener('click', async () => {
-    if (!(await confirmBox('Cancel this SMSA shipment? The waybill can no longer be used.', { ok: 'Cancel shipment', danger: true }))) return;
-    act(cs, 'cancel-shipment', {}, 'Shipment cancelled');
+    if (!(await confirmBox('Cancel this SMSA waybill? It can no longer be used.', { ok: 'Cancel waybill', danger: true }))) return;
+    act(cs, 'cancel-shipment', {}, 'Waybill cancelled');
   });
 }

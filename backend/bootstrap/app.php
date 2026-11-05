@@ -31,6 +31,9 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $json = fn (array $body, int $status) => response()->json($body, $status, [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        // Answers to the person (wrong password, a field to fix, no permission) are not faults: keep them out of the error log.
+        // A gateway that cannot be reached (502) is still logged.
+        $exceptions->report(fn (ApiError $e) => $e->status < 500 || $e->status === 503 ? false : null);   // 503 = shop closed for maintenance
 
         $exceptions->render(function (ApiError $e) use ($json) {
             return $json($e->toArray(), $e->status);

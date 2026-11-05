@@ -379,3 +379,34 @@ table.vt .input { min-width: 90px; padding: 6px 8px; }
 .ticks li { position: relative; padding-inline-start: 24px; }
 .ticks li::before { content: '✓'; position: absolute; inset-inline-start: 0; color: var(--green, #138A43); font-weight: 800; }
 .maint-flag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; background: var(--danger); color: #fff; font-weight: 800; font-size: 12.5px; text-decoration: none; }
+
+/* Shipping rates: destinations and their delivery methods */
+.dest h3 { margin: 16px 0 2px; font-size: 1rem; }
+.methods { display: grid; gap: 12px; margin: 10px 0; }
+.method { margin: 0; padding: 14px; border: 1px solid var(--line, #E6E3DA); box-shadow: none; }
+.method.off { opacity: .65; }
+.method-head { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.method-head .grow { flex: 1; }
+.method-head .field { margin: 0; }
+.method-more { margin: 4px 0 8px; }
+.plist { margin: 6px 0 0; padding-inline-start: 18px; }
+/* SMSA shipping */
+.smsa-state { border-inline-start: 4px solid var(--gray, #8a8a8a); }
+.smsa-state.on { border-inline-start-color: var(--green, #138A43); }
+.smsa-methods { display: grid; gap: 10px; }
+.smsa-method { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 10px 12px; border: 1px solid var(--line, #E6E3DA); border-radius: var(--radius-sm, 10px); }
+.smsa-svc { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; }
+.smsa-svc select { width: auto; }
+.smsa-duties { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.smsa-duty { display: flex; gap: 10px; padding: 12px; border: 2px solid var(--line, #E6E3DA); border-radius: var(--radius-sm, 10px); cursor: pointer; }
+.smsa-duty.on { border-color: var(--ink); }
+.smsa-duty span { display: grid; gap: 4px; }
+.smsa-duty small { color: var(--gray); font-size: 12.5px; }
+.smsa-failed { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.scans { margin: 8px 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 13.5px; }
+.scans li { padding-inline-start: 12px; border-inline-start: 2px solid var(--line, #E6E3DA); }
+.problems { margin: 8px 0 0; padding-inline-start: 18px; display: grid; gap: 6px; }
+th.pick, td.pick { width: 34px; }
+td.pick input, th.pick input { width: 18px; height: 18px; }
+@media (max-width: 760px) { table.t.cards td.pick { position: absolute; inset-inline-end: 8px; top: 10px; width: auto; padding: 0; } table.t.cards td.pick::before { content: none; } table.t.cards tr { position: relative; } }
+.wrap-any { overflow-wrap: anywhere; word-break: break-all; }

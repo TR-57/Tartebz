@@ -114,7 +114,8 @@ class SmsaController extends Controller
         foreach (['testUrl', 'liveUrl'] as $k) {
             if ($r->filled($k)) {
                 $u = rtrim(trim((string) $r->input($k)), '/');
-                if (! preg_match('#^https://[a-z0-9.-]+(:\d+)?$#i', $u)) {
+                $local = app()->environment('local', 'testing') && preg_match('#^http://(localhost|127\.0\.0\.1)(:\d+)?$#', $u);
+                if (! $local && ! preg_match('#^https://[a-z0-9.-]+(:\d+)?$#i', $u)) {
                     $f[$k] = 'An https:// address, like https://ecomapis.smsaexpress.com';
                 }
                 $next[$k] = $u;
@@ -148,7 +149,7 @@ class SmsaController extends Controller
         }
         if ($r->has('enabled')) {
             $on = $this->bool($r, 'enabled');
-            if ($on && empty($cur['enabled'])) {
+            if ($on && (empty($cur['enabled']) || empty($cur['since']))) {
                 $next['since'] = now()->toDateTimeString();   // only orders placed from now on
             }
             $next['enabled'] = $on;

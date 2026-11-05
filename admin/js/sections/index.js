@@ -11,8 +11,9 @@ import website from './website.js';
 import maintenance from './maintenance.js';
 import payments from './payments.js';
 import shipping from './shipping.js';
+import smsa from './smsa.js';
 import staff from './staff.js';
 import activity from './activity.js';
 import account from './account.js';
 
-export const sections = [dashboard, orders, products, categories, media, translations, website, maintenance, payments, shipping, currencies, staff, activity, account];
+export const sections = [dashboard, orders, products, categories, media, translations, website, maintenance, payments, shipping, smsa, currencies, staff, activity, account];

@@ -29,7 +29,7 @@ The shop needs a Hostinger plan with **SSH, Git and Composer** (Business or Clou
    ```
    /usr/bin/php /home/<user>/domains/<domain>/tartebz-app/backend/artisan schedule:run >> /dev/null 2>&1
    ```
-   deploy.sh prints the exact line for your server. Without cron, missed card payments and refunds are not re-checked,
+   deploy.sh prints the exact line for your server. Without cron, SMSA waybills are not created by themselves and tracking is not read, missed card payments and refunds are not re-checked,
    expired reservations are not cleared and failed emails are not retried. The admin dashboard warns when cron has stopped.
 
 ## Every update

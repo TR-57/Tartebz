@@ -12,7 +12,7 @@ Owners, managers and staff can use the board too.
 |---|---|
 | **See orders** | Tabs: *To prepare* (paid, not ticked), *Not paid*, *Prepared*, *Sent*, *All*. Filter by date (today, yesterday, 7 / 30 days, or two dates) and by country. Search by name, phone or order number. |
 | **Tick** | The box at the start of each order = prepared. A paid order becomes *Preparing*; untick to undo. Who ticked it is saved. |
-| **Open an order** | Customer, call / WhatsApp buttons, products, delivery fee, history, notes. **Print invoice** (A4 or receipt printer, Arabic or English). **Book SMSA and print the label**, update tracking, mark shipped / delivered. |
+| **Open an order** | Customer, call / WhatsApp buttons, products, delivery fee, history, notes. **Print** – the invoice, and for orders outside Bahrain the invoice followed by the SMSA waybill (Arabic or English). SMSA panel: waybill, status, **Send to SMSA now / Try again**, print the label, refresh tracking; mark shipped / delivered. |
 | **Not paid yet** | **Send the payment link** on WhatsApp (opens WhatsApp with a ready message) or by email, or **Mark as paid** when the money came by Benefit transfer / cash. |
 | **New order** | For customers who order on WhatsApp: name, phone, country, city, address, products (+ / −). The **delivery fee is worked out by itself** from the weight and the country (the same prices as the website). Then choose: *Send a payment link* · *Paid already* · *Pays later*. Stock is kept for the order for as long as a WhatsApp order (Settings › Website). |
 

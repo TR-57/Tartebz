@@ -41,7 +41,12 @@
       invoice: 'Print invoice', open: 'Open the order', another: 'New order', close: 'Close', back: 'Back',
       items_n: '{n} items', no_items: 'Add at least one product.', changed: 'Stock or prices changed – check the order again.',
       order: 'Order', call: 'Call', whatsapp: 'WhatsApp', mark_paid: 'Mark as paid', mark_paid_q: 'How was it paid?', marked_paid: 'Marked as paid',
-      ship: 'Book SMSA and get the label', label: 'Print SMSA label', track: 'Update tracking', shipped: 'Mark as shipped', delivered: 'Mark as delivered',
+      ship: 'Send to SMSA now', retry: 'Try again', label: 'Print SMSA label', track: 'Refresh tracking', track_page: 'SMSA tracking page',
+      print_both: 'Print invoice + SMSA waybill', waybill: 'Waybill', smsa_wait: 'The waybill is being created – it appears here within a minute.',
+      smsa_paid_first: 'The waybill is created once the order is paid.', smsa_hand: 'Not sent to SMSA yet. Send it by hand below.',
+      st_created: 'Waiting for SMSA pickup', st_moving: 'On the way with SMSA', st_delivered: 'Delivered by SMSA', st_failed: 'Refused by SMSA', st_cancelled: 'Waybill cancelled',
+      sv_EIDL: 'By air (EIDL)', sv_EIED: 'By road (EIED)', sv_EDDL: 'Inside Bahrain (EDDL)', duties_c: 'Import VAT and duty: the customer pays on delivery', duties_s: 'Import VAT and duty: we pay',
+      sandbox: 'Sandbox', del_method: 'Delivery', shipped: 'Mark as shipped', delivered: 'Mark as delivered',
       boxes: 'Boxes', weight_kg: 'Weight (kg)', smsa_off: 'SMSA is not switched on yet (Settings › Shipping).', live_ship: 'This books a real SMSA parcel. Continue?',
       prepared_by: 'Prepared by {n}', tick_hint: 'Tick when prepared', history: 'History', add_note: 'Add a note for the team', save: 'Save',
       link_hint: 'Send the customer a link to pay by card.', saved: 'Saved', err: 'Something went wrong. Try again.', offline: 'No connection. Check the internet.',
@@ -78,7 +83,12 @@
       invoice: 'طباعة الفاتورة', open: 'فتح الطلب', another: 'طلب جديد', close: 'إغلاق', back: 'رجوع',
       items_n: '{n} قطع', no_items: 'أضف منتجًا واحدًا على الأقل.', changed: 'تغيّر المخزون أو السعر – راجع الطلب مرة أخرى.',
       order: 'الطلب', call: 'اتصال', whatsapp: 'واتساب', mark_paid: 'تسجيل كمدفوع', mark_paid_q: 'كيف تم الدفع؟', marked_paid: 'تم التسجيل كمدفوع',
-      ship: 'حجز شحنة سمسا وطباعة البوليصة', label: 'طباعة بوليصة سمسا', track: 'تحديث التتبع', shipped: 'تم الشحن', delivered: 'تم التوصيل',
+      ship: 'إرسال إلى سمسا الآن', retry: 'إعادة المحاولة', label: 'طباعة بوليصة سمسا', track: 'تحديث التتبع', track_page: 'صفحة تتبع سمسا',
+      print_both: 'طباعة الفاتورة + بوليصة سمسا', waybill: 'البوليصة', smsa_wait: 'جارٍ إنشاء البوليصة – تظهر هنا خلال دقيقة.',
+      smsa_paid_first: 'تُنشأ البوليصة بعد دفع الطلب.', smsa_hand: 'لم يُرسل إلى سمسا بعد. أرسله يدويًا من الأسفل.',
+      st_created: 'بانتظار استلام سمسا', st_moving: 'في الطريق مع سمسا', st_delivered: 'سلّمته سمسا', st_failed: 'رفضته سمسا', st_cancelled: 'البوليصة ملغاة',
+      sv_EIDL: 'شحن جوي (EIDL)', sv_EIED: 'شحن بري (EIED)', sv_EDDL: 'داخل البحرين (EDDL)', duties_c: 'ضريبة الاستيراد والجمارك: يدفعها العميل عند الاستلام', duties_s: 'ضريبة الاستيراد والجمارك: ندفعها نحن',
+      sandbox: 'تجريبي', del_method: 'التوصيل', shipped: 'تم الشحن', delivered: 'تم التوصيل',
       boxes: 'عدد الصناديق', weight_kg: 'الوزن (كجم)', smsa_off: 'سمسا غير مفعّلة بعد (الإعدادات › الشحن).', live_ship: 'سيتم حجز شحنة حقيقية مع سمسا. متابعة؟',
       prepared_by: 'جهّزه {n}', tick_hint: 'علّم عند التجهيز', history: 'السجل', add_note: 'أضف ملاحظة للفريق', save: 'حفظ',
       link_hint: 'أرسل للعميل رابطًا ليدفع بالبطاقة.', saved: 'تم الحفظ', err: 'حدث خطأ. حاول مرة أخرى.', offline: 'لا يوجد اتصال. تأكد من الإنترنت.',
@@ -585,7 +595,8 @@
     el.querySelector('.sheet-body').innerHTML = body;
     var foot = el.querySelector('.sheet-foot');
     if (!foot) { foot = doc.createElement('div'); foot.className = 'sheet-foot'; el.appendChild(foot); }
-    foot.innerHTML = '<div class="btns"><a class="btn btn-dark" target="_blank" rel="noopener" href="/api/admin/orders/' + o.id + '/invoice">' + icon('printer') + esc(tr('invoice')) + '</a>' +
+    var both = o.abroad && o.shipment && o.shipment.awb && o.shipment.status !== 'cancelled';
+    foot.innerHTML = '<div class="btns"><a class="btn btn-dark" target="_blank" rel="noopener" href="/api/admin/orders/' + o.id + '/print?lang=' + lang + '">' + icon('printer') + esc(tr(both ? 'print_both' : 'invoice')) + '</a>' +
       steps.map(function (s) { return '<button class="btn" data-step="' + s[0] + '">' + icon('check') + esc(s[1]) + '</button>'; }).join('') + '</div>';
     var reload = function () { api('orders/' + o.id).then(function (x) { if (sheetEl === el) orderView(el, x); load(true); }); };
     var prep = el.querySelector('#o-prep');
@@ -617,24 +628,38 @@
     bindShip(el, o, r.smsa, reload);
   }
   function shipBox(o, smsa) {
-    if (o.awb) {
-      return '<p style="margin:0 0 8px"><b><bdi>' + esc(o.awb) + '</bdi></b>' + (o.trackingStatus ? ' · <span class="muted">' + esc(o.trackingStatus) + '</span>' : '') + '</p>' +
-        '<div class="btns">' + (o.hasLabel ? '<a class="btn btn-dark" target="_blank" rel="noopener" href="/api/admin/orders/' + o.id + '/label">' + icon('printer') + esc(tr('label')) + '</a>' : '') +
-        '<button class="btn" id="o-track">' + icon('truck') + esc(tr('track')) + '</button></div>';
+    var sh = o.shipment, live = sh && sh.awb && sh.status !== 'cancelled';
+    var paid = o.paymentStatus === 'paid' && ['cancelled', 'refunded'].indexOf(o.status) < 0;
+    var canSend = paid && (!sh || sh.status === 'failed' || sh.status === 'cancelled');
+    var h = '';
+    if (o.shippingMethodName && o.shippingMethodName.en) h += '<p class="muted small" style="margin:0 0 6px">' + esc(tr('del_method')) + ': ' + esc(lang === 'ar' ? o.shippingMethodName.ar : o.shippingMethodName.en) + '</p>';
+    if (live) {
+      h += '<p style="margin:0 0 6px">' + esc(tr('waybill')) + ' <b><bdi>' + esc(sh.awb) + '</bdi></b> · <b>' + esc(tr('st_' + sh.status)) + '</b>' + (sh.mode === 'test' ? ' <span class="muted small">(' + esc(tr('sandbox')) + ')</span>' : '') + '</p>' +
+        '<p class="muted small" style="margin:0 0 6px">' + esc(tr('sv_' + sh.service) || sh.service) + (sh.dutiesBy ? ' · ' + esc(tr(sh.dutiesBy === 'shipper' ? 'duties_s' : 'duties_c')) : '') + '</p>' +
+        (sh.lastScan ? '<p class="small" style="margin:0 0 8px">' + icon('truck') + ' ' + esc(sh.lastScan) + '</p>' : '');
     }
-    if (o.paymentStatus !== 'paid' || ['cancelled', 'refunded'].indexOf(o.status) > -1) return '<p class="muted small" style="margin:0">' + esc(tr('not_paid')) + '</p>';
-    if (!smsa.enabled) return '<p class="muted small" style="margin:0">' + esc(tr('smsa_off')) + '</p>';
-    return (smsa.problems.length ? '<p class="note">' + smsa.problems.map(function (p) { return esc(srv(p)); }).join('<br>') + '</p>' : '') +
-      '<div class="row2"><div class="field"><label for="o-boxes">' + esc(tr('boxes')) + '</label><input id="o-boxes" type="number" min="1" max="25" value="1" dir="ltr"></div>' +
-      '<div class="field"><label for="o-kg">' + esc(tr('weight_kg')) + '</label><input id="o-kg" type="number" min="0.1" step="0.1" value="' + (Math.max(100, o.weightGrams) / 1000).toFixed(1) + '" dir="ltr"></div></div>' +
-      '<button class="btn btn-red btn-block" id="o-ship"' + (smsa.problems.length ? ' disabled' : '') + '>' + icon('truck') + esc(tr('ship')) + '</button>';
+    if (sh && sh.status === 'failed') h += '<p class="note">' + esc(tr('st_failed')) + ': ' + esc(srv(sh.error)) + '</p>';
+    if (!sh || sh.status === 'cancelled') h += '<p class="muted small" style="margin:0 0 8px">' + esc(!paid ? tr('smsa_paid_first') : smsa.enabled && smsa.method ? tr('smsa_wait') : smsa.configured ? tr('smsa_hand') : tr('smsa_off')) + '</p>';
+    var btns = '';
+    if (live) {
+      btns += '<a class="btn btn-dark" target="_blank" rel="noopener" href="/api/admin/orders/' + o.id + '/label">' + icon('printer') + esc(tr('label')) + '</a>' +
+        '<button class="btn" id="o-track">' + icon('truck') + esc(tr('track')) + '</button>' +
+        '<a class="btn" target="_blank" rel="noopener" href="' + esc(sh.trackUrl) + '">' + esc(tr('track_page')) + '</a>';
+    }
+    if (canSend && smsa.configured) {
+      h += (smsa.problems.length ? '<p class="note">' + smsa.problems.map(function (p) { return esc(srv(p)); }).join('<br>') + '</p>' : '') +
+        '<div class="row2"><div class="field"><label for="o-boxes">' + esc(tr('boxes')) + '</label><input id="o-boxes" type="number" min="1" max="25" value="1" dir="ltr"></div>' +
+        '<div class="field"><label for="o-kg">' + esc(tr('weight_kg')) + '</label><input id="o-kg" type="number" min="0.1" step="0.1" value="' + (Math.max(100, o.weightGrams) / 1000).toFixed(1) + '" dir="ltr"></div></div>';
+      btns += '<button class="btn btn-red" id="o-ship"' + (smsa.problems.length ? ' disabled' : '') + '>' + icon('truck') + esc(tr(sh && sh.status === 'failed' ? 'retry' : 'ship')) + '</button>';
+    }
+    return h + (btns ? '<div class="btns">' + btns + '</div>' : '');
   }
   function bindShip(el, o, smsa, reload) {
     var sh = el.querySelector('#o-ship');
     if (sh) sh.onclick = function () {
       if (smsa.mode === 'live' && !window.confirm(tr('live_ship'))) return;
       busy(sh, api('orders/' + o.id + '/ship', { body: { parcels: +el.querySelector('#o-boxes').value || 1, weightKg: +el.querySelector('#o-kg').value || null } }))
-        .then(function (x) { toast('SMSA ✓'); if (x.order && x.order.hasLabel) window.open('/api/admin/orders/' + o.id + '/label', '_blank'); reload(); }, function (e) { toast(e.message, true); });
+        .then(function () { toast('SMSA ✓'); reload(); }, function (e) { toast(srv(e.message), true); reload(); });
     };
     var tk = el.querySelector('#o-track');
     if (tk) tk.onclick = function () { busy(tk, api('orders/' + o.id + '/track', { body: {} })).then(function () { toast(tr('saved')); reload(); }, function (e) { toast(e.message, true); }); };
