@@ -43,8 +43,9 @@ class BuildPublic extends Command
             $this->put($dest.'/'.basename($file), $html);
         }
 
-        // Orders board: its service worker and app manifest live at the top (a service worker only covers pages below it).
-        foreach (['staff-sw.js', 'staff.webmanifest'] as $f) {
+        // At the top of the site: the orders board's service worker and app manifest (a service worker only covers pages below it),
+        // and the site icon browsers ask for at /favicon.ico.
+        foreach (['staff-sw.js', 'staff.webmanifest', 'favicon.ico'] as $f) {
             if (is_file($src.'/'.$f)) {
                 $this->put($dest.'/'.$f, (string) file_get_contents($src.'/'.$f));
             }

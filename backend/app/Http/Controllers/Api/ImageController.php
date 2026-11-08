@@ -18,7 +18,7 @@ class ImageController extends Controller
         if (! $file) {
             $orig = '/'.ltrim($path, '/');
 
-            return redirect(Thumbs::source($path) ? $orig : '/assets/img/favicon.svg', 302)->header('Cache-Control', 'public, max-age=300');
+            return redirect(Thumbs::source($path) ? $orig : '/assets/img/logo-icon-192.png', 302)->header('Cache-Control', 'public, max-age=300');
         }
 
         return response()->file($file, ['Content-Type' => 'image/webp', 'Cache-Control' => 'public, max-age=2592000']);
@@ -29,7 +29,7 @@ class ImageController extends Controller
     {
         $file = Thumbs::makeOg($path);
         if (! $file) {
-            return redirect(Thumbs::source($path) ? '/'.ltrim($path, '/') : '/assets/img/favicon.svg', 302);
+            return redirect(Thumbs::source($path) ? '/'.ltrim($path, '/') : '/assets/img/logo-icon-192.png', 302);
         }
 
         return response()->file($file, ['Content-Type' => 'image/jpeg', 'Cache-Control' => 'public, max-age=2592000']);

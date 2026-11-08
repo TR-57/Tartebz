@@ -55,7 +55,7 @@ class MediaTest extends TestCase
         $this->get('/img/2400/uploads/'.$m['path'])->assertOk();
         [$w] = getimagesize(config('store.thumb_dir').'/2400/uploads/'.$m['path'].'.webp');
         $this->assertSame(1000, $w, 'no upscaling');
-        $this->get('/img/400/uploads/nope.jpg')->assertRedirect('/assets/img/favicon.svg'); // no original: a placeholder, never a broken image
+        $this->get('/img/400/uploads/nope.jpg')->assertRedirect('/assets/img/logo-icon-192.png'); // no original: a placeholder, never a broken image
     }
 
     public function test_svg_and_fake_images_are_refused(): void

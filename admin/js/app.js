@@ -30,7 +30,7 @@ document.addEventListener('click', (e) => {
 function authShell(inner) {
   document.body.removeAttribute('data-signed-in');
   app.innerHTML = `<div class="auth-wrap"><div class="auth-box">
-    <div class="auth-brand"><span class="logo" aria-hidden="true">ت</span><span><b data-noi18n>${STORE}</b><span class="muted small">Admin</span></span>
+    <div class="auth-brand"><img class="logo" src="/assets/img/logo-icon-192.png" alt="" width="48" height="48"><span><b data-noi18n>${STORE}</b><span class="muted small">Admin</span></span>
       <span style="margin-inline-start:auto">${langToggle()}</span></div>${inner}</div></div>`;
 }
 
@@ -127,7 +127,7 @@ function renderShell() {
 
   app.innerHTML = `<a class="skip" href="#main">Skip to content</a><div class="shell">
     <aside class="side" id="side" aria-label="Main menu">
-      <a class="side-brand" href="#/${homeKey()}"><span class="logo" aria-hidden="true">ت</span><span data-noi18n>${STORE}</span></a>
+      <a class="side-brand" href="#/${homeKey()}"><img class="logo" src="/assets/img/logo-icon-192.png" alt="" width="48" height="48"><span data-noi18n>${STORE}</span></a>
       ${nav}
       <div class="side-foot">
         <a class="nav-link" href="/" target="_blank" rel="noopener">${icon('store')}<span>Open the store</span></a>
