@@ -133,7 +133,7 @@ class Outbox
                 $msg->replyTo($row->reply_to);
             }
             if ($row->text_body) {
-                $msg->text(new \Illuminate\Support\HtmlString($row->text_body));
+                $msg->text((string) $row->text_body);   // the plain-text copy (a string: the mailer refuses anything else)
             }
         });
     }
