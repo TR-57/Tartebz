@@ -81,22 +81,27 @@ Everything is built. You only paste keys, test, and switch to live – all in th
 
 ## Delivery prices – Admin → Settings → **Shipping rates** (owner)
 
-Prices are set per **destination**: one country, a group of countries (e.g. GCC: SA, AE, QA, KW, OM), or `*` for
-"everywhere else". Each destination has its own **delivery methods** – for example *By air (SMSA)* and *By road (SMSA)* – and
-the customer picks one at checkout (the staff board picks it for team-made orders). Each method has:
+The same model and rates as Sniper Shopping. Prices are calculated by the website from these rates – never fetched from SMSA,
+never taken from the browser (checkout prices the order again on the server).
 
-| Field | Meaning |
-|---|---|
-| Name (English / Arabic) | What the customer sees |
-| How it is priced | **Fixed price**; **Base price + per extra weight** (base covers the first X kg, every further step adds Y); or a **Weight table** (up to 0.5 kg → 3.800 …, above the last row every step adds Y) |
-| Lowest / highest price | Optional floor and ceiling |
-| Free when the order reaches | Optional free delivery over an order value |
-| Not offered above (kg) | Hides the method for heavier parcels |
-| Delivery time from / to (days) | Shown next to the price |
-| On / Off | Off hides it from customers |
+| Destination | Method | Price (BHD) | Time | Free over | Max weight | Delivered by |
+|---|---|---|---|---|---|---|
+| Bahrain | Standard delivery | 2.000 up to 5 kg, +0.300 per extra kg, max 6.000 | 1–2 working days | 25.000 | – | our team |
+| Bahrain | Same-day express | 4.000 flat | same day | – | 20 kg | our team |
+| Bahrain | Collect from branch | free | 0–1 working day | – | – | – |
+| Saudi Arabia | GCC courier | 3.500 up to 0.5 kg, +0.800 per extra 0.5 kg | 3–5 working days | – | 30 kg | SMSA |
+| UAE, Kuwait, Qatar, Oman | GCC courier | 4.000 up to 0.5 kg, +1.000 per extra 0.5 kg | 4–7 working days | – | 30 kg | SMSA |
 
-All prices are BHD; customers see them in their own currency. The cart, the checkout and the server use the same formula,
-so the customer pays exactly what the cart showed. "Price check" at the bottom shows the price for any country and weight.
+Examples: 0.5 kg → Saudi 3.500, UAE/Kuwait 4.000; 1.5 kg → 5.100 / 6.000; 2 kg → 5.900 / 7.000.
+
+- **Formula:** the base covers the first X kg; every started step above it adds the step price; then the maximum; free once the
+  order subtotal reaches "free over"; above the max weight the method is not offered.
+- **Weight:** the sum of the products' weights; a product with no weight counts as **0.5 kg** (General › weight of a product with none).
+- **Delivery time:** working days – Friday and Saturday are not working days; orders after **2 pm Bahrain time** count from the next
+  day (General › cut-off and weekend). The shop shows the time and the arrival dates ("Arrives Sun 15 Nov – Tue 17 Nov").
+- **Quoted** methods have no price at checkout ("Quoted after order"); the team adds the delivery cost after the order.
+- The product page shows "Delivery to [country]" with every method; checkout shows only the methods for the customer's country.
+- The **Delivery and Pricing** page (/delivery) shows this table from the live rates.
 
 ---
 
@@ -112,7 +117,8 @@ They are different – a live key does not work on the sandbox and the other way
 ### 2. Set it up (sandbox first)
 1. Paste the **sandbox** key, press **Check connection**.
 2. Fill in the **sender** (printed on every waybill): name (5+ letters), phone, country, city, address (10+ characters).
-3. **Delivery methods sent with SMSA**: tick the methods whose paid orders go through SMSA. For each method going **abroad**
+3. **Delivery methods sent with SMSA**: tick the GCC courier methods (Saudi Arabia, rest of the GCC – ticked by default; Bahrain is
+   delivered by our own team). For each method going **abroad**
    choose **By air (EIDL)** or **By road (EIED)** – the service printed on the label. Inside Bahrain is always **EDDL**.
 4. **Import VAT and duty paid by** (shipments outside Bahrain only): *the customer pays on delivery* (Consignee) or *we pay*
    (billed to our SMSA account, Shipper). Each waybill remembers what it was created with, and SMSA's own record is compared –
@@ -128,10 +134,13 @@ billable parcel**. Only orders placed after SMSA was switched on are sent by the
 ### What happens to an order
 - **Paid** + an SMSA delivery method → waybill within a minute (the `store:smsa` job runs every minute from cron). The customer
   gets an email with the tracking number.
-- SMSA **refused** it (address too short, unknown city …) → the order shows why; it is tried again 10 minutes later, 3 times at
-  most. Fix the address and press **Try again**. The SMSA screen lists refused orders.
+- The customer's address line, city or phone is empty → it is not sent; the order says why.
+- SMSA **refused** it (unknown city …) → the order shows SMSA's message and goes back to the team's "to prepare" list; it is tried
+  again 10 minutes later, 3 times at most. Fix the address and press **Try again**. The SMSA screen lists refused orders.
+- SMSA's record of who pays import VAT and duty differs from what was sent → a warning on the order ("check this waybill in the
+  SMSA portal before it ships") and it goes back to "to prepare".
 - Tracking is read **every hour**: the scans go on the order's history; the order becomes **Shipped** when SMSA has the parcel
-  and **Delivered** when it is delivered (switch off "Update the order status from SMSA tracking" to do it by hand).
+  and **Delivered** when it is delivered – the customer is emailed both times (switch off "Update the order status from SMSA tracking" to do it by hand).
 - Any paid order can be **sent to SMSA by hand** from the order (boxes and weight can be changed), and a waybill can be
   **cancelled** by a manager before SMSA picks it up.
 
@@ -143,3 +152,17 @@ billable parcel**. Only orders placed after SMSA was switched on are sent by the
 - In the order list, tick several orders: **Print invoices (+ SMSA waybills abroad)**, **SMSA labels (one PDF)** or
   **Send to SMSA**.
 - The staff board (/staff) has the same print button and SMSA panel on each order.
+
+## Pages Tap asks for
+
+| Requirement | Page |
+|---|---|
+| Terms and Conditions | /terms |
+| Refund Policy | /refund-policy |
+| Privacy Policy | /privacy |
+| Products or services | /shop (every product with photo, description and price: /product/…) |
+| Pricing | product prices on /shop and each product page; delivery prices on /delivery |
+| Checkout page | /checkout (links to the Terms and the Refund Policy under the pay button) |
+
+The business name, CR number, address, email and phone on these pages come from Admin › Settings. Read the texts before going
+live and change anything that does not match how you work.

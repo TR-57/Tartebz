@@ -269,6 +269,21 @@ class Orders
         self::event($o->id, 'email', 'Customer emailed the tracking number.');
     }
 
+    /** SMSA delivered the parcel. */
+    public static function emailDelivered(?object $o): void
+    {
+        if (! $o || $o->email === '') {
+            return;
+        }
+        $ar = $o->lang !== 'en';
+        $subject = $ar ? "تم توصيل طلبك {$o->number} 🎉" : "Your order {$o->number} has been delivered 🎉";
+        $body = $ar
+            ? '<h1 style="margin:0 0 10px;font-size:22px;">وصل طلبك!</h1><p>سلّمت سمسا طلبك رقم <b>'.e($o->number).'</b>. نتمنى تستمتع فيه – ولو عندك أي ملاحظة، رد على هذا البريد.</p>'
+            : '<h1 style="margin:0 0 10px;font-size:22px;">Your order has arrived!</h1><p>SMSA has delivered order <b>'.e($o->number).'</b>. Enjoy – and if anything is not right, just reply to this email.</p>';
+        Outbox::queue($o->email, $subject, EmailLayout::wrap($ar ? 'ar' : 'en', $subject, $body));
+        self::event($o->id, 'email', 'Customer emailed: delivered.');
+    }
+
     public static function emailShipped(object $o): void
     {
         if ($o->email === '' || $o->awb === '') {

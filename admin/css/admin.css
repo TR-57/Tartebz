@@ -313,7 +313,7 @@ table.vt .input { min-width: 90px; padding: 6px 8px; }
 .cat-img { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .cat-img img { width: 90px; height: 90px; object-fit: cover; border-radius: 12px; }
 @media (max-width: 1000px) {
-  .ed-grid { grid-template-columns: 1fr; }
+  .ed-grid { grid-template-columns: minmax(0, 1fr); }
   .m-detail { grid-template-columns: 1fr; }
 }
 @media (max-width: 720px) {
@@ -410,3 +410,5 @@ th.pick, td.pick { width: 34px; }
 td.pick input, th.pick input { width: 18px; height: 18px; }
 @media (max-width: 760px) { table.t.cards td.pick { position: absolute; inset-inline-end: 8px; top: 10px; width: auto; padding: 0; } table.t.cards td.pick::before { content: none; } table.t.cards tr { position: relative; } }
 .wrap-any { overflow-wrap: anywhere; word-break: break-all; }
+.ed-main, .ed-side { min-width: 0; }
+.ed-main .card, .ed-side .card { overflow-wrap: anywhere; }

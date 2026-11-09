@@ -46,7 +46,7 @@
       smsa_paid_first: 'The waybill is created once the order is paid.', smsa_hand: 'Not sent to SMSA yet. Send it by hand below.',
       st_created: 'Waiting for SMSA pickup', st_moving: 'On the way with SMSA', st_delivered: 'Delivered by SMSA', st_failed: 'Refused by SMSA', st_cancelled: 'Waybill cancelled',
       sv_EIDL: 'By air (EIDL)', sv_EIED: 'By road (EIED)', sv_EDDL: 'Inside Bahrain (EDDL)', duties_c: 'Import VAT and duty: the customer pays on delivery', duties_s: 'Import VAT and duty: we pay',
-      sandbox: 'Sandbox', del_method: 'Delivery', shipped: 'Mark as shipped', delivered: 'Mark as delivered',
+      sandbox: 'Sandbox', del_method: 'Delivery', free: 'Free', quoted: 'Quoted after order', shipped: 'Mark as shipped', delivered: 'Mark as delivered',
       boxes: 'Boxes', weight_kg: 'Weight (kg)', smsa_off: 'SMSA is not switched on yet (Settings › Shipping).', live_ship: 'This books a real SMSA parcel. Continue?',
       prepared_by: 'Prepared by {n}', tick_hint: 'Tick when prepared', history: 'History', add_note: 'Add a note for the team', save: 'Save',
       link_hint: 'Send the customer a link to pay by card.', saved: 'Saved', err: 'Something went wrong. Try again.', offline: 'No connection. Check the internet.',
@@ -88,7 +88,7 @@
       smsa_paid_first: 'تُنشأ البوليصة بعد دفع الطلب.', smsa_hand: 'لم يُرسل إلى سمسا بعد. أرسله يدويًا من الأسفل.',
       st_created: 'بانتظار استلام سمسا', st_moving: 'في الطريق مع سمسا', st_delivered: 'سلّمته سمسا', st_failed: 'رفضته سمسا', st_cancelled: 'البوليصة ملغاة',
       sv_EIDL: 'شحن جوي (EIDL)', sv_EIED: 'شحن بري (EIED)', sv_EDDL: 'داخل البحرين (EDDL)', duties_c: 'ضريبة الاستيراد والجمارك: يدفعها العميل عند الاستلام', duties_s: 'ضريبة الاستيراد والجمارك: ندفعها نحن',
-      sandbox: 'تجريبي', del_method: 'التوصيل', shipped: 'تم الشحن', delivered: 'تم التوصيل',
+      sandbox: 'تجريبي', del_method: 'التوصيل', free: 'مجاني', quoted: 'يُحدَّد بعد الطلب', shipped: 'تم الشحن', delivered: 'تم التوصيل',
       boxes: 'عدد الصناديق', weight_kg: 'الوزن (كجم)', smsa_off: 'سمسا غير مفعّلة بعد (الإعدادات › الشحن).', live_ship: 'سيتم حجز شحنة حقيقية مع سمسا. متابعة؟',
       prepared_by: 'جهّزه {n}', tick_hint: 'علّم عند التجهيز', history: 'السجل', add_note: 'أضف ملاحظة للفريق', save: 'حفظ',
       link_hint: 'أرسل للعميل رابطًا ليدفع بالبطاقة.', saved: 'تم الحفظ', err: 'حدث خطأ. حاول مرة أخرى.', offline: 'لا يوجد اتصال. تأكد من الإنترنت.',
@@ -770,8 +770,9 @@
           quote = r.quote; if (sheetEl !== el) return;
           N.method = quote.method ? quote.method.id : '';
           var n = quote.lines.reduce(function (s, l) { return s + l.qty; }, 0);
-          box.innerHTML = (quote.methods.length > 1 ? '<div class="ship-pick"><span>' + esc(tr('ship_method')) + '</span><select id="n-method">' + quote.methods.map(function (m) {
-              return '<option value="' + esc(m.id) + '"' + (m.id === N.method ? ' selected' : '') + '>' + esc(lang === 'ar' ? m.name.ar : m.name.en) + ' – ' + Number(m.price).toFixed(3) + '</option>';
+          box.innerHTML = (quote.methods.length ? '<div class="ship-pick"><span>' + esc(tr('ship_method')) + '</span><select id="n-method">' + quote.methods.map(function (m) {
+              var price = m.quoted ? tr('quoted') : m.price ? 'BHD ' + Number(m.price).toFixed(3) : tr('free');
+              return '<option value="' + esc(m.id) + '"' + (m.id === N.method ? ' selected' : '') + '>' + esc((lang === 'ar' ? m.name.ar : m.name.en) + ' – ' + price + (m.eta ? ' – ' + m.eta[lang] : '')) + '</option>';
             }).join('') + '</select></div>' : '') + (!quote.method ? '<div class="muted">' + esc(tr('no_method')) + '</div>' : '') +
             '<div><span>' + esc(tr('items')) + ' · ' + esc(tr('weight')) + '</span><span>' + n + ' · <bdi>' + (quote.weightGrams / 1000).toFixed(2) + ' kg</bdi></span></div>' +
             '<div><span>' + esc(tr('subtotal')) + '</span>' + money(quote.subtotal) + '</div>' +

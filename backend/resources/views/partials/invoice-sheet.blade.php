@@ -54,7 +54,7 @@
 
   <table class="totals">
     <tr><td>{{ $L('Subtotal', 'المجموع الفرعي') }}</td><td class="num"><bdi>{{ $money((float) $o->subtotal) }}</bdi></td></tr>
-    <tr><td>{{ $L('Delivery', 'التوصيل') }} <small>(<bdi>{{ number_format($o->weight_grams / 1000, 2) }} kg</bdi>)</small></td><td class="num"><bdi>{{ $money((float) $o->shipping) }}</bdi></td></tr>
+    <tr><td>{{ $L('Delivery', 'التوصيل') }} <small>(<bdi>{{ number_format($o->weight_grams / 1000, 2) }} kg</bdi>)</small></td><td class="num">@if (! empty($deliveryQuoted)){{ $L('Quoted after the order', 'يُحدَّد بعد الطلب') }}@elseif ((float) $o->shipping == 0.0){{ $L('Free', 'مجاني') }}@else<bdi>{{ $money((float) $o->shipping) }}</bdi>@endif</td></tr>
     @if ((float) $o->discount > 0)<tr><td>{{ $L('Discount', 'الخصم') }}</td><td class="num"><bdi>− {{ $money((float) $o->discount) }}</bdi></td></tr>@endif
     <tr class="grand"><td>{{ $L('Total', 'الإجمالي') }}</td><td class="num"><bdi>{{ $o->charge_currency }} {{ number_format((float) $o->charge_amount, in_array($o->charge_currency, ['BHD', 'KWD', 'OMR', 'JOD'], true) ? 3 : 2) }}</bdi></td></tr>
     @if ($refunded > 0)<tr><td>{{ $L('Refunded', 'المسترجع') }}</td><td class="num"><bdi>− {{ $o->charge_currency }} {{ number_format($refunded, in_array($o->charge_currency, ['BHD', 'KWD', 'OMR', 'JOD'], true) ? 3 : 2) }}</bdi></td></tr>@endif

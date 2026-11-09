@@ -125,16 +125,12 @@
   };
 
   /* "Arrives tomorrow" / "Arrives Sun 3 Nov – Wed 6 Nov", from the delivery days set per country. */
-  TZ.delivery = function (c) {
+  /* When the chosen delivery method arrives, as dates ("Arrives Sun 10 Nov – Mon 11 Nov"), for a parcel of `kg` to `c`. */
+  TZ.delivery = function (c, kg, subtotal) {
     c = c || TZ.country();
-    var row = ((TZ.shop && TZ.shop.delivery) || []).filter(function (d) { return d.country === c.code; })[0];
-    if (!row) return '';
-    var loc = lang === 'ar' ? 'ar-BH-u-nu-latn' : 'en-GB';
-    var day = function (n) { return new Date(Date.now() + n * 864e5).toLocaleDateString(loc, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Bahrain' }); };
-    if (row.max === 0) return TZ.t('arrives_today');
-    if (row.min === 1 && row.max === 1) return TZ.t('arrives_tomorrow');
-    if (row.min === row.max) return TZ.t('arrives_on', { date: day(row.min) });
-    return TZ.t('arrives_range', { from: day(row.min), to: day(row.max) });
+    var w = kg != null ? kg : (TZ.cart && TZ.cart.count && TZ.cart.count() ? TZ.cart.weight() : (TZ.shipping.fallbackKg || 0.5));
+    var m = TZ.chosenMethod(TZ.shipMethods(w, c, subtotal != null ? subtotal : (TZ.cart ? TZ.cart.subtotal() : 0)), c);
+    return m ? TZ.arrivalText(m) : '';
   };
   TZ.deliveryChip = function (c) {
     var txt = TZ.delivery(c);
@@ -178,7 +174,7 @@
     var msg = [TZ.t('wa_order_intro'), ''].concat(TZ.cart.lines().map(function (l) {
       return '• ' + TZ.L(l.p.name) + ' × ' + l.qty + ' = ' + TZ.money(l.p.price * l.qty);
     })).concat(['', TZ.t('cart_subtotal') + ': ' + TZ.money(TZ.cart.subtotal()),
-      TZ.t('cart_shipping') + ' (' + c.flag + ' ' + TZ.L(c.name) + (TZ.cart.method() ? ' · ' + TZ.L(TZ.cart.method().name) : '') + '): ' + TZ.money(TZ.cart.shipping()),
+      TZ.t('cart_shipping') + ' (' + c.flag + ' ' + TZ.L(c.name) + (TZ.cart.method() ? ' · ' + TZ.L(TZ.cart.method().name) : '') + '): ' + (TZ.cart.method() ? TZ.shipPrice(TZ.cart.method()) : TZ.money(0)),
       TZ.t('cart_total') + ': ' + TZ.money(TZ.cart.total())]).join('\n');
     return 'https://wa.me/' + ((TZ.shop && TZ.shop.whatsapp) || TZ.store.phoneRaw) + '?text=' + encodeURIComponent(msg);
   };
@@ -189,6 +185,7 @@
     var num = function (v) { return v === '' || v == null || isNaN(+v) ? null : +v; };
     kg = Math.max(0, kg || 0);
     if (num(m.maxKg) != null && kg > num(m.maxKg)) return null;
+    if (m.pricing === 'quoted') return 0;   // the team adds the delivery cost after the order
     var step = num(m.stepKg) || 0, per = num(m.perStep) || 0, p;
     var steps = function (over) { return step > 0 && over > 0 ? Math.ceil(Math.round(over / step * 1e6) / 1e6) : 0; };
     if (m.pricing === 'formula') p = (num(m.base) || 0) + steps(kg - (num(m.firstKg) || 0)) * per;
@@ -209,7 +206,8 @@
     if (!d) return [];
     return (d.methods || []).map(function (m) {
       var price = TZ.methodPrice(m, kg, subtotal || 0);
-      return price == null ? null : { id: m.id, name: m.name, price: price, etaMin: m.etaMin, etaMax: m.etaMax };
+      return price == null ? null : { id: m.id, name: m.name, price: price, quoted: m.pricing === 'quoted', free: price === 0 && m.pricing !== 'quoted',
+        freeOver: m.freeOver != null && m.freeOver !== '' ? +m.freeOver : null, etaMin: m.etaMin, etaMax: m.etaMax, etaUnit: m.etaUnit || 'working' };
     }).filter(Boolean);
   };
   /* The customer's chosen method for a country (kept in this browser), if it is on offer; else the first. */
@@ -218,31 +216,83 @@
     return list.filter(function (m) { return m.id === want; })[0] || list[0] || null;
   };
   TZ.chooseMethod = function (id, countryObj) { store.set('ship_method_' + (countryObj || TZ.country()).code, id); };
+  /* "1–2 working days" / "Same day" – the same words as Sniper and as the server (App\Support\Shipping::etaText). */
   TZ.etaText = function (m) {
     if (!m || (m.etaMin == null && m.etaMax == null)) return '';
     var a = m.etaMin != null ? +m.etaMin : +m.etaMax, b = m.etaMax != null ? +m.etaMax : a;
+    if (b < a) b = a;
     if (!b) return TZ.t('eta_same');
-    return a === b ? TZ.t('eta_day', { a: b }) : TZ.t('eta_days', { a: a, b: b });
+    var working = m.etaUnit !== 'calendar';
+    var unit = TZ.t(working ? (b === 1 ? 'eta_wday' : 'eta_wdays') : (b === 1 ? 'eta_cday' : 'eta_cdays'));
+    return (a === b ? b : a + '–' + b) + ' ' + unit;
+  };
+  /* Today in Bahrain: {y, m, d, h} – the cut-off and the weekend follow the shop's clock, not the customer's. */
+  function bahrainNow() {
+    var o = {};
+    try {
+      new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Bahrain', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', hourCycle: 'h23' })
+        .formatToParts(new Date()).forEach(function (x) { o[x.type] = +x.value; });
+    } catch (err) { var n = new Date(Date.now() + 3 * 36e5); o = { year: n.getUTCFullYear(), month: n.getUTCMonth() + 1, day: n.getUTCDate(), hour: n.getUTCHours() }; }
+    return { y: o.year, m: o.month, d: o.day, h: o.hour % 24 };
+  }
+  /* Add n days, skipping the weekend (Friday, Saturday) when counting working days – as Sniper does. */
+  function addDays(from, n, working, weekend) {
+    var d = new Date(from.getTime());
+    while (working && weekend.indexOf(d.getUTCDay()) > -1) d.setUTCDate(d.getUTCDate() + 1);
+    for (var left = n; left > 0;) {
+      d.setUTCDate(d.getUTCDate() + 1);
+      if (working && weekend.indexOf(d.getUTCDay()) > -1) continue;
+      left -= 1;
+    }
+    return d;
+  }
+  /* The arrival window as dates: {from, to, today}; an order after the cut-off counts from the next day. */
+  TZ.arrival = function (m) {
+    if (!m || (m.etaMin == null && m.etaMax == null)) return null;
+    var a = m.etaMin != null ? +m.etaMin : +m.etaMax, b = m.etaMax != null ? +m.etaMax : a;
+    if (b < a) b = a;
+    var now = bahrainNow(), today = new Date(Date.UTC(now.y, now.m - 1, now.d)), start = new Date(today.getTime());
+    var cut = TZ.shipping.cutoffHour;
+    if (cut != null && cut !== '' && now.h >= +cut) start.setUTCDate(start.getUTCDate() + 1);
+    var working = m.etaUnit !== 'calendar', weekend = TZ.shipping.weekend || [5, 6];
+    return { from: addDays(start, a, working, weekend), to: addDays(start, b, working, weekend), today: today };
+  };
+  TZ.arrivalText = function (m) {
+    var w = TZ.arrival(m);
+    if (!w) return '';
+    var loc = lang === 'ar' ? 'ar-BH-u-nu-latn' : 'en-GB';
+    var day = function (d) { return d.toLocaleDateString(loc, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }); };
+    var off = function (d) { return Math.round((d - w.today) / 864e5); };
+    if (off(w.to) === 0) return TZ.t('arrives_today');
+    if (off(w.from) === 1 && off(w.to) === 1) return TZ.t('arrives_tomorrow');
+    if (w.from.getTime() === w.to.getTime()) return TZ.t('arrives_on', { date: day(w.to) });
+    return TZ.t('arrives_range', { from: off(w.from) === 0 ? TZ.t('today') : day(w.from), to: day(w.to) });
   };
   /* Delivery price: the chosen method (or the given one); the lowest for a country with methodId 'cheapest'. */
   TZ.shipCost = function (weightKg, countryObj, methodId, subtotal) {
     if (weightKg <= 0) return 0;
     var list = TZ.shipMethods(weightKg, countryObj, subtotal || 0);
     if (!list.length) return 0;
-    if (methodId === 'cheapest') return Math.min.apply(null, list.map(function (m) { return m.price; }));
+    if (methodId === 'cheapest') {
+      // the lowest price to have it delivered: collection and "quoted" methods only count when nothing else is on offer
+      var paid = list.filter(function (m) { return !m.quoted && m.price > 0; });
+      return Math.min.apply(null, (paid.length ? paid : list).map(function (m) { return m.price; }));
+    }
     var m = methodId ? list.filter(function (x) { return x.id === methodId; })[0] : TZ.chosenMethod(list, countryObj);
     return (m || list[0]).price;
   };
 
-  /* Delivery method choice (cart, checkout): radio buttons when there is more than one, else nothing. */
+  /* What a method costs, in words: the price, "Free" or "Quoted after order". */
+  TZ.shipPrice = function (m) { return !m ? '' : m.quoted ? TZ.t('ship_quoted') : m.price ? TZ.money(m.price) : TZ.t('free'); };
+  /* Delivery method choice (cart, checkout): every method for the customer's country, with price and time. */
   TZ.methodPicker = function (where) {
     var list = TZ.shipMethods(TZ.cart.weight(), null, TZ.cart.subtotal());
-    if (list.length < 2) return '';
+    if (!list.length) return '';
     var cur = TZ.chosenMethod(list);
     return '<fieldset class="ship-methods ship-methods-' + where + '"><legend>' + TZ.esc(TZ.t('ship_method')) + '</legend>' + list.map(function (m) {
       return '<label class="ship-method' + (cur && cur.id === m.id ? ' is-on' : '') + '"><input type="radio" name="ship_method_' + where + '" value="' + TZ.esc(m.id) + '" data-ship-method' +
-        (cur && cur.id === m.id ? ' checked' : '') + '><span><b>' + TZ.esc(TZ.L(m.name)) + '</b>' + (TZ.etaText(m) ? '<small>' + TZ.esc(TZ.etaText(m)) + '</small>' : '') +
-        '</span><em>' + TZ.esc(TZ.money(m.price)) + '</em></label>';
+        (cur && cur.id === m.id ? ' checked' : '') + '><span><b>' + TZ.esc(TZ.L(m.name)) + '</b>' + (TZ.etaText(m) ? '<small>' + TZ.esc(TZ.etaText(m)) + ' · ' + TZ.esc(TZ.arrivalText(m)) + '</small>' : '') +
+        '</span><em>' + TZ.esc(TZ.shipPrice(m)) + '</em></label>';
     }).join('') + '</fieldset>';
   };
   doc.addEventListener('change', function (e) {
@@ -574,6 +624,8 @@
       NAV.map(function (n) { return '<li><a href="' + TZ.url(n[0]) + '">' + TZ.esc(TZ.t(n[2])) + '</a></li>'; }).join('') +
       '<li><a href="' + TZ.url('checkout.html') + '">' + TZ.esc(TZ.t('co_title')) + '</a></li></ul></div>' +
       '<div><h3>' + TZ.esc(TZ.t('footer_cats')) + '</h3><ul>' + cats + '</ul></div>' +
+      '<div><h3>' + TZ.esc(TZ.t('footer_policies')) + '</h3><ul>' + [['delivery.html', 'nav_delivery'], ['terms.html', 'nav_terms'], ['refund-policy.html', 'nav_refund'], ['privacy.html', 'nav_privacy']]
+        .map(function (n) { return '<li><a href="' + TZ.url(n[0]) + '">' + TZ.esc(TZ.t(n[1])) + '</a></li>'; }).join('') + '</ul></div>' +
       '<div><h3>' + TZ.esc(TZ.t('footer_contact')) + '</h3><ul class="footer-contact">' +
       '<li>' + TZ.icon('mail') + '<a href="mailto:' + TZ.store.email + '">' + TZ.store.email + '</a></li>' +
       '<li>' + TZ.icon('phone') + '<a href="tel:+' + TZ.store.phoneRaw + '" dir="ltr">' + TZ.store.phone + '</a></li>' +
@@ -639,7 +691,7 @@
       '<label class="ship-to">' + TZ.icon('truck') + '<span>' + TZ.esc(TZ.t('ship_to_label')) + '</span><span class="select-wrap"><select data-country>' + TZ.countryOptions() + '</select>' + TZ.icon('chevron', 'chev') + '</span></label>' +
       '<dl class="totals"><div><dt>' + TZ.esc(TZ.t('cart_subtotal')) + '</dt><dd>' + TZ.esc(TZ.money(TZ.cart.subtotal())) + '</dd></div>' +
       TZ.methodPicker('cart') +
-      '<div><dt>' + TZ.esc(TZ.t('cart_shipping')) + '<small>' + TZ.esc(TZ.cart.method() ? TZ.t('ship_note', { m: TZ.L(TZ.cart.method().name), w: w }) : TZ.t('ship_none')) + '</small></dt><dd>' + TZ.esc(TZ.money(TZ.cart.shipping())) + '</dd></div>' +
+      '<div><dt>' + TZ.esc(TZ.t('cart_shipping')) + '<small>' + TZ.esc(TZ.cart.method() ? TZ.t('ship_note', { m: TZ.L(TZ.cart.method().name), w: w }) : TZ.t('ship_none')) + '</small></dt><dd>' + TZ.esc(TZ.cart.method() ? TZ.shipPrice(TZ.cart.method()) : TZ.money(0)) + '</dd></div>' +
       '<div class="grand"><dt>' + TZ.esc(TZ.t('cart_total')) + '</dt><dd>' + TZ.esc(TZ.money(TZ.cart.total())) + '</dd></div></dl>' +
       (TZ.delivery(c) ? '<p class="cart-eta">' + TZ.deliveryChip(c) + '</p>' : '') +
       '<a class="btn btn-primary btn-block btn-lg" href="' + TZ.url('checkout.html') + '">' + TZ.esc(TZ.t('cart_checkout')) + TZ.icon('arrow', 'flip-rtl') + '</a>' +

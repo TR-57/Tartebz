@@ -231,6 +231,11 @@
     "ar": "إغلاق",
     "where": "assets/js/app.js"
    },
+   "co_agree": {
+    "en": "By placing your order you agree to the {terms} and the {refund}.",
+    "ar": "بإتمام الطلب أنت توافق على {terms} و{refund}.",
+    "where": "assets/js/pages.js"
+   },
    "co_back": {
     "en": "Edit order",
     "ar": "تعديل الطلب",
@@ -379,7 +384,7 @@
    "co_title": {
     "en": "Checkout",
     "ar": "إتمام الطلب",
-    "where": "checkout.html, assets/js/app.js"
+    "where": "checkout.html, assets/js/app.js, assets/js/policies.js"
    },
    "co_total_paid": {
     "en": "Amount",
@@ -471,20 +476,30 @@
     "ar": "هذا الحقل مطلوب",
     "where": "assets/js/app.js, assets/js/pages.js"
    },
-   "eta_day": {
-    "en": "within {a} day",
-    "ar": "خلال {a} يوم",
-    "where": "assets/js/app.js"
+   "eta_cday": {
+    "en": "day",
+    "ar": "يوم",
+    "where": ""
    },
-   "eta_days": {
-    "en": "{a}–{b} days",
-    "ar": "{a}–{b} أيام",
-    "where": "assets/js/app.js"
+   "eta_cdays": {
+    "en": "days",
+    "ar": "أيام",
+    "where": ""
    },
    "eta_same": {
     "en": "Same day",
-    "ar": "نفس اليوم",
+    "ar": "في نفس اليوم",
     "where": "assets/js/app.js"
+   },
+   "eta_wday": {
+    "en": "working day",
+    "ar": "يوم عمل",
+    "where": ""
+   },
+   "eta_wdays": {
+    "en": "working days",
+    "ar": "أيام عمل",
+    "where": ""
    },
    "f_addr1": {
     "en": "Street / Area",
@@ -611,6 +626,11 @@
     "ar": "دفع آمن عبر",
     "where": "assets/js/app.js"
    },
+   "footer_policies": {
+    "en": "Policies",
+    "ar": "السياسات",
+    "where": "assets/js/app.js"
+   },
    "footer_rights": {
     "en": "© {y} Tartebz. All rights reserved.",
     "ar": "© {y} ترتيبز. جميع الحقوق محفوظة.",
@@ -630,6 +650,11 @@
     "en": "How it started",
     "ar": "قصة التأسيس",
     "where": "about.html"
+   },
+   "free": {
+    "en": "Free",
+    "ar": "مجاني",
+    "where": "assets/js/app.js, assets/js/policies.js"
    },
    "gcc_delivery": {
     "en": "Delivery to 6 Gulf countries",
@@ -689,7 +714,7 @@
    "home": {
     "en": "Home",
     "ar": "الرئيسية",
-    "where": "about.html, checkout.html, contact.html, assets/js/pages.js"
+    "where": "about.html, checkout.html, contact.html, delivery.html, privacy.html, refund-policy.html, terms.html, assets/js/pages.js"
    },
    "iab_copied": {
     "en": "✓ Copied",
@@ -851,15 +876,35 @@
     "ar": "تواصل معنا",
     "where": "contact.html"
    },
+   "nav_delivery": {
+    "en": "Delivery and Pricing",
+    "ar": "التوصيل والأسعار",
+    "where": "delivery.html"
+   },
    "nav_home": {
     "en": "Home",
     "ar": "الرئيسية",
     "where": ""
    },
+   "nav_privacy": {
+    "en": "Privacy Policy",
+    "ar": "سياسة الخصوصية",
+    "where": "privacy.html"
+   },
+   "nav_refund": {
+    "en": "Refund Policy",
+    "ar": "سياسة الاسترداد",
+    "where": "refund-policy.html, assets/js/pages.js"
+   },
    "nav_shop": {
     "en": "Shop",
     "ar": "المنتجات",
-    "where": "about.html, assets/js/pages.js"
+    "where": "about.html, assets/js/pages.js, assets/js/policies.js"
+   },
+   "nav_terms": {
+    "en": "Terms and Conditions",
+    "ar": "الشروط والأحكام",
+    "where": "terms.html, assets/js/pages.js"
    },
    "no_results": {
     "en": "Nothing found",
@@ -1101,6 +1146,11 @@
     "ar": "سعر ثابت",
     "where": "assets/js/pages.js"
    },
+   "ship_free_over": {
+    "en": "Free on orders from {amount}",
+    "ar": "مجاني للطلبات من {amount}",
+    "where": "assets/js/pages.js, assets/js/policies.js"
+   },
    "ship_from": {
     "en": "From",
     "ar": "يبدأ من",
@@ -1126,9 +1176,19 @@
     "ar": "{m} · {w} كجم",
     "where": "assets/js/app.js, assets/js/pages.js"
    },
+   "ship_quoted": {
+    "en": "Quoted after order",
+    "ar": "يُحدَّد بعد الطلب",
+    "where": "assets/js/app.js, assets/js/policies.js"
+   },
+   "ship_quoted_note": {
+    "en": "We’ll send you the delivery price after the order",
+    "ar": "نتواصل معك بسعر التوصيل بعد الطلب",
+    "where": "assets/js/pages.js"
+   },
    "ship_tab_text": {
-    "en": "Delivery inside Bahrain and across the Gulf with SMSA Express. Lowest delivery price for this item on its own:",
-    "ar": "التوصيل داخل البحرين ولكل دول الخليج عبر سمسا إكسبريس. أقل سعر توصيل لهذا المنتج وحده:",
+    "en": "Inside Bahrain our own team delivers; across the Gulf we ship with SMSA Express. Times are in working days (Friday and Saturday off); orders after 2 pm count from the next day. Lowest delivery price for this item on its own:",
+    "ar": "داخل البحرين يوصلك فريقنا، ولدول الخليج نشحن مع سمسا إكسبريس. المدة بأيام العمل (الجمعة والسبت عطلة)، والطلب بعد الساعة 2 ظهرًا يُحسب من اليوم التالي. أقل سعر توصيل لهذا المنتج وحده:",
     "where": "assets/js/pages.js"
    },
    "ship_text": {
@@ -1144,7 +1204,12 @@
    "ship_to_label": {
     "en": "Deliver to",
     "ar": "التوصيل إلى",
-    "where": "assets/js/app.js, assets/js/pages.js"
+    "where": "assets/js/app.js"
+   },
+   "ship_to_pick": {
+    "en": "Delivery to",
+    "ar": "التوصيل إلى",
+    "where": "assets/js/pages.js"
    },
    "shop_text": {
     "en": "Every Tartebz flavour in one place. Filter by sourness and find yours.",
@@ -1305,6 +1370,11 @@
     "en": "Test mode: payments are tests, no money is taken.",
     "ar": "وضع تجريبي: الدفع تجريبي ولا يتم خصم أي مبلغ.",
     "where": "assets/js/pages.js"
+   },
+   "today": {
+    "en": "today",
+    "ar": "اليوم",
+    "where": "assets/js/app.js"
    },
    "val_1": {
     "en": "Inspired by Arabic sweets heritage, served in a modern way.",
@@ -2425,7 +2495,38 @@
    "VAT billing Consignee (customer), Duty billing Consignee (customer).": "فوترة الضريبة: المستلم (العميل)، فوترة الجمارك: المستلم (العميل).",
    "VAT billing Consignee (customer), Duty billing Shipper (us).": "فوترة الضريبة: المستلم (العميل)، فوترة الجمارك: المرسل (نحن).",
    "VAT billing Shipper (us), Duty billing Consignee (customer).": "فوترة الضريبة: المرسل (نحن)، فوترة الجمارك: المستلم (العميل).",
-   "VAT billing Shipper (us), Duty billing Shipper (us).": "فوترة الضريبة: المرسل (نحن)، فوترة الجمارك: المرسل (نحن)."
+   "VAT billing Shipper (us), Duty billing Shipper (us).": "فوترة الضريبة: المرسل (نحن)، فوترة الجمارك: المرسل (نحن).",
+   "Quoted after the order": "يُحدَّد بعد الطلب",
+   "Quoted after order": "يُحدَّد بعد الطلب",
+   "General": "عام",
+   "Weight of a product with none (kg)": "وزن المنتج الذي ليس له وزن (كجم)",
+   "Used for the delivery price and the SMSA waybill.": "يُستخدم لسعر التوصيل ولبوليصة سمسا.",
+   "Daily cut-off (hour, Bahrain time)": "آخر موعد يومي للطلبات (الساعة بتوقيت البحرين)",
+   "Orders after it count from the next day. 14 = 2 pm. Empty = no cut-off.": "الطلبات بعده تُحسب من اليوم التالي. 14 = الساعة 2 ظهرًا. فارغ = بلا موعد.",
+   "Not working days": "أيام العطلة",
+   "Sunday": "الأحد",
+   "Monday": "الاثنين",
+   "Tuesday": "الثلاثاء",
+   "Wednesday": "الأربعاء",
+   "Thursday": "الخميس",
+   "Friday": "الجمعة",
+   "Saturday": "السبت",
+   "0 = same day": "0 = في نفس اليوم",
+   "Counted in": "تُحسب بـ",
+   "Working days": "أيام العمل",
+   "Calendar days": "أيام التقويم",
+   "The customer sees “Quoted after order”; the team adds the delivery cost after the order.": "يرى العميل «يُحدَّد بعد الطلب»، ويضيف الفريق سعر التوصيل بعد الطلب.",
+   "Delivery prices and times (working days, the daily cut-off) are set per delivery method in": "أسعار التوصيل ومدته (أيام العمل وآخر موعد يومي) تُضبط لكل طريقة توصيل في",
+   "at least one delivery method sent with SMSA": "طريقة توصيل واحدة على الأقل تُرسل مع سمسا",
+   "SMSA shipping: enter the sender name.": "شحن سمسا: أدخل اسم المرسل.",
+   "SMSA shipping: enter the sender phone.": "شحن سمسا: أدخل هاتف المرسل.",
+   "SMSA shipping: enter the sender address.": "شحن سمسا: أدخل عنوان المرسل.",
+   "the customer’s address is empty": "عنوان العميل فارغ",
+   "the customer’s city is empty": "مدينة العميل فارغة",
+   "the customer’s phone is empty": "هاتف العميل فارغ",
+   "Customer emailed: delivered.": "أُرسل بريد للعميل: تم التوصيل.",
+   "An hour from 0 to 24, or empty for no cut-off.": "ساعة من 0 إلى 24، أو فارغ بلا موعد.",
+   "Keep at least two working days.": "أبقِ يومي عمل على الأقل."
   }
  }
 }

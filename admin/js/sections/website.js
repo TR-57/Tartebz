@@ -1,24 +1,15 @@
 import { api, esc, toggle, busy, toast, showErrors, clearErrors, icon, can } from '../core.js';
 
 const LOGO_NAMES = { benefit: 'BenefitPay', visa: 'Visa', mastercard: 'Mastercard', applepay: 'Apple Pay', mada: 'mada', knet: 'KNET', tabby: 'tabby', cod: 'Cash on delivery' };
-const COUNTRY = { BH: '🇧🇭 Bahrain', SA: '🇸🇦 Saudi Arabia', AE: '🇦🇪 UAE', QA: '🇶🇦 Qatar', KW: '🇰🇼 Kuwait', OM: '🇴🇲 Oman' };
 
-/* Website extras: WhatsApp ordering, back-in-stock alerts, payment marks and delivery times. */
+/* Website extras: WhatsApp ordering, back-in-stock alerts, payment marks, stock reservation. Delivery times: Shipping rates. */
 export default {
   key: 'website', label: 'Website', icon: 'store', role: 'manager', group: 'settings',
   async view(main, route, alive) {
     const r = await api('website');
     if (!alive()) return;
     const s = r.storefront;
-    let delivery = s.delivery.map((d) => ({ ...d }));
     const edit = can('manager');
-
-    const rows = () => delivery.map((d, i) => `<tr data-i="${i}">
-      <td data-label="Country" data-field="delivery.${i}.country">${COUNTRY[d.country] ? `<b>${esc(COUNTRY[d.country])}</b>` : `<input class="input" data-k="country" value="${esc(d.country)}" maxlength="2" dir="ltr" style="width:70px" aria-label="Country">`}</td>
-      <td data-label="From (days)"><input class="input" type="number" min="0" max="60" data-k="min" value="${d.min}" dir="ltr" style="width:80px" aria-label="From (days)"></td>
-      <td data-label="To (days)" data-field="delivery.${i}.max"><input class="input" type="number" min="0" max="60" data-k="max" value="${d.max}" dir="ltr" style="width:80px" aria-label="To (days)"></td>
-      <td data-label="Shown as" class="muted small">${esc(d.min === 1 && d.max === 1 ? 'Arrives tomorrow' : d.max === 0 ? 'Arrives today' : `Arrives in ${d.min}–${d.max} days (as dates)`)}</td>
-      <td>${COUNTRY[d.country] ? '' : `<button type="button" class="iconbtn" data-rm="${i}" aria-label="Remove">${icon('close')}</button>`}</td></tr>`).join('');
 
     main.innerHTML = `
       <div class="phead"><div><h1>Website</h1><p class="sub">Extras on the shop pages. Changes show on the website within a minute.</p></div></div>
@@ -51,24 +42,11 @@ export default {
             <span class="hint">Until you mark it paid or cancel it.</span></div>
         </div>
       </div>
-      <div class="card"><h2>Delivery times</h2><p class="muted small">Days after the order. The website shows them as dates, e.g. “Arrives Sun 3 Nov – Wed 6 Nov”.</p>
-        <div class="table-wrap"><table class="t cards"><thead><tr><th>Country</th><th>From (days)</th><th>To (days)</th><th>Shown as</th><th></th></tr></thead><tbody id="drows">${rows()}</tbody></table></div>
-        <p><button type="button" class="btn btn-sm" id="dadd">${icon('plus')} Add a country</button></p>
-      </div>
+      <p class="muted small">Delivery prices and times (working days, the daily cut-off) are set per delivery method in <a href="#/shipping">Shipping rates</a>.</p>
       ${edit ? '<div class="savebar"><button type="submit" class="btn btn-primary" id="save">Save</button></div>' : ''}
       </form>`;
 
     const form = main.querySelector('#wf');
-    const tbody = main.querySelector('#drows');
-    tbody.addEventListener('input', (e) => {
-      const tr = e.target.closest('[data-i]');
-      if (!tr) return;
-      const k = e.target.dataset.k;
-      delivery[+tr.dataset.i][k] = k === 'country' ? e.target.value.toUpperCase() : +e.target.value;
-    });
-    tbody.addEventListener('change', () => { tbody.innerHTML = rows(); });
-    tbody.addEventListener('click', (e) => { const b = e.target.closest('[data-rm]'); if (b) { delivery.splice(+b.dataset.rm, 1); tbody.innerHTML = rows(); } });
-    main.querySelector('#dadd').addEventListener('click', () => { delivery.push({ country: '', min: 2, max: 4 }); tbody.innerHTML = rows(); });
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       clearErrors(form);
@@ -77,7 +55,6 @@ export default {
         backInStock: form.querySelector('[name=backInStock]').checked,
         whatsappNumber: form.querySelector('[name=whatsappNumber]').value,
         paymentLogos: [...form.querySelectorAll('[name=logo]:checked')].map((c) => c.value),
-        delivery,
         cartHoldMinutes: +form.querySelector('[name=cartHoldMinutes]').value,
         orderHoldMinutes: +form.querySelector('[name=orderHoldMinutes]').value,
         whatsappHoldHours: +form.querySelector('[name=whatsappHoldHours]').value,

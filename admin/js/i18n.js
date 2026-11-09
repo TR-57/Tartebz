@@ -73,7 +73,7 @@
     if (!list.length || !document.body || !document.body.hasAttribute('data-signed-in')) return;
     list.forEach(function (s) { reported[s] = 1; });
     try {
-      fetch('/api/admin/i18n/missing', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'text/plain' },
+      fetch('/api/admin/i18n/missing', { method: 'POST', credentials: 'same-origin', keepalive: true, headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({ page: location.hash.split('?')[0] || '#/', strings: list.slice(0, 60) }) }).catch(function () {});
     } catch (e) { /* ignore */ }
   }

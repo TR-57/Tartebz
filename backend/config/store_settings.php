@@ -48,38 +48,40 @@ return [
         'backInStock' => true,      // "Tell me when it's back" on sold-out products
         'cartHoldMinutes' => 15,    // a product added to a cart is kept for that customer this long (renewed while they are active)
         'paymentLogos' => ['benefit', 'visa', 'mastercard'], // shown near prices, in the cart and the footer – only what you really accept
-        // Delivery time per country, in days after the order (shown as "Arrives tomorrow" / "Arrives Sun 3 – Wed 6 Nov").
-        'delivery' => [
-            ['country' => 'BH', 'min' => 1, 'max' => 1],
-            ['country' => 'SA', 'min' => 2, 'max' => 4],
-            ['country' => 'AE', 'min' => 2, 'max' => 4],
-            ['country' => 'QA', 'min' => 2, 'max' => 4],
-            ['country' => 'KW', 'min' => 2, 'max' => 4],
-            ['country' => 'OM', 'min' => 3, 'max' => 5],
-        ],
     ],
 
     // Delivery prices (BHD). A country with a fixed price pays that; the other delivery countries pay by weight.
-    // Delivery prices (Admin › Settings › Shipping rates): destinations, each with its own methods (by air, by road …).
-    // How a method is priced: see App\Support\Shipping. Money in BHD.
+    // Delivery prices (Admin › Settings › Shipping rates) – the same model and rates as Sniper Shopping. Each destination
+    // offers its own methods; how a method is priced: see App\Support\Shipping. Money in BHD.
+    // Delivery times count working days (`weekend`: 5 = Friday, 6 = Saturday); an order after `cutoffHour` (Bahrain time)
+    // counts from the next day. A product with no weight counts as `fallbackKg`.
     'shipping' => [
+        'fallbackKg' => 0.5,
+        'cutoffHour' => 14,
+        'weekend' => [5, 6],
         'destinations' => [
             ['id' => 'bh', 'name' => ['en' => 'Bahrain', 'ar' => 'البحرين'], 'countries' => ['BH'], 'methods' => [
-                ['id' => 'bh-home', 'name' => ['en' => 'Home delivery', 'ar' => 'توصيل للمنزل'], 'pricing' => 'flat', 'base' => 1.5,
-                    'firstKg' => 0, 'stepKg' => 0.5, 'perStep' => 0, 'table' => [], 'min' => null, 'max' => null, 'freeOver' => null, 'maxKg' => null,
-                    'etaMin' => 1, 'etaMax' => 1, 'active' => true],
+                // our own team, not SMSA
+                ['id' => 'bh-std', 'name' => ['en' => 'Standard delivery', 'ar' => 'توصيل عادي'], 'pricing' => 'formula', 'base' => 2,
+                    'firstKg' => 5, 'stepKg' => 1, 'perStep' => 0.3, 'table' => [], 'min' => null, 'max' => 6, 'freeOver' => 25, 'maxKg' => null,
+                    'etaMin' => 1, 'etaMax' => 2, 'etaUnit' => 'working', 'active' => true],
+                ['id' => 'bh-exp', 'name' => ['en' => 'Same-day express', 'ar' => 'توصيل سريع في نفس اليوم'], 'pricing' => 'flat', 'base' => 4,
+                    'firstKg' => 0, 'stepKg' => 1, 'perStep' => 0, 'table' => [], 'min' => null, 'max' => null, 'freeOver' => null, 'maxKg' => 20,
+                    'etaMin' => 0, 'etaMax' => 0, 'etaUnit' => 'working', 'active' => true],
+                ['id' => 'bh-pick', 'name' => ['en' => 'Collect from branch', 'ar' => 'الاستلام من الفرع'], 'pricing' => 'flat', 'base' => 0,
+                    'firstKg' => 0, 'stepKg' => 1, 'perStep' => 0, 'table' => [], 'min' => null, 'max' => null, 'freeOver' => null, 'maxKg' => null,
+                    'etaMin' => 0, 'etaMax' => 1, 'etaUnit' => 'working', 'active' => true],
             ]],
-            ['id' => 'gcc', 'name' => ['en' => 'GCC', 'ar' => 'دول الخليج'], 'countries' => ['SA', 'AE', 'QA', 'KW', 'OM'], 'methods' => [
-                // the old shop's rate card; above 10 kg: + 1.050 for every started 0.5 kg
-                ['id' => 'gcc-air', 'name' => ['en' => 'By air (SMSA)', 'ar' => 'شحن جوي (سمسا)'], 'pricing' => 'table',
-                    'table' => [[0.5, 3.8], [1, 4.2], [1.5, 5.1], [2, 6.1], [2.5, 7.3], [3, 8.7], [3.5, 9.6], [4, 12.1], [4.5, 12.2], [5, 13.8],
-                        [5.5, 14.9], [6, 15.9], [6.5, 17], [7, 18.1], [7.5, 19.1], [8, 20.2], [8.5, 21.2], [9, 22.3], [9.5, 23.3], [10, 24.4]],
-                    'base' => 0, 'firstKg' => 0, 'stepKg' => 0.5, 'perStep' => 1.05, 'min' => null, 'max' => null, 'freeOver' => null, 'maxKg' => null,
-                    'etaMin' => 2, 'etaMax' => 4, 'active' => true],
-                // switched off until its prices are set in the admin
-                ['id' => 'gcc-road', 'name' => ['en' => 'By road (SMSA)', 'ar' => 'شحن بري (سمسا)'], 'pricing' => 'formula', 'table' => [],
-                    'base' => 3, 'firstKg' => 1, 'stepKg' => 0.5, 'perStep' => 0.5, 'min' => null, 'max' => null, 'freeOver' => null, 'maxKg' => null,
-                    'etaMin' => 4, 'etaMax' => 7, 'active' => false],
+            ['id' => 'sa', 'name' => ['en' => 'Saudi Arabia', 'ar' => 'السعودية'], 'countries' => ['SA'], 'methods' => [
+                // SMSA (Admin › SMSA shipping)
+                ['id' => 'sa-std', 'name' => ['en' => 'GCC courier', 'ar' => 'شحن سريع لدول الخليج'], 'pricing' => 'formula', 'base' => 3.5,
+                    'firstKg' => 0.5, 'stepKg' => 0.5, 'perStep' => 0.8, 'table' => [], 'min' => null, 'max' => null, 'freeOver' => null, 'maxKg' => 30,
+                    'etaMin' => 3, 'etaMax' => 5, 'etaUnit' => 'working', 'active' => true],
+            ]],
+            ['id' => 'gcc', 'name' => ['en' => 'Rest of GCC', 'ar' => 'باقي دول الخليج'], 'countries' => ['AE', 'KW', 'QA', 'OM'], 'methods' => [
+                ['id' => 'gcc-std', 'name' => ['en' => 'GCC courier', 'ar' => 'شحن سريع لدول الخليج'], 'pricing' => 'formula', 'base' => 4,
+                    'firstKg' => 0.5, 'stepKg' => 0.5, 'perStep' => 1, 'table' => [], 'min' => null, 'max' => null, 'freeOver' => null, 'maxKg' => 30,
+                    'etaMin' => 4, 'etaMax' => 7, 'etaUnit' => 'working', 'active' => true],
             ]],
         ],
     ],
@@ -109,8 +111,8 @@ return [
         'testUrl' => 'https://ecomapis-sandbox.azurewebsites.net',
         'liveUrl' => 'https://ecomapis.smsaexpress.com',
         'retailId' => '',
-        'methods' => [],                  // delivery-method ids (Shipping rates) whose paid orders get an SMSA waybill by themselves
-        'services' => [],                 // {method id: EIDL (by air) | EIED (by road)} for methods going abroad; inside the sender's country EDDL
+        'methods' => ['sa-std', 'gcc-std'], // delivery-method ids (Shipping rates) whose paid orders get an SMSA waybill by themselves (the GCC courier)
+        'services' => ['sa-std' => 'EIDL', 'gcc-std' => 'EIDL'], // {method id: EIDL (by air) | EIED (by road)} abroad; inside the sender's country EDDL
         'dutiesBy' => 'consignee',        // import VAT and duty abroad: consignee (customer, on delivery) | shipper (billed to our SMSA account)
         'contents' => 'Sweets',           // on every waybill (customs); empty = the order's item names
         'autoStatus' => true,             // the order becomes Shipped / Delivered from SMSA's tracking

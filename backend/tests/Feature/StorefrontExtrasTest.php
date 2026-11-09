@@ -60,17 +60,20 @@ class StorefrontExtrasTest extends TestCase
     public function test_website_settings_reach_the_storefront(): void
     {
         $this->actingAsAdmin($this->makeAdmin('manager'));
-        $this->putJson('/api/admin/website', ['whatsappNumber' => '12', 'delivery' => [['country' => 'SA', 'min' => 4, 'max' => 2]]])
-            ->assertStatus(422)->assertJsonPath('error.fields', fn ($f) => isset($f['whatsappNumber'], $f['delivery.0.max']));
+        $this->putJson('/api/admin/website', ['whatsappNumber' => '12'])
+            ->assertStatus(422)->assertJsonPath('error.fields', fn ($f) => isset($f['whatsappNumber']));
         $this->putJson('/api/admin/website', [
             'whatsappOrders' => false, 'backInStock' => true, 'whatsappNumber' => '+973 3753 3757',
-            'paymentLogos' => ['visa', 'applepay', 'bogus'], 'delivery' => [['country' => 'bh', 'min' => 0, 'max' => 0]],
+            'paymentLogos' => ['visa', 'applepay', 'bogus'],
         ])->assertOk();
         $shop = $this->signOut()->getJson('/api/storefront')->assertOk()->json('shop');
         $this->assertFalse($shop['whatsappOrders']);
         $this->assertSame('97337533757', $shop['whatsapp']);
         $this->assertSame(['visa', 'applepay'], $shop['paymentLogos']);
-        $this->assertSame([['country' => 'BH', 'min' => 0, 'max' => 0]], $shop['delivery']);
+        // Delivery times come from the delivery methods (Shipping rates): working days, 2 pm cut-off, Friday and Saturday off.
+        $ship = $this->getJson('/api/storefront')->json('shipping');
+        $this->assertSame([0.5, 14, [5, 6]], [$ship['fallbackKg'], $ship['cutoffHour'], $ship['weekend']]);
+        $this->assertSame('working', $ship['destinations'][0]['methods'][0]['etaUnit']);
 
         // Alerts switched off: the form is refused.
         Settings::set('storefront', ['backInStock' => false] + Settings::get('storefront'));

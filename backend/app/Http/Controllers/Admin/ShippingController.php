@@ -18,8 +18,8 @@ class ShippingController extends Controller
 {
     public function index()
     {
-        return $this->ok(['destinations' => array_map(fn ($d) => $d + ['methods' => array_map([Shipping::class, 'method'], (array) ($d['methods'] ?? []))], Shipping::destinations()),
-            'pricing' => Shipping::PRICING]);
+        return $this->ok(['destinations' => array_map(fn ($d) => ['methods' => array_map([Shipping::class, 'method'], (array) ($d['methods'] ?? []))] + $d, Shipping::destinations()),
+            'pricing' => Shipping::PRICING, 'general' => Shipping::cfg()]);
     }
 
     /** {destinations: [{id?, name{en,ar}, countries[], methods[{id?, name{en,ar}, pricing, base, firstKg, stepKg, perStep, table, min, max, freeOver, maxKg, etaMin, etaMax, active}]}]} */
@@ -137,15 +137,28 @@ class ShippingController extends Controller
                     'table' => $table, 'min' => $min, 'max' => $max,
                     'freeOver' => $num($m['freeOver'] ?? null, "$mk.freeOver", true),
                     'maxKg' => $num($m['maxKg'] ?? null, "$mk.maxKg", true, 1000),
-                    'etaMin' => $eMin, 'etaMax' => $eMax, 'active' => filter_var($m['active'] ?? true, FILTER_VALIDATE_BOOL),
+                    'etaMin' => $eMin, 'etaMax' => $eMax, 'etaUnit' => ($m['etaUnit'] ?? 'working') === 'calendar' ? 'calendar' : 'working',
+                    'active' => filter_var($m['active'] ?? true, FILTER_VALIDATE_BOOL),
                 ]);
             }
             $out[] = ['id' => $id, 'name' => $name, 'countries' => $countries, 'methods' => $methods];
         }
+        // General: the weight of a product with none, the daily cut-off (Bahrain time) and the weekend
+        $g = (array) $r->input('general', []) + Shipping::cfg();
+        $fallback = $num($g['fallbackKg'] ?? 0.5, 'general.fallbackKg', false, 100);
+        $cutoff = $g['cutoffHour'] ?? null;
+        if ($cutoff !== null && $cutoff !== '' && (! is_numeric($cutoff) || (int) $cutoff < 0 || (int) $cutoff > 24)) {
+            $f['general.cutoffHour'] = 'An hour from 0 to 24, or empty for no cut-off.';
+        }
+        $weekend = array_values(array_unique(array_map('intval', array_filter((array) ($g['weekend'] ?? []), fn ($d) => is_numeric($d) && (int) $d >= 0 && (int) $d <= 6))));
+        if (count($weekend) > 5) {
+            $f['general.weekend'] = 'Keep at least two working days.';
+        }
         if ($f) {
             throw ApiError::validation($f);
         }
-        Settings::set('shipping', ['destinations' => $out]);
+        Settings::set('shipping', ['fallbackKg' => (float) $fallback, 'cutoffHour' => $cutoff === null || $cutoff === '' ? null : (int) $cutoff,
+            'weekend' => $weekend, 'destinations' => $out]);
         Audit::log($r, 'shipping_saved', 'settings', 'shipping', ['destinations' => count($out), 'methods' => array_sum(array_map(fn ($d) => count($d['methods']), $out))]);
 
         return $this->index();

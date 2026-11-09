@@ -484,8 +484,16 @@
         (p.inStock ? '<div class="pd-pay"><span>' + e(t('pay_with')) + '</span>' + TZ.payLogos() + '</div>' : '') +
         TZ.sourMeter(p.sour, true) +
         '<p class="pd-desc">' + e(TZ.L(p.desc)) + '</p>' +
-        '<div class="pd-ship">' + TZ.icon('truck') + '<div><b>' + e(t('ship_to_label')) + ' ' + c.flag + ' ' + e(TZ.L(c.name)) + ': ' + e(TZ.money(TZ.shipCost(p.weight, c, null, p.price))) + '</b>' +
-        '<small>' + e((function (m) { return m ? t('ship_note', { m: TZ.L(m.name), w: p.weight }) + (TZ.etaText(m) ? ' · ' + TZ.etaText(m) : '') : t('ship_none'); })(TZ.chosenMethod(TZ.shipMethods(p.weight, c, p.price)))) + '</small></div></div>' +
+        (function () {
+          // "Delivery to [country]": every method for that country, with its price (or Free / Quoted), time and arrival
+          var list = TZ.shipMethods(p.weight, c, p.price);
+          return '<div class="pd-ship">' + TZ.icon('truck') + '<div class="pd-ship-body"><label class="pd-ship-to"><span>' + e(t('ship_to_pick')) + '</span>' +
+            '<span class="select-wrap"><select data-country aria-label="' + e(t('ship_to_pick')) + '">' + TZ.countryOptions() + '</select>' + TZ.icon('chevron', 'chev') + '</span></label>' +
+            (list.length ? '<ul class="pd-ship-list">' + list.map(function (m) {
+              return '<li><span><b>' + e(TZ.L(m.name)) + '</b><small>' + e([TZ.etaText(m), TZ.arrivalText(m)].filter(Boolean).join(' · ')) +
+                (m.freeOver && !m.free ? ' · ' + e(t('ship_free_over', { amount: TZ.money(m.freeOver) })) : '') + '</small></span><em>' + e(TZ.shipPrice(m)) + '</em></li>';
+            }).join('') + '</ul>' : '<small>' + e(t('ship_none')) + '</small>') + '</div></div>';
+        })() +
         '<ul class="pd-perks"><li>' + TZ.icon('shield') + e(t('secure_pay')) + '</li><li>' + TZ.icon('truck') + e(t('gcc_delivery')) + '</li><li>' + TZ.icon('leaf') + e(t('natural')) + '</li></ul>' +
         (tags ? '<div class="pd-cats">' + tags + '</div>' : '') +
         '</div></div>' +
@@ -635,12 +643,16 @@
         }).join('') + '</ul>' +
         '<dl class="totals"><div><dt>' + e(t('cart_subtotal')) + '</dt><dd>' + e(TZ.money(TZ.cart.subtotal())) + '</dd></div>' +
         '<div><dt>' + e(t('cart_shipping')) + '<small>' + c.flag + ' ' + e(TZ.cart.method() ? t('ship_note', { m: TZ.L(TZ.cart.method().name), w: w }) : t('ship_none')) + '</small>' +
-        (TZ.delivery(c) ? '<small class="co-eta">' + e(TZ.delivery(c)) + '</small>' : '') + '</dt><dd>' + e(TZ.money(TZ.cart.shipping())) + '</dd></div>' +
+        (TZ.delivery(c) ? '<small class="co-eta">' + e(TZ.delivery(c)) + '</small>' : '') +
+        (TZ.cart.method() && TZ.cart.method().quoted ? '<small class="co-eta">' + e(t('ship_quoted_note')) + '</small>' : '') +
+        '</dt><dd>' + e(TZ.cart.method() ? TZ.shipPrice(TZ.cart.method()) : TZ.money(0)) + '</dd></div>' +
         '<div class="grand"><dt>' + e(t('cart_total')) + '</dt><dd>' + e(TZ.money(TZ.cart.total())) + '</dd></div></dl>' +
         '<p class="co-charge" id="co-charge" hidden></p>' +
         '<div class="co-msg" id="co-msg" role="alert" hidden></div>' +
         '<button class="btn btn-primary btn-block btn-lg" type="submit" form="co-form" id="place-order">' + TZ.icon(chosen === 'tap' ? 'shield' : 'arrow') + e(t(chosen === 'tap' ? 'co_go_pay' : 'co_go_wa')) + '</button>' +
-        '<p class="co-secure">' + TZ.icon('shield') + e(chosen === 'tap' ? t('pay_note') : t('pay_wa_note')) + '</p></div></aside>';
+        '<p class="co-secure">' + TZ.icon('shield') + e(chosen === 'tap' ? t('pay_note') : t('pay_wa_note')) + '</p>' +
+        '<p class="co-agree">' + e(t('co_agree')).replace('{terms}', '<a href="' + TZ.url('terms.html') + '" target="_blank">' + e(t('nav_terms')) + '</a>')
+          .replace('{refund}', '<a href="' + TZ.url('refund-policy.html') + '" target="_blank">' + e(t('nav_refund')) + '</a>') + '</p></div></aside>';
 
       Object.keys(memo).forEach(function (k) { if (k === 'dial') return; var f = root.querySelector('[name="' + k + '"]'); if (f && !f.value) f.value = memo[k]; });
 
@@ -752,7 +764,8 @@
       }
     },
 
-    about: function () { countUp(doc); }
+    about: function () { countUp(doc); },
+    policy: function () { if (TZ.policyPage) TZ.policyPage(doc.body.getAttribute('data-policy')); }
   };
 
   doc.addEventListener('tz:cart', function () {

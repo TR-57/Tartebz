@@ -27,7 +27,7 @@ use setasign\Fpdi\PdfParser\StreamReader;
  */
 class Smsa
 {
-    public const TRACK_URL = 'https://www.smsaexpress.com/trackingdetails?tracknumbers=';
+    public const TRACK_URL = 'https://smsaexpress.com/trackingdetails?tracknumbers=';
 
     private const TRACK_EVERY_MINUTES = 60;
 
@@ -83,8 +83,19 @@ class Smsa
         return isset(self::SERVICES[$chosen]) ? $chosen : self::guessService($method['name'] ?? '');
     }
 
-    /** What still stops sending to SMSA, in words for the team; [] when ready. */
+    /** What still stops automatic sending, in words for the team: the key, the sender, at least one method; [] when ready. */
     public static function missing(): array
+    {
+        $out = self::missingToSend();
+        if (! array_filter((array) (self::cfg()['methods'] ?? []))) {
+            $out[] = 'at least one delivery method sent with SMSA';
+        }
+
+        return $out;
+    }
+
+    /** What stops sending one order by hand: the key and the sender. */
+    public static function missingToSend(): array
     {
         $s = self::cfg();
         $sh = $s['shipper'] ?? [];
@@ -104,13 +115,13 @@ class Smsa
     /** Sending works (key and sender address saved) – by hand from an order. */
     public static function configured(): bool
     {
-        return ! self::missing();
+        return ! self::missingToSend();
     }
 
     /** Switched on: paid orders with SMSA delivery methods get their waybill by themselves. */
     public static function enabled(): bool
     {
-        return ! empty(self::cfg()['enabled']) && self::configured();
+        return ! empty(self::cfg()['enabled']) && ! self::missing();
     }
 
     /** The order's delivery method, when it is one that goes through SMSA (else null). */
@@ -196,7 +207,7 @@ class Smsa
         if (! $o->paid_at || in_array($o->status, ['cancelled', 'refunded'], true)) {
             throw new ApiError('unpaid', 'Only paid orders are sent to SMSA.', 409);
         }
-        if ($missing = self::missing()) {
+        if ($missing = self::missingToSend()) {
             throw new ApiError('smsa_not_set', 'SMSA is not set up yet: enter '.implode(', ', $missing).' in Settings › SMSA shipping.', 409);
         }
         $mode = self::mode();
@@ -242,9 +253,8 @@ class Smsa
     {
         $s = self::cfg();
         [$consignee, $problems] = self::consignee($o);
-        $problems = array_merge($problems, self::shipperProblems());
         if ($problems) {
-            throw new ApiError('fix_address', 'Not sent to SMSA: '.implode(' ', $problems), 422);
+            throw new ApiError('fix_address', 'Not sent to SMSA: '.implode(', ', $problems).'. Fix the order’s address, then try again.', 422);
         }
         $names = DB::table('order_items')->where('order_id', $o->id)->pluck('name')->all();
         $contents = trim((string) ($s['contents'] ?? '')) ?: implode(', ', $names);
@@ -275,31 +285,24 @@ class Smsa
         ];
     }
 
-    /** The receiver, checked against SMSA's own length rules. Returns [address, problems]. */
+    /** The receiver. Returns [address, problems]: the address line, city and phone must not be empty. */
     public static function consignee(object $o): array
     {
-        $name = trim($o->first_name.' '.$o->last_name);
-        $line1 = trim($o->address1);
-        if (mb_strlen($line1) < 10) {
-            $line1 = trim(implode(', ', array_filter([$o->address1, $o->state, $o->city])));
-        }
         $problems = [];
-        if (mb_strlen($name) < 5) {
-            $problems[] = 'The customer’s full name must be at least 5 letters for SMSA.';
+        foreach (['address1' => 'address', 'city' => 'city', 'phone' => 'phone'] as $f => $label) {
+            if (trim((string) $o->{$f}) === '') {
+                $problems[] = 'the customer’s '.$label.' is empty';
+            }
         }
-        if (mb_strlen($line1) < 10) {
-            $problems[] = 'The address must be at least 10 characters for SMSA.';
-        }
-        if (mb_strlen(trim($o->city)) < 3) {
-            $problems[] = 'The city must be at least 3 letters for SMSA.';
-        }
-        [$cc, $num] = Shipping::splitPhone($o->phone, $o->country);
+        [$cc, $num] = Shipping::splitPhone((string) $o->phone, (string) $o->country);
+        $line2 = trim((string) $o->address2);
 
         return [[
-            'ContactName' => mb_substr($name, 0, 150), 'ContactPhoneNumber' => $cc.$num, 'ContactPhoneNumber2' => '', 'Coordinates' => '',
-            'Country' => strtoupper($o->country), 'District' => mb_substr(trim($o->state ?: $o->city), 0, 100), 'PostalCode' => '',
-            'City' => mb_substr(trim($o->city), 0, 50), 'AddressLine1' => mb_substr($line1, 0, 100), 'AddressLine2' => mb_substr(trim($o->address2), 0, 100),
-            'ConsigneeID' => '', 'ShortCode' => '',
+            'ContactName' => mb_substr(trim($o->first_name.' '.$o->last_name), 0, 150), 'ContactPhoneNumber' => $num !== '' ? $cc.$num : '',
+            'ContactPhoneNumber2' => '', 'Coordinates' => '', 'Country' => strtoupper((string) $o->country),
+            'District' => mb_substr($line2 !== '' ? $line2 : trim((string) $o->city), 0, 100), 'PostalCode' => '',
+            'City' => mb_substr(trim((string) $o->city), 0, 50), 'AddressLine1' => mb_substr(trim((string) $o->address1), 0, 100),
+            'AddressLine2' => mb_substr($line2, 0, 100), 'ConsigneeID' => '', 'ShortCode' => '',
         ], $problems];
     }
 
@@ -315,21 +318,15 @@ class Smsa
         ];
     }
 
+    /** The sender fields still empty (Admin › SMSA shipping). */
     public static function shipperProblems(): array
     {
-        $s = self::cfg()['shipper'];
+        $sh = self::cfg()['shipper'] ?? [];
         $p = [];
-        if (mb_strlen(trim((string) $s['name'])) < 5) {
-            $p[] = 'SMSA shipping: the sender name must be at least 5 letters.';
-        }
-        if (mb_strlen(trim((string) $s['address1'])) < 10) {
-            $p[] = 'SMSA shipping: the sender address must be at least 10 characters.';
-        }
-        if (mb_strlen(trim((string) $s['city'])) < 3) {
-            $p[] = 'SMSA shipping: enter the sender city.';
-        }
-        if (strlen(preg_replace('/\D/', '', (string) $s['phone'])) < 8) {
-            $p[] = 'SMSA shipping: enter the sender phone number.';
+        foreach (['name' => 'the sender name', 'phone' => 'the sender phone', 'city' => 'the sender city', 'address1' => 'the sender address'] as $f => $label) {
+            if (trim((string) ($sh[$f] ?? '')) === '') {
+                $p[] = 'SMSA shipping: enter '.$label.'.';
+            }
         }
 
         return $p;
@@ -358,6 +355,7 @@ class Smsa
         }
         if ($diff) {
             Orders::event($orderId, 'warning', 'SMSA waybill '.$awb.' does not match the import VAT and duty setting – '.implode('; ', $diff).'. Check this waybill in the SMSA portal before it ships.');
+            self::backToStaff($orderId);
             Log::warning('smsa duties mismatch', ['order' => $orderId, 'awb' => $awb, 'got' => $got]);
 
             return;
@@ -414,6 +412,13 @@ class Smsa
             DB::table('shipments')->insert($row + ['order_id' => $o->id, 'created_at' => now()]);
         }
         Orders::event($o->id, 'warning', 'SMSA waybill not created: '.$why, [], $admin);
+        self::backToStaff($o->id);
+    }
+
+    /** The order goes back to the team's "to prepare" list (the tick on the orders board is taken off). */
+    private static function backToStaff(int $orderId): void
+    {
+        DB::table('orders')->where('id', $orderId)->update(['prepared_at' => null, 'prepared_by' => '', 'updated_at' => now()]);
     }
 
     /** Cancels the waybill at SMSA (managers; before SMSA has the parcel). */
@@ -639,6 +644,7 @@ class Smsa
             if ($o && $status === 'delivered' && in_array($o->status, ['paid', 'processing', 'shipped'], true)) {
                 DB::table('orders')->where('id', $o->id)->update(['status' => 'delivered', 'delivered_at' => now(), 'shipped_at' => $o->shipped_at ?? now(), 'updated_at' => now()]);
                 Orders::event($o->id, 'status', 'Delivered (SMSA tracking).');
+                Orders::emailDelivered(DB::table('orders')->find($o->id));
             } elseif ($o && $status === 'moving' && in_array($o->status, ['paid', 'processing'], true)) {
                 DB::table('orders')->where('id', $o->id)->update(['status' => 'shipped', 'shipped_at' => now(), 'updated_at' => now()]);
                 Orders::event($o->id, 'status', 'Shipped (SMSA has the parcel).');
@@ -720,7 +726,7 @@ class Smsa
             throw new ApiError('smsa_not_set', 'Enter the SMSA API key for '.($mode === 'live' ? 'live' : 'sandbox').' mode in Settings › SMSA shipping first.', 409);
         }
         $base = rtrim((string) self::cfg()[$mode === 'live' ? 'liveUrl' : 'testUrl'], '/');
-        $http = Http::withHeaders(['apikey' => $key])->acceptJson()->connectTimeout(10)->timeout(45);
+        $http = Http::withHeaders(['apikey' => $key])->acceptJson()->connectTimeout(10)->timeout(30);
         if ($body !== null) {
             $http = $http->withBody(json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), 'application/json');
         }

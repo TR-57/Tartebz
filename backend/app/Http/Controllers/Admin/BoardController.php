@@ -44,7 +44,7 @@ class BoardController extends Controller
 
             return [
                 'id' => $p->id, 'name' => $p->name, 'nameAr' => $p->name_ar ?: $p->name, 'price' => (float) $p->price,
-                'image' => $images ? Thumbs::url($images[0], 200) : null, 'weightGrams' => Catalog::weightGrams($p, $tree),
+                'image' => $images ? Thumbs::url($images[0], 200) : null, 'weightGrams' => Catalog::shipGrams($p, $tree),
                 'available' => Catalog::available($p), 'free' => $counted ? max(0, (int) $p->stock_qty - ($held[$p->id] ?? 0)) : null,
             ];
         })->values(), 'countries' => $this->countries(), 'tap' => Tap::enabled()]);
@@ -213,6 +213,8 @@ class BoardController extends Controller
                 'phone' => $biz['phone'], 'email' => $biz['email'], 'logo' => $logo ? Thumbs::url($logo, 400) : '',
             ],
             'refunded' => (float) $o->refunded_amount,
+            // a "quoted" delivery method: the team adds the delivery cost after the order
+            'deliveryQuoted' => (float) $o->shipping == 0.0 && (\App\Support\Shipping::findMethod((string) $o->shipping_method)['pricing'] ?? '') === 'quoted',
         ];
     }
 

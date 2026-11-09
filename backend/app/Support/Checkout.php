@@ -53,7 +53,7 @@ class Checkout
                 $qty = $free;
             }
             $price = round((float) $p->price, 3);
-            $w = Catalog::weightGrams($p, $tree);
+            $w = Catalog::shipGrams($p, $tree);
             $images = json_decode((string) $p->images, true) ?: [];
             $lines[] = [
                 'id' => $p->id, 'name' => $p->name, 'nameAr' => $p->name_ar, 'image' => $images[0] ?? '',

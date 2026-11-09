@@ -4,13 +4,36 @@ import { api, esc, pill, busy, toast, showErrors, clearErrors, icon, confirmBox,
    delivery methods – by air, by road, home delivery … – each with its price and delivery time. The same model as
    Sniper Safety; the server (App\Support\Shipping::price) and the shop (TZ.methodPrice) price them the same way. */
 
-const PRICING = [['flat', 'Fixed price'], ['formula', 'Base price + per extra weight'], ['table', 'Weight table']];
+const PRICING = [['formula', 'Base price + per extra weight'], ['flat', 'Fixed price'], ['table', 'Weight table'], ['quoted', 'Quoted after the order']];
+const WEEKDAYS = [[0, 'Sunday'], [1, 'Monday'], [2, 'Tuesday'], [3, 'Wednesday'], [4, 'Thursday'], [5, 'Friday'], [6, 'Saturday']];
+
+/* The method's price as a sentence, shown under it (as on Sniper). Written in the admin's language: numbers inside. */
+function describe(m) {
+  const ar = isAr();
+  const n = (v) => (v === '' || v == null || isNaN(+v) ? null : +v);
+  const bhd = (v) => (ar ? `${(+v || 0).toFixed(3)} د.ب` : `BHD ${(+v || 0).toFixed(3)}`);
+  let s;
+  if (m.pricing === 'quoted') s = ar ? 'يُحدَّد سعر التوصيل بعد الطلب – بلا سعر عند الدفع' : 'Quoted after the order – no price at checkout';
+  else if (m.pricing === 'flat') s = n(m.base) ? (ar ? `${bhd(m.base)} مهما كان الوزن` : `${bhd(m.base)} whatever the weight`) : (ar ? 'مجاني مهما كان الوزن' : 'Free whatever the weight');
+  else if (m.pricing === 'table') s = ar ? 'حسب جدول الأوزان' : 'By the weight table';
+  else s = ar ? `${bhd(m.base)} حتى ${n(m.firstKg) || 0} كجم، ثم ${bhd(m.perStep)} لكل ${n(m.stepKg) || 0} كجم إضافية (أو جزء منها)`
+    : `${bhd(m.base)} covers the first ${n(m.firstKg) || 0} kg, then ${bhd(m.perStep)} for every extra ${n(m.stepKg) || 0} kg (or part of it)`;
+  const extra = [];
+  if (m.pricing !== 'quoted') {
+    if (n(m.min) != null) extra.push(ar ? `لا يقل عن ${bhd(m.min)}` : `never below ${bhd(m.min)}`);
+    if (n(m.max) != null) extra.push(ar ? `لا يزيد عن ${bhd(m.max)}` : `never above ${bhd(m.max)}`);
+    if (n(m.freeOver) != null) extra.push(ar ? `مجاني للطلبات من ${bhd(m.freeOver)}` : `free once the order reaches ${bhd(m.freeOver)}`);
+  }
+  if (n(m.maxKg) != null) extra.push(ar ? `غير متاح فوق ${m.maxKg} كجم` : `not offered above ${m.maxKg} kg`);
+  return s + (extra.length ? (ar ? '؛ ' : '; ') + extra.join(ar ? '؛ ' : '; ') : '') + '.';
+}
 
 /* The price of one method for a parcel – a twin of App\Support\Shipping::price(). null = not offered (too heavy). */
 function priceOf(m, kg, subtotal) {
   const num = (v) => (v === '' || v == null || isNaN(+v) ? null : +v);
   kg = Math.max(0, kg || 0);
   if (num(m.maxKg) != null && kg > num(m.maxKg)) return null;
+  if (m.pricing === 'quoted') return 'quoted';
   const step = num(m.stepKg) || 0; const per = num(m.perStep) || 0;
   const steps = (over) => (step > 0 && over > 0 ? Math.ceil(Math.round((over / step) * 1e6) / 1e6) : 0);
   let p;
@@ -26,7 +49,7 @@ function priceOf(m, kg, subtotal) {
   return Math.round(Math.max(0, p) * 1000) / 1000;
 }
 
-const blankMethod = () => ({ id: '', name: { en: '', ar: '' }, pricing: 'flat', base: 0, firstKg: 1, stepKg: 0.5, perStep: 0, table: [[0.5, 0]], min: null, max: null, freeOver: null, maxKg: null, etaMin: null, etaMax: null, active: true });
+const blankMethod = () => ({ id: '', name: { en: '', ar: '' }, pricing: 'formula', base: 0, firstKg: 0.5, stepKg: 0.5, perStep: 0, table: [[0.5, 0]], min: null, max: null, freeOver: null, maxKg: null, etaMin: null, etaMax: null, etaUnit: 'working', active: true });
 const nv = (v) => (v == null ? '' : v);
 
 export default {
@@ -35,6 +58,7 @@ export default {
     const r = await api('shipping');
     if (!alive()) return;
     let dests = JSON.parse(JSON.stringify(r.destinations));
+    const general = { ...r.general, weekend: [...(r.general.weekend || [])] };
     // Listeners go on a box of this view's own: the page's <main> stays when another section opens.
     main.innerHTML = '<div class="rates-root"></div>';
     const root = main.firstElementChild;
@@ -56,6 +80,7 @@ export default {
           <div class="field" data-field="${k}.name"><label>Name (English)</label><input class="input" data-k="name.en" value="${esc(m.name.en)}" placeholder="By air" dir="ltr"></div>
           <div class="field"><label>Name (Arabic)</label><input class="input" data-k="name.ar" value="${esc(m.name.ar)}" placeholder="شحن جوي" dir="rtl"></div>
           <div class="field full"><label>How it is priced</label><select data-k="pricing">${PRICING.map(([v, l]) => `<option value="${v}"${pr === v ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+          ${pr === 'quoted' ? '<p class="muted small full">The customer sees “Quoted after order”; the team adds the delivery cost after the order.</p>' : ''}
           ${pr === 'flat' ? num(`${k}.base`, 'Price (BHD)', m.base, { k: 'base' }) : ''}
           ${pr === 'formula' ? num(`${k}.base`, 'Base price (BHD)', m.base, { k: 'base' }) + num(`${k}.firstKg`, 'Base price covers up to (kg)', m.firstKg, { k: 'firstKg', step: '0.1' })
             + num(`${k}.stepKg`, 'Then every (kg)', m.stepKg, { k: 'stepKg', step: '0.1' }) + num(`${k}.perStep`, 'adds (BHD)', m.perStep, { k: 'perStep' }) : ''}
@@ -66,10 +91,12 @@ export default {
             <button type="button" class="iconbtn" data-act="trm" data-t="${t}" aria-label="Remove">${icon('close')}</button></div>`).join('')}
           <button type="button" class="btn btn-sm" data-act="tadd">${icon('plus')} Add a row</button>
           <div class="form-grid" style="margin-top:8px">${num(`${k}.stepKg`, 'Above the last row: every (kg)', m.stepKg, { k: 'stepKg', step: '0.1' })}${num(`${k}.perStep`, 'adds (BHD)', m.perStep, { k: 'perStep' })}</div></div>` : ''}
-        <details class="method-more" ${m.min != null || m.max != null || m.freeOver != null || m.maxKg != null ? 'open' : ''}><summary class="muted small">Limits and free delivery</summary>
+        ${pr === 'quoted' ? '' : `<details class="method-more" ${m.min != null || m.max != null || m.freeOver != null || m.maxKg != null ? 'open' : ''}><summary class="muted small">Limits and free delivery</summary>
           <div class="form-grid">${num(`${k}.min`, 'Lowest price (BHD)', m.min, { k: 'min', ph: 'none' })}${num(`${k}.max`, 'Highest price (BHD)', m.max, { k: 'max', ph: 'none' })}
-            ${num(`${k}.freeOver`, 'Free when the order reaches (BHD)', m.freeOver, { k: 'freeOver', ph: 'never' })}${num(`${k}.maxKg`, 'Not offered above (kg)', m.maxKg, { k: 'maxKg', step: '0.1', ph: 'no limit' })}</div></details>
-        <div class="form-grid">${num(`${k}.etaMin`, 'Delivery time: from (days)', m.etaMin, { k: 'etaMin', step: '1' })}${num(`${k}.etaMax`, 'to (days)', m.etaMax, { k: 'etaMax', step: '1' })}</div>
+            ${num(`${k}.freeOver`, 'Free when the order reaches (BHD)', m.freeOver, { k: 'freeOver', ph: 'never' })}${num(`${k}.maxKg`, 'Not offered above (kg)', m.maxKg, { k: 'maxKg', step: '0.1', ph: 'no limit' })}</div></details>`}
+        <div class="form-grid">${num(`${k}.etaMin`, 'Delivery time: from (days)', m.etaMin, { k: 'etaMin', step: '1', hint: '0 = same day' })}${num(`${k}.etaMax`, 'to (days)', m.etaMax, { k: 'etaMax', step: '1' })}
+          <div class="field"><label>Counted in</label><select data-k="etaUnit"><option value="working"${m.etaUnit !== 'calendar' ? ' selected' : ''}>Working days</option><option value="calendar"${m.etaUnit === 'calendar' ? ' selected' : ''}>Calendar days</option></select></div></div>
+        <p class="method-says muted small" data-noi18n>${esc(describe(m))}</p>
       </div>`;
     };
 
@@ -95,7 +122,8 @@ export default {
       if (!d) { box.innerHTML = '<p class="muted">We do not deliver there.</p>'; return; }
       const rows = d.methods.filter((m) => m.active !== false).map((m) => {
         const p = priceOf(m, kg, sub);
-        return `<li><span data-noi18n>${esc((isAr() ? m.name.ar : m.name.en) || m.name.en)}</span>: <b data-noi18n>${p == null ? '—' : p === 0 ? '0' : esc(money(p))}</b>${p == null ? ' <span class="muted small">Not offered at this weight</span>' : p === 0 ? ' <span class="muted small">Free</span>' : ''}</li>`;
+        const what = p == null ? '<span class="muted small">Not offered at this weight</span>' : p === 'quoted' ? '<b>Quoted after the order</b>' : p === 0 ? '<b>Free</b>' : `<b data-noi18n>${esc(money(p))}</b>`;
+        return `<li><span data-noi18n>${esc((isAr() ? m.name.ar : m.name.en) || m.name.en)}</span>: ${what}</li>`;
       });
       box.innerHTML = rows.length ? `<ul class="plist">${rows.join('')}</ul>` : '<p class="muted">No method is on.</p>';
     };
@@ -105,6 +133,11 @@ export default {
         <div class="phead"><div><h1>Shipping rates</h1><p class="sub">What the customer pays for delivery, per destination and delivery method (BHD). Choose which methods go through SMSA in SMSA shipping.</p></div>
           <div class="actions"><a class="btn" href="#/smsa">${icon('truck')} SMSA shipping</a></div></div>
         <form id="rf" novalidate>
+          <div class="card"><h2>General</h2><div class="form-grid">
+            <div class="field" data-field="general.fallbackKg"><label for="g-kg">Weight of a product with none (kg)</label><input id="g-kg" class="input" type="number" min="0" step="0.1" value="${esc(nv(general.fallbackKg))}" dir="ltr" data-g="fallbackKg"><span class="hint">Used for the delivery price and the SMSA waybill.</span></div>
+            <div class="field" data-field="general.cutoffHour"><label for="g-cut">Daily cut-off (hour, Bahrain time)</label><input id="g-cut" class="input" type="number" min="0" max="24" step="1" value="${esc(nv(general.cutoffHour))}" dir="ltr" data-g="cutoffHour"><span class="hint">Orders after it count from the next day. 14 = 2 pm. Empty = no cut-off.</span></div>
+            <div class="field full" data-field="general.weekend"><span class="field-label">Not working days</span><div class="logo-picks">${WEEKDAYS.map(([d, l]) => `<label class="chip-check"><input type="checkbox" data-wd="${d}" ${general.weekend.includes(d) ? 'checked' : ''}><span>${esc(l)}</span></label>`).join('')}</div></div>
+          </div></div>
           <div id="dests">${dests.map(destHtml).join('')}</div>
           <p><button type="button" class="btn" data-act="dadd">${icon('plus')} Add a destination</button></p>
           <div class="card"><h2>Price check</h2><div class="form-grid">
@@ -122,6 +155,7 @@ export default {
     root.addEventListener('input', (e) => {
       const el = e.target;
       if (el.id && el.id.startsWith('pc-')) { check(); return; }
+      if (el.dataset.g) { general[el.dataset.g] = el.value === '' ? null : +el.value; return; }
       const { di, mi } = at(el);
       if (di < 0) return;
       if (el.dataset.dk) {
@@ -138,9 +172,14 @@ export default {
     });
     root.addEventListener('change', (e) => {
       const el = e.target;
+      if (el.dataset.wd != null) { const d = +el.dataset.wd; general.weekend = el.checked ? [...new Set([...general.weekend, d])] : general.weekend.filter((x) => x !== d); return; }
       const { di, mi } = at(el);
       if (di < 0 || mi < 0) return;
       const m = dests[di].methods[mi];
+      if (el.dataset.k === 'etaUnit') { m.etaUnit = el.value; draw(); }
+      if (el.dataset.k && ['base', 'firstKg', 'stepKg', 'perStep', 'min', 'max', 'freeOver', 'maxKg'].includes(el.dataset.k)) {
+        const says = el.closest('.method').querySelector('.method-says'); if (says) says.textContent = describe(m);
+      }
       if (el.dataset.k === 'pricing') { m.pricing = el.value; if (m.pricing === 'table' && !(m.table || []).length) m.table = [[0.5, 0]]; draw(); }
       if (el.dataset.k === 'active') { m.active = el.checked; draw(); }
     });
@@ -164,8 +203,8 @@ export default {
       const form = root.querySelector('#rf');
       clearErrors(form);
       try {
-        const res = await busy(root.querySelector('#save'), () => api('shipping', { method: 'PUT', body: { destinations: dests } }));
-        dests = JSON.parse(JSON.stringify(res.destinations)); draw(); toast('Saved');
+        const res = await busy(root.querySelector('#save'), () => api('shipping', { method: 'PUT', body: { destinations: dests, general } }));
+        dests = JSON.parse(JSON.stringify(res.destinations)); Object.assign(general, res.general); draw(); toast('Saved');
       } catch (err) { showErrors(root.querySelector('#rf'), err); }
     });
   },

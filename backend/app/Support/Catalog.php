@@ -445,6 +445,14 @@ class Catalog
     }
 
     /** Effective shipping weight in grams (own weight if kept, else category's inherited, else own, else 0 = fallback). */
+    /** The weight delivery is priced on: the product's (or its category's), else the default (Shipping rates › 0.5 kg). */
+    public static function shipGrams(object $p, ?array $tree = null): int
+    {
+        $g = self::weightGrams($p, $tree);
+
+        return $g > 0 ? $g : Shipping::fallbackGrams();
+    }
+
     public static function weightGrams(object $p, ?array $tree = null): int
     {
         if ($p->own_weight && $p->weight_grams > 0) {

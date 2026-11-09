@@ -9,7 +9,7 @@ use App\Support\Settings;
 use App\Support\StockAlerts;
 use Illuminate\Http\Request;
 
-/** Website extras: WhatsApp ordering, back-in-stock alerts, payment logos, delivery times, stock reservation times (managers). */
+/** Website extras: WhatsApp ordering, back-in-stock alerts, payment logos, stock reservation times (managers). */
 class WebsiteController extends Controller
 {
     public const LOGOS = ['benefit', 'visa', 'mastercard', 'applepay', 'mada', 'knet', 'tabby', 'cod'];
@@ -28,20 +28,6 @@ class WebsiteController extends Controller
             $f['whatsappNumber'] = 'Enter the WhatsApp number with the country code, e.g. +973 3753 3757.';
         }
         $logos = array_values(array_intersect(self::LOGOS, (array) $r->input('paymentLogos', [])));
-        $delivery = [];
-        foreach (array_values((array) $r->input('delivery', [])) as $i => $d) {
-            $d = (array) $d;
-            $cc = strtoupper(trim((string) ($d['country'] ?? '')));
-            $min = (int) ($d['min'] ?? 0);
-            $max = (int) ($d['max'] ?? 0);
-            if (! preg_match('/^[A-Z]{2}$/', $cc)) {
-                $f["delivery.$i.country"] = 'A country is a 2-letter code, like SA.';
-            }
-            if ($min < 0 || $max < $min || $max > 60) {
-                $f["delivery.$i.max"] = 'Enter the days as “from” and “to”, with “to” not smaller than “from”.';
-            }
-            $delivery[] = ['country' => $cc, 'min' => $min, 'max' => $max];
-        }
         $cartMin = (int) $r->input('cartHoldMinutes', Settings::get('storefront')['cartHoldMinutes'] ?? 15);
         $orderMin = (int) $r->input('orderHoldMinutes', Settings::get('orders')['holdMinutes'] ?? 60);
         $waHours = (int) $r->input('whatsappHoldHours', Settings::get('orders')['whatsappHoldHours'] ?? 24);
@@ -62,7 +48,6 @@ class WebsiteController extends Controller
             'whatsappNumber' => $num,
             'backInStock' => $this->bool($r, 'backInStock', true),
             'paymentLogos' => $logos,
-            'delivery' => $delivery,
             'cartHoldMinutes' => $cartMin,
         ];
         Settings::set('storefront', $value);

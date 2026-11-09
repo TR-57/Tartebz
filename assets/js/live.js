@@ -53,6 +53,7 @@
     if (s.phone) { TZ.store.phone = s.phone; }
     if (s.whatsapp) TZ.store.phoneRaw = String(s.whatsapp).replace(/\D/g, '');
     if (s.cr) TZ.store.cr = s.cr;
+    if (s.legalName) TZ.store.legalName = s.legalName;
     if (s.address && s.address.en) TZ.store.address = s.address;
     if (s.mapsUrl) TZ.store.mapsUrl = s.mapsUrl;
     if (s.social) {
@@ -66,6 +67,7 @@
       // The server's delivery prices: what the cart shows is what checkout charges.
       TZ.shipping.countries = d.shipping.countries || [];
       TZ.shipping.destinations = d.shipping.destinations || TZ.shipping.destinations;
+      ['fallbackKg', 'cutoffHour', 'weekend'].forEach(function (k) { if (k in d.shipping) TZ.shipping[k] = d.shipping[k]; });
     }
     if (d.payments) TZ.payments = d.payments;
     TZ.maintenance = !!d.maintenance; // only signed-in team members get past the "back soon" page

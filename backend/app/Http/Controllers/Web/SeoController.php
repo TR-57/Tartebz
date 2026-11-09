@@ -23,6 +23,9 @@ class SeoController extends Controller
         $add('/shop', $newest ? substr($newest, 0, 10) : null, 'daily', '0.9');
         $add('/about', null, 'monthly', '0.5');
         $add('/contact', null, 'monthly', '0.5');
+        foreach (['/delivery', '/terms', '/refund-policy', '/privacy'] as $page) {
+            $add($page, null, 'yearly', '0.3');
+        }
         foreach ($tree as $c) {
             if ($c->live) {
                 $add('/shop?cat='.rawurlencode($c->slug), null, 'weekly', '0.7');

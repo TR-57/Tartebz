@@ -550,6 +550,14 @@ select:focus-visible, input:focus-visible, textarea:focus-visible { outline: non
 .pd-ship > .ico { width: 28px; height: 28px; color: var(--red); margin-top: 2px; }
 .pd-ship b { display: block; font-weight: 800; }
 .pd-ship small { color: var(--gray); font-size: .85rem; }
+.pd-ship-body { flex: 1; min-width: 0; }
+.pd-ship-to { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-weight: 800; margin-bottom: 8px; }
+.pd-ship-to .select-wrap { flex: 1; min-width: 160px; max-width: 260px; }
+.pd-ship-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.pd-ship-list li { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,.12); }
+.pd-ship-list li:first-child { border-top: 0; padding-top: 0; }
+.pd-ship-list small { display: block; }
+.pd-ship-list em { font-style: normal; font-weight: 800; white-space: nowrap; }
 .pd-perks { display: grid; gap: 10px; }
 .pd-perks li { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: .95rem; }
 .pd-perks .ico { width: 20px; height: 20px; color: var(--green); }
@@ -1228,3 +1236,26 @@ body.has-iab .site-header { top: var(--iab-h); }
 .ship-method em { font-style: normal; font-weight: 800; white-space: nowrap; }
 .ship-method.is-on { border-color: var(--red); background: #FFF6F6; }
 .cart-foot .ship-methods { margin-top: 4px; }
+
+/* Legal pages (terms, refund, privacy, delivery) */
+.policy { max-width: 820px; }
+.policy-sec { margin-bottom: 28px; }
+.policy-sec h2 { font-size: 1.25rem; margin: 0 0 10px; }
+.policy-sec p { margin: 0 0 10px; line-height: 1.8; color: var(--ink); }
+.table-scroll { overflow-x: auto; margin: 14px 0; }
+.policy-table { width: 100%; border-collapse: collapse; font-size: .92rem; min-width: 520px; }
+.policy-table th, .policy-table td { text-align: start; padding: 10px 8px; border-bottom: 1px solid rgba(0,0,0,.08); vertical-align: top; }
+.policy-table th { font-size: .8rem; color: var(--gray); }
+.policy-table small { display: block; color: var(--gray); font-size: .8rem; margin-top: 2px; }
+.policy-updated { color: var(--gray); font-size: .85rem; }
+.policy-cta { display: flex; flex-wrap: wrap; gap: 10px; }
+.co-agree { font-size: .82rem; color: var(--gray); text-align: center; margin: 10px 0 0; }
+.co-agree a { color: inherit; text-decoration: underline; }
+@media (max-width: 640px) {
+  .policy-table { min-width: 0; }
+  .policy-table thead { display: none; }
+  .policy-table, .policy-table tbody, .policy-table tr, .policy-table td { display: block; width: 100%; }
+  .policy-table tr { padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,.1); }
+  .policy-table td { border: 0; padding: 3px 0; display: grid; grid-template-columns: 7.5em 1fr; gap: 8px; }
+  .policy-table td::before { content: attr(data-label); color: var(--gray); font-size: .8rem; }
+}

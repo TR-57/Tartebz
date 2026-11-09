@@ -50,12 +50,12 @@ class CheckoutPaymentsTest extends TestCase
     {
         $q = $this->postJson('/api/checkout/quote', ['items' => [['id' => $this->productId, 'qty' => 2, 'price' => 0.001]], 'country' => 'BH'])->assertOk()->json('quote');
         $this->assertEquals(6.0, $q['subtotal']);
-        $this->assertEquals(1.5, $q['shipping']);           // Bahrain flat
-        $this->assertEquals(7.5, $q['total']);
+        $this->assertEquals(2.0, $q['shipping']);           // Bahrain standard: 2.000 up to 5 kg
+        $this->assertEquals(8.0, $q['total']);
         $sa = $this->postJson('/api/checkout/quote', ['items' => [['id' => $this->productId, 'qty' => 2]], 'country' => 'SA'])->json('quote');
-        $this->assertEquals(4.2, $sa['shipping']);          // 1 kg by the weight table
+        $this->assertEquals(4.3, $sa['shipping']);          // GCC courier: 3.500 up to 0.5 kg + 0.800
         $this->assertSame('SAR', $sa['chargeCurrency']);
-        $this->assertEquals(102.0, $sa['chargeAmount']);     // (6 + 4.2) BHD × 10
+        $this->assertEquals(103.0, $sa['chargeAmount']);     // (6 + 4.3) BHD × 10
         $this->postJson('/api/checkout/quote', ['items' => [], 'country' => 'US'])->assertStatus(422);
         $this->postJson('/api/checkout/quote', ['items' => [['id' => $this->productId, 'qty' => 9]], 'country' => 'BH'])
             ->assertJsonPath('quote.issues.0.code', 'only')->assertJsonPath('quote.lines.0.qty', 5);
@@ -63,8 +63,8 @@ class CheckoutPaymentsTest extends TestCase
 
     public function test_card_payment_counts_only_after_tap_confirms_it(): void
     {
-        $this->fakeTap('CAPTURED', 7.5);
-        $r = $this->postJson('/api/checkout', $this->customer(['expected_total' => 7.5]))->assertOk();
+        $this->fakeTap('CAPTURED', 8.0);
+        $r = $this->postJson('/api/checkout', $this->customer(['expected_total' => 8.0]))->assertOk();
         $this->assertStringStartsWith('https://checkout.tap.company/', $r->json('redirect'));
         $token = $r->json('order.token');
         $o = DB::table('orders')->where('token', $token)->first();
@@ -72,7 +72,7 @@ class CheckoutPaymentsTest extends TestCase
         $this->assertSame('20001', $o->number);
         $this->assertSame('chg_TS01', $o->tap_charge_id);
         $this->assertSame(5, (int) DB::table('products')->find($this->productId)->stock_qty, 'no stock taken before payment');
-        Http::assertSent(fn ($req) => $req->url() === 'https://api.tap.company/v2/charges' && $req['amount'] == 7.5 && $req['currency'] === 'BHD'
+        Http::assertSent(fn ($req) => $req->url() === 'https://api.tap.company/v2/charges' && $req['amount'] == 8.0 && $req['currency'] === 'BHD'
             && $req->hasHeader('Authorization', 'Bearer sk_test_ABCDEFGH1234') && str_contains($req['redirect']['url'], $token));
 
         // A forged webhook body claiming CAPTURED changes nothing by itself: Tap is asked, and Tap's answer counts.
@@ -154,7 +154,7 @@ class CheckoutPaymentsTest extends TestCase
 
     public function test_sync_job_catches_payments_whose_notification_was_lost(): void
     {
-        $this->fakeTap('CAPTURED', 7.5);
+        $this->fakeTap('CAPTURED', 8.0);
         $token = $this->postJson('/api/checkout', $this->customer())->json('order.token');
         DB::table('orders')->where('token', $token)->update(['updated_at' => now()->subMinutes(10)]);
         $this->artisan('store:sync-payments')->assertSuccessful();

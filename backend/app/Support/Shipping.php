@@ -11,16 +11,38 @@ namespace App\Support;
  *   flat     base, whatever the weight
  *   formula  base covers the first `firstKg`; every further `stepKg` (or part of one) adds `perStep`
  *   table    weight bands [[up to kg, price], …]; above the last band every further `stepKg` adds `perStep`
+ *   quoted   no price at checkout – the team adds the delivery cost after the order
  *
  * Then, in order: clamp to `min` / `max` (empty = no limit); free once the subtotal reaches `freeOver`
  * (empty = never); `maxKg` hides the method for heavier parcels. All money is BHD.
+ *
+ * Delivery time: `etaMin`–`etaMax` in `etaUnit` – "working" days skip the weekend (Friday and Saturday), "calendar" days
+ * do not; 0 = same day. An order after the cut-off hour (Bahrain time) counts from the next day. A product with no weight
+ * counts as `fallbackKg` (0.5 kg).
  *
  * The storefront has a twin of price() in assets/js/app.js (TZ.methodPrice): keep them in step, so the cart shows
  * exactly what checkout charges.
  */
 class Shipping
 {
-    public const PRICING = ['flat', 'formula', 'table'];
+    public const PRICING = ['flat', 'formula', 'table', 'quoted'];
+
+    /** The general delivery settings: fallbackKg, cutoffHour, weekend. */
+    public static function cfg(): array
+    {
+        $s = (array) Settings::get('shipping');
+
+        return [
+            'fallbackKg' => max(0.0, (float) ($s['fallbackKg'] ?? 0.5)),
+            'cutoffHour' => isset($s['cutoffHour']) && is_numeric($s['cutoffHour']) ? max(0, min(24, (int) $s['cutoffHour'])) : null,
+            'weekend' => array_values(array_unique(array_map('intval', array_filter((array) ($s['weekend'] ?? [5, 6]), 'is_numeric')))),
+        ];
+    }
+
+    public static function fallbackGrams(): int
+    {
+        return (int) round(self::cfg()['fallbackKg'] * 1000);
+    }
 
     /** The destinations, as saved – or built from the older single price list when nothing new was saved yet. */
     public static function destinations(): array
@@ -68,7 +90,7 @@ class Shipping
     {
         return $m + [
             'id' => '', 'name' => ['en' => '', 'ar' => ''], 'pricing' => 'flat', 'base' => 0.0, 'firstKg' => 0.0, 'stepKg' => 0.5, 'perStep' => 0.0,
-            'table' => [], 'min' => null, 'max' => null, 'freeOver' => null, 'maxKg' => null, 'etaMin' => null, 'etaMax' => null, 'active' => true,
+            'table' => [], 'min' => null, 'max' => null, 'freeOver' => null, 'maxKg' => null, 'etaMin' => null, 'etaMax' => null, 'etaUnit' => 'working', 'active' => true,
         ];
     }
 
@@ -118,13 +140,16 @@ class Shipping
         return $v === '' || $v === null || ! is_numeric($v) ? null : (float) $v;
     }
 
-    /** One method's price for a parcel: ['available' => bool, 'price' => float, 'free' => bool]. */
+    /** One method's price for a parcel: ['available' => bool, 'price' => float, 'free' => bool, 'quoted' => bool]. */
     public static function price(array $m, float $kg, float $subtotal): array
     {
         $kg = max(0.0, $kg);
         $maxKg = self::num($m['maxKg'] ?? null);
         if ($maxKg !== null && $kg > $maxKg) {
-            return ['available' => false, 'price' => null, 'free' => false];
+            return ['available' => false, 'price' => null, 'free' => false, 'quoted' => false];
+        }
+        if (($m['pricing'] ?? '') === 'quoted') {
+            return ['available' => true, 'price' => 0.0, 'free' => false, 'quoted' => true];
         }
         $pricing = in_array($m['pricing'] ?? '', self::PRICING, true) ? $m['pricing'] : 'flat';
         $step = self::num($m['stepKg'] ?? null) ?? 0.0;
@@ -160,11 +185,11 @@ class Shipping
         }
         $freeOver = self::num($m['freeOver'] ?? null);
         if ($freeOver !== null && $subtotal >= $freeOver) {
-            return ['available' => true, 'price' => 0.0, 'free' => true];
+            return ['available' => true, 'price' => 0.0, 'free' => true, 'quoted' => false];
         }
         $p = round(max(0.0, $p), 3);
 
-        return ['available' => true, 'price' => $p, 'free' => $p == 0.0];
+        return ['available' => true, 'price' => $p, 'free' => $p == 0.0, 'quoted' => false];
     }
 
     /** The methods on offer for a parcel to a country, in the order set in the admin. */
@@ -180,8 +205,9 @@ class Shipping
             if (! $r['available']) {
                 continue;
             }
-            $out[] = ['id' => (string) $m['id'], 'name' => self::names($m), 'price' => $r['price'], 'free' => $r['free'],
-                'etaMin' => self::num($m['etaMin'] ?? null), 'etaMax' => self::num($m['etaMax'] ?? null)];
+            $out[] = ['id' => (string) $m['id'], 'name' => self::names($m), 'price' => $r['price'], 'free' => $r['free'], 'quoted' => $r['quoted'],
+                'etaMin' => self::num($m['etaMin'] ?? null), 'etaMax' => self::num($m['etaMax'] ?? null), 'etaUnit' => self::unit($m),
+                'eta' => ['en' => self::etaText($m, 'en'), 'ar' => self::etaText($m, 'ar')]];
         }
 
         return $out;
@@ -223,6 +249,31 @@ class Shipping
         }
 
         return null;
+    }
+
+    public static function unit(array $m): string
+    {
+        return ($m['etaUnit'] ?? 'working') === 'calendar' ? 'calendar' : 'working';
+    }
+
+    /** "1–2 working days", "Same day" – as on Sniper. */
+    public static function etaText(array $m, string $lang = 'en'): string
+    {
+        $a = self::num($m['etaMin'] ?? null);
+        $b = self::num($m['etaMax'] ?? null);
+        if ($a === null && $b === null) {
+            return '';
+        }
+        $a ??= $b;
+        $b = ($b === null || $b < $a) ? $a : $b;
+        if ($b == 0.0) {
+            return $lang === 'ar' ? 'في نفس اليوم' : 'Same day';
+        }
+        $working = self::unit($m) === 'working';
+        $unit = $lang === 'ar' ? ($working ? 'أيام عمل' : 'أيام')
+            : ($working ? ($b == 1.0 ? 'working day' : 'working days') : ($b == 1.0 ? 'day' : 'days'));
+
+        return ($a == $b ? (string) (int) $b : (int) $a.'–'.(int) $b).' '.$unit;
     }
 
     public static function names(array $m): array

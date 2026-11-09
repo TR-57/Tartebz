@@ -50,7 +50,7 @@ class HoldsRefundsTest extends TestCase
     {
         Http::fake([
             'api.tap.company/v2/charges' => Http::response(['id' => 'chg_TS01', 'status' => 'INITIATED', 'transaction' => ['url' => 'https://checkout.tap.company/?x']]),
-            'api.tap.company/v2/charges/chg_TS01' => Http::response(['id' => 'chg_TS01', 'status' => 'CAPTURED', 'amount' => 4.5, 'currency' => 'BHD']),
+            'api.tap.company/v2/charges/chg_TS01' => Http::response(['id' => 'chg_TS01', 'status' => 'CAPTURED', 'amount' => 5.0, 'currency' => 'BHD']),
             'api.tap.company/v2/refunds' => Http::response($refund),
             'api.tap.company/v2/refunds/re_TS01' => Http::response(['id' => 're_TS01', 'status' => 'REFUNDED']),
         ]);
@@ -137,7 +137,7 @@ class HoldsRefundsTest extends TestCase
 
         // Partial: pending until Tap confirms (webhook re-fetches the refund).
         $r = $this->postJson("/api/admin/orders/$id/refund", ['amount' => 1.5, 'reason' => 'one bag damaged'])->assertOk();
-        $r->assertJsonPath('refund.status', 'pending')->assertJsonPath('order.refundable', 3);
+        $r->assertJsonPath('refund.status', 'pending')->assertJsonPath('order.refundable', 3.5);
         Http::assertSent(fn ($req) => $req->url() === 'https://api.tap.company/v2/refunds' && $req['charge_id'] === 'chg_TS01' && $req['amount'] == 1.5 && $req['currency'] === 'BHD');
         $this->postJson('/api/payments/tap/webhook', ['id' => 're_TS01', 'status' => 'REFUNDED'])->assertOk();
         $o = DB::table('orders')->find($id);
@@ -146,10 +146,10 @@ class HoldsRefundsTest extends TestCase
         $this->assertDatabaseHas('mail_outbox', ['to_email' => 'sara@example.com', 'subject' => 'Refund for your order '.$o->number]);
 
         // Full rest, recorded by hand (e.g. done in the Tap dashboard), with restock.
-        $this->postJson("/api/admin/orders/$id/refund", ['amount' => 3, 'method' => 'manual', 'restock' => true])->assertOk()
+        $this->postJson("/api/admin/orders/$id/refund", ['amount' => 3.5, 'method' => 'manual', 'restock' => true])->assertOk()
             ->assertJsonPath('order.status', 'refunded')->assertJsonPath('order.paymentStatus', 'refunded')->assertJsonPath('order.refundable', 0);
         $this->assertSame(5, (int) DB::table('products')->find($this->productId)->stock_qty);
-        $this->assertEquals(4.5, (float) DB::table('orders')->find($id)->refunded_bhd);
+        $this->assertEquals(5.0, (float) DB::table('orders')->find($id)->refunded_bhd);
         $this->postJson("/api/admin/orders/$id/refund", ['amount' => 0.1, 'method' => 'manual'])->assertStatus(409);
 
         // A late Tap notice for the charge does not make it "paid" again; dashboard revenue is net.
@@ -169,12 +169,12 @@ class HoldsRefundsTest extends TestCase
         Http::swap(new \Illuminate\Http\Client\Factory);
         Http::fake(['api.tap.company/v2/refunds' => fn () => throw new \Illuminate\Http\Client\ConnectionException('down')]);
         $this->actingAsAdmin($this->makeAdmin('manager'));
-        $this->postJson("/api/admin/orders/$id/refund", ['amount' => 4.5])->assertStatus(502);
+        $this->postJson("/api/admin/orders/$id/refund", ['amount' => 5])->assertStatus(502);
         $rf = DB::table('order_refunds')->where('order_id', $id)->first();
         $this->assertSame('pending', $rf->status);
         // It still blocks a second refund of the same money.
         $this->postJson("/api/admin/orders/$id/refund", ['amount' => 1])->assertStatus(422);
-        $this->postJson("/api/admin/orders/$id/refunds/{$rf->id}/check", ['result' => 'failed'])->assertOk()->assertJsonPath('order.refundable', 4.5);
+        $this->postJson("/api/admin/orders/$id/refunds/{$rf->id}/check", ['result' => 'failed'])->assertOk()->assertJsonPath('order.refundable', 5);
         $this->assertSame('paid', DB::table('orders')->find($id)->payment_status);
     }
 

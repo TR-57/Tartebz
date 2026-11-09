@@ -58,11 +58,11 @@ class StaffBoardTest extends TestCase
     {
         $this->actingAsAdmin($this->makeAdmin('shop_staff'));
         $this->postJson('/api/admin/board/quote', ['items' => [['id' => $this->productId, 'qty' => 2]], 'country' => 'BH'])
-            ->assertOk()->assertJsonPath('quote.shipping', 1.5)->assertJsonPath('quote.total', 7.5)->assertJsonPath('quote.weightGrams', 1000);
+            ->assertOk()->assertJsonPath('quote.shipping', 2)->assertJsonPath('quote.total', 8)->assertJsonPath('quote.weightGrams', 1000);
         $this->postJson('/api/admin/board/quote', ['items' => [['id' => $this->productId, 'qty' => 2]], 'country' => 'SA'])
-            ->assertOk()->assertJsonPath('quote.shipping', 4.2);   // 1 kg on the weight table
+            ->assertOk()->assertJsonPath('quote.shipping', 4.3);   // GCC courier, 1 kg: 3.500 + 0.800
         $this->postJson('/api/admin/board/quote', ['items' => [['id' => $this->productId, 'qty' => 5]], 'country' => 'SA'])
-            ->assertOk()->assertJsonPath('quote.shipping', 7.3);   // 2.5 kg on the weight table
+            ->assertOk()->assertJsonPath('quote.shipping', 6.7);   // 2.5 kg: 3.500 + 4 × 0.800
     }
 
     public function test_payment_link_order_from_whatsapp(): void
@@ -71,7 +71,7 @@ class StaffBoardTest extends TestCase
         $this->actingAsAdmin($staff);
         $this->postJson('/api/admin/board/orders', $this->order(['phone' => '1', 'payment' => '']))->assertStatus(422)
             ->assertJsonPath('error.fields', fn ($f) => isset($f['phone'], $f['payment']));
-        $r = $this->postJson('/api/admin/board/orders', $this->order(['expected_total' => 7.5]))->assertOk();
+        $r = $this->postJson('/api/admin/board/orders', $this->order(['expected_total' => 8]))->assertOk();
         $o = DB::table('orders')->find($r->json('order.id'));
         $this->assertSame(['staff', 'Fatima', 'tap', 'pending_payment', '+973 33334444'], [$o->source, $o->created_by_name, $o->payment_method, $o->status, $o->phone]);
         $this->assertNull($o->alert_at, 'the team made it, so no new-order alarm');
