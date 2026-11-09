@@ -209,7 +209,7 @@ select:focus-visible, input:focus-visible, textarea:focus-visible { outline: non
 .deco { position: absolute; border-radius: 50%; filter: blur(64px); }
 .deco-1 { width: 128px; height: 128px; background: rgba(255, 215, 0, .25); top: 80px; inset-inline-start: 40px; animation: pulse 4s ease-in-out infinite; }
 .deco-2 { width: 192px; height: 192px; background: rgba(250, 204, 21, .22); bottom: 80px; inset-inline-end: 40px; animation: pulse 4s ease-in-out 1s infinite; }
-.deco-3 { width: 384px; height: 384px; background: rgba(251, 146, 60, .14); top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.deco-3 { width: 384px; height: 384px; background: rgba(251, 146, 60, .14); top: 120px; left: 50%; transform: translateX(-50%); }
 .hero-icons { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .hero-icons .hi { position: absolute; color: var(--yellow); animation: float 6s ease-in-out infinite; }
 .hero-icons .hi svg { width: 100%; height: 100%; }
@@ -744,7 +744,7 @@ select:focus-visible, input:focus-visible, textarea:focus-visible { outline: non
 .contact-card:hover { transform: translateY(-3px); border-color: rgba(227, 6, 19, .3); box-shadow: var(--shadow); }
 .contact-card .why-ico { width: 50px; height: 50px; margin: 0; border-radius: 14px; flex: none; }
 .contact-card .why-ico .ico { width: 22px; height: 22px; }
-.contact-card h3 { font-size: 1rem; margin: 0 0 2px; color: var(--gray); font-weight: 700; }
+.contact-card h3, .contact-card h2 { font-size: 1rem; margin: 0 0 2px; color: var(--gray); font-weight: 700; }
 .contact-card div > div, .contact-card p { font-weight: 800; margin: 0; word-break: break-word; }
 .contact-card a:hover { color: var(--red); }
 .contact-social { display: flex; gap: 10px; margin-top: 6px; }
@@ -1193,7 +1193,7 @@ body.has-iab .site-header { top: var(--iab-h); }
 .pending-bar button { background: none; border: 0; color: #bbb; cursor: pointer; font: inherit; padding: 2px 6px; }
 .pd-held { display: flex; gap: 8px; align-items: flex-start; }
 .pd-held .ico { width: 20px; height: 20px; flex: none; margin-top: 2px; }
-.staff-link { color: inherit; opacity: .7; }
+.staff-link { color: inherit; opacity: .7; text-decoration: underline; }
 
 /* ---------- mobile number: country code + number ---------- */
 .phone-in { display: flex; gap: 8px; align-items: stretch; }
@@ -1259,3 +1259,6 @@ body.has-iab .site-header { top: var(--iab-h); }
   .policy-table td { border: 0; padding: 3px 0; display: grid; grid-template-columns: 7.5em 1fr; gap: 8px; }
   .policy-table td::before { content: attr(data-label); color: var(--gray); font-size: .8rem; }
 }
+
+/* The Arabic words are written into the built pages (fast first paint); an English visitor sees them only once replaced. */
+html[lang="en"]:not(.tz-text) [data-i18n], html[lang="en"]:not(.tz-text) [data-i18n-html] { visibility: hidden; }

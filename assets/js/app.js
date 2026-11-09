@@ -538,7 +538,7 @@
     var name = TZ.esc(TZ.L(p.name)), cat = TZ.mainCat(p);
     var c = p.art.colors;
     return '<article class="pcard reveal' + (p.inStock ? '' : ' is-out') + '" style="--c1:' + c[0] + ';--c2:' + c[1] + ';--d:' + ((i || 0) % 4) * 80 + 'ms" data-id="' + p.id + '">' +
-      '<a class="pcard-media" href="' + TZ.productUrl(p) + '" aria-label="' + name + '">' + TZ.badges(p) +
+      '<a class="pcard-media" href="' + TZ.productUrl(p) + '" tabindex="-1" aria-hidden="true">' + TZ.badges(p) +
       '<span class="pcard-glow"></span>' + TZ.productArt(p, 'pcard-art') + '</a>' +
       '<div class="pcard-body">' +
       (cat ? '<a class="pcard-cat" href="' + TZ.url('shop.html?cat=' + cat.id) + '">' + TZ.esc(TZ.L(cat.name)) + '</a>' : '') +
@@ -907,6 +907,11 @@
 
   /* ---------- boot ---------- */
   function boot() {
+    // The page's own words (headings, buttons) right away; products and prices follow with the live shop data.
+    doc.querySelectorAll('[data-i18n]').forEach(function (el) { el.textContent = TZ.t(el.getAttribute('data-i18n')); });
+    doc.querySelectorAll('[data-i18n-html]').forEach(function (el) { el.innerHTML = TZ.t(el.getAttribute('data-i18n-html')); });
+    doc.documentElement.classList.add('tz-text');
+    renderHeader();   // the logo and menu too (the logo address is written into the built page)
     var start = function () {
       if (TZ.booted) return;
       TZ.booted = true;

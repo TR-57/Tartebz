@@ -301,8 +301,8 @@
       var packs = [TZ.find('electric-sour-strips'), TZ.find('tartebz-fruits')].concat(TZ.products.filter(TZ.hasCutout)).filter(TZ.hasCutout);
       packs = packs.filter(function (p, i) { return packs.indexOf(p) === i; });
       if (packs.length < 2) packs = packs.concat(TZ.suggestions(2));
-      set('#hero-pack-1', packs[0] ? TZ.decoArt(packs[0]) : '');
-      set('#hero-pack-2', packs[1] ? TZ.decoArt(packs[1]) : '');
+      set('#hero-pack-1', packs[0] ? TZ.decoArt(packs[0], 'is-hero') : '');
+      set('#hero-pack-2', packs[1] ? TZ.decoArt(packs[1], 'is-hero') : '');
 
       set('#marquee', marquee());
       sourPicker();
@@ -363,9 +363,10 @@
         '<div class="shop-tools">' +
         '<label class="search"><span class="sr-only">' + e(t('search_label')) + '</span>' + TZ.icon('search') + '<input type="search" id="shop-q" value="' + e(st.q) + '" placeholder="' + e(t('search_ph')) + '" autocomplete="off"></label>' +
         '<label class="switch"><input type="checkbox" id="shop-stock"' + (st.stock ? ' checked' : '') + '><span class="switch-ui" aria-hidden="true"></span><span>' + e(t('instock_only')) + '</span></label>' +
-        '<label class="sort"><span>' + e(t('sort_label')) + '</span><span class="select-wrap"><select id="shop-sort">' + sorts + '</select>' + TZ.icon('chevron', 'chev') + '</span></label>' +
+        '<label class="sort"><span>' + e(t('sort_label')) + '</span><span class="select-wrap"><select id="shop-sort" aria-label="' + e(t('sort_label')) + '">' + sorts + '</select>' + TZ.icon('chevron', 'chev') + '</span></label>' +
         '</div></div></div>' +
         '<section class="section shop-section"><div class="container">' +
+        '<h2 class="sr-only">' + e(t('nav_shop')) + '</h2>' +
         '<div class="shop-meta"><span id="shop-count" aria-live="polite"></span>' + TZ.curPicker('cur-pick-sm') + '</div>' +
         '<div class="grid products-grid" id="shop-grid"></div></div></section>' +
         (function () {
@@ -471,7 +472,7 @@
         '<div class="pd-blob"></div><div class="pd-ring"></div>' + TZ.productArt(p, 'pd-art') +
         '<span class="pd-spark s1">' + TZ.icon('sparkle') + '</span><span class="pd-spark s2">' + TZ.icon('sparkle') + '</span><span class="pd-spark s3">' + TZ.icon('star') + '</span></div>' +
         (p.images && p.images.length > 1 ? '<div class="pd-thumbs" role="group" aria-label="' + e(name) + '">' + p.images.map(function (im, i) {
-          return '<button type="button" class="pd-thumb" data-photo="' + i + '" aria-pressed="' + (i === 0) + '"><img src="' + e(im.small) + '" alt="" loading="lazy"></button>';
+          return '<button type="button" class="pd-thumb" data-photo="' + i + '" aria-pressed="' + (i === 0) + '" aria-label="' + e(name) + ' ' + (i + 1) + '"><img src="' + e(im.small) + '" alt="" loading="lazy"></button>';
         }).join('') + '</div>' : '') + '</div>' +
         '<div class="pd-info">' +
         '<h1 class="pd-title">' + e(name) + '</h1>' +

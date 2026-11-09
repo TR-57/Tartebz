@@ -16,6 +16,8 @@ TZ.store = {
     tiktok: 'https://www.tiktok.com/@tartebz'
   }
 };
+/* The shop logo, written into each built page (store:build-public) so the header shows it before the shop data arrives. */
+if (window.TZ_LOGO && window.TZ_LOGO.s) { TZ.store.logo = TZ_LOGO.s; TZ.store.logoLarge = TZ_LOGO.m || TZ_LOGO.s; TZ.store.logoXL = TZ_LOGO.l || TZ.store.logoLarge; }
 
 /* Country → currency. rate = multiplier on the BHD price (from real past orders). */
 TZ.countries = [

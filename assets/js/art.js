@@ -187,20 +187,28 @@
       label(236, flavor, false);
   }
 
-  /* A product photo (resized copies from /img/<width>/…; the browser picks the size it needs). */
+  /* A product photo (resized copies from /img/<width>/…; the browser picks the size it needs for where it is shown).
+     The product page's main photo loads first (it is what the visitor waits for); every other photo loads when near. */
+  var SIZES = { 'pd-art': '(max-width: 900px) 92vw, 520px', 'pcard-art': '(max-width: 600px) 46vw, (max-width: 1000px) 30vw, 280px' };
+  function widths(im) {
+    var w200 = im.small ? im.small.replace('/img/400/', '/img/200/') : '';
+    return (w200 && w200 !== im.small ? esc(w200) + ' 200w, ' : '') + esc(im.small) + ' 400w, ' + esc(im.src) + ' 800w' + (im.large ? ', ' + esc(im.large) + ' 1600w' : '');
+  }
   TZ.photo = function (p, i, cls) {
     var im = (p.images && p.images[i || 0]) || { src: p.image };
-    var set = im.small ? ' srcset="' + esc(im.small) + ' 400w, ' + esc(im.src) + ' 800w' + (im.large ? ', ' + esc(im.large) + ' 1600w' : '') + '"' +
-      ' sizes="(max-width: 600px) 90vw, (max-width: 1000px) 45vw, 520px"' : '';
-    return '<img class="art art-photo ' + (cls || '') + '" src="' + esc(im.src) + '"' + set + ' alt="' + esc(TZ.L(p.name)) + '" loading="lazy" decoding="async">';
+    var main = /\bpd-art\b/.test(cls || '');
+    var sizes = SIZES[(cls || '').split(' ')[0]] || '72px';   // cart, checkout and bar thumbnails are small
+    var set = im.small ? ' srcset="' + widths(im) + '" sizes="' + sizes + '"' : '';
+    return '<img class="art art-photo ' + (cls || '') + '" src="' + esc(im.src) + '"' + set + ' alt="' + esc(TZ.L(p.name)) + '"' +
+      (main ? ' fetchpriority="high"' : ' loading="lazy"') + ' decoding="async">';
   };
 
   /* The product's photo with a see-through background (no card), or null. For decorative spots: hero, category cards. */
   TZ.cutout = function (p, cls) {
     var im = (p.images || []).filter(function (x) { return x.clear; })[0];
     if (!im) return null;
-    return '<img class="art art-cutout ' + (cls || '') + '" src="' + esc(im.src) + '" srcset="' + esc(im.small) + ' 400w, ' + esc(im.src) + ' 800w"' +
-      ' sizes="(max-width: 600px) 50vw, 360px" alt="' + esc(TZ.L(p.name)) + '" loading="lazy" decoding="async">';
+    return '<img class="art art-cutout ' + (cls || '') + '" src="' + esc(im.src) + '" srcset="' + widths(im) + '"' +
+      ' sizes="(max-width: 600px) 40vw, 300px" alt="' + esc(TZ.L(p.name)) + '"' + (/\bis-hero\b/.test(cls || '') ? ' fetchpriority="high"' : ' loading="lazy"') + ' decoding="async">';
   };
   TZ.hasCutout = function (p) { return !!(p && (p.images || []).some(function (x) { return x.clear; })); };
   /* Decorative spots: the see-through photo, else the drawn pack – never a photo on a white card. */

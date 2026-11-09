@@ -73,8 +73,11 @@
     if (!list.length || !document.body || !document.body.hasAttribute('data-signed-in')) return;
     list.forEach(function (s) { reported[s] = 1; });
     try {
-      fetch('/api/admin/i18n/missing', { method: 'POST', credentials: 'same-origin', keepalive: true, headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ page: location.hash.split('?')[0] || '#/', strings: list.slice(0, 60) }) }).catch(function () {});
+      var body = JSON.stringify({ page: location.hash.split('?')[0] || '#/', strings: list.slice(0, 60) });
+      // a beacon is still delivered when the page is left right after
+      if (!(navigator.sendBeacon && navigator.sendBeacon('/api/admin/i18n/missing', new Blob([body], { type: 'text/plain' })))) {
+        fetch('/api/admin/i18n/missing', { method: 'POST', credentials: 'same-origin', keepalive: true, headers: { 'Content-Type': 'text/plain' }, body: body }).catch(function () {});
+      }
     } catch (e) { /* ignore */ }
   }
 
