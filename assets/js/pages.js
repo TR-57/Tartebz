@@ -104,8 +104,8 @@
     return '<div class="marquee-track"><div class="mq-group">' + items + '</div><div class="mq-group" aria-hidden="true">' + items + '</div></div>';
   }
 
-  /* Home: slide from sweet to electric – the products and the colours follow. */
-  var SP_COLORS = [['#FFF4B8', '#FFE066'], ['#FFE680', '#FFB347'], ['#FFC266', '#FF6B4A'], ['#FF7A59', '#E30613'], ['#2B2F8F', '#00C2FF']];
+  /* Home: slide from sweet to electric – the products and the colours follow: sweet is blue, the middle yellow, electric red. */
+  var SP_COLORS = [['#3D8BFF', '#1D5FD6'], ['#9CCBFF', '#FFE066'], ['#FFE45C', '#FFC21A'], ['#FFB02E', '#F2541B'], ['#F0202C', '#B0000E']];
   var SP_EMOJI = ['🍬', '🍭', '🍋', '🔥', '⚡'];
   function sourPicker() {
     var box = $('#sp-control'), grid = $('#sp-grid'), sec = $('#sour-pick');
@@ -120,7 +120,7 @@
       sec._level = v;
       var col = SP_COLORS[v - 1];
       sec.style.setProperty('--sp1', col[0]); sec.style.setProperty('--sp2', col[1]);
-      sec.classList.toggle('is-dark', v >= 4);
+      sec.classList.toggle('is-dark', v === 1 || v >= 4);
       sec.classList.toggle('is-electric', v === 5);
       range.style.setProperty('--v', (v - 1) / 4);
       range.setAttribute('aria-valuetext', t('sour_' + v));

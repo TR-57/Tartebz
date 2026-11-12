@@ -396,7 +396,7 @@ select:focus-visible, input:focus-visible, textarea:focus-visible { outline: non
 .why-ico .ico { width: 28px; height: 28px; }
 .why-card h3 { font-size: 1.2rem; font-weight: 900; }
 .why-card p { margin: 0; color: var(--gray); font-size: .98rem; }
-.channels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 28px; }
+.channels { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 28px; }
 .channels li { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-radius: var(--radius); background: var(--cream); font-weight: 700; font-size: .98rem; }
 .channels .ico { width: 26px; height: 26px; color: var(--red); }
 
@@ -1072,8 +1072,8 @@ body.has-iab .site-header { top: var(--iab-h); }
 .sp-scale { display: flex; align-items: center; gap: 14px; width: 100%; }
 .sp-end { font-weight: 900; font-size: 1rem; white-space: nowrap; }
 #sp-range { flex: 1; -webkit-appearance: none; appearance: none; height: 14px; border-radius: var(--pill); cursor: pointer; margin: 0;
-  background: linear-gradient(90deg, #FFE066, #FF8A00 40%, #E30613 70%, #2B2F8F 88%, #00C2FF); box-shadow: inset 0 2px 4px rgba(0, 0, 0, .2), 0 0 0 3px rgba(255, 255, 255, .55); }
-[dir="rtl"] #sp-range { background: linear-gradient(270deg, #FFE066, #FF8A00 40%, #E30613 70%, #2B2F8F 88%, #00C2FF); }
+  background: linear-gradient(90deg, #1D6FE8, #6FB0FF 22%, #FFD700 50%, #FF8A00 72%, #E30613); box-shadow: inset 0 2px 4px rgba(0, 0, 0, .2), 0 0 0 3px rgba(255, 255, 255, .55); }
+[dir="rtl"] #sp-range { background: linear-gradient(270deg, #1D6FE8, #6FB0FF 22%, #FFD700 50%, #FF8A00 72%, #E30613); }
 #sp-range::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: #fff; border: 4px solid var(--ink); box-shadow: 0 6px 16px rgba(0, 0, 0, .3); transition: transform .2s var(--spring); }
 #sp-range::-moz-range-thumb { width: 28px; height: 28px; border-radius: 50%; background: #fff; border: 4px solid var(--ink); box-shadow: 0 6px 16px rgba(0, 0, 0, .3); }
 #sp-range:active::-webkit-slider-thumb { transform: scale(1.18); }
