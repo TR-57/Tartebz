@@ -1,7 +1,7 @@
 import { api, esc, d, ltr, pill, field, toggle, formData, busy, toast, toastErr, confirmBox, icon, fmtDate, modal, showErrors, clearErrors, money } from '../core.js';
 
 /* Managers: discount codes. A use counts when the order is paid and comes back if the order is cancelled. */
-const SOURCE = { manual: 'Made here', cart: 'Abandoned cart', popup: 'Pop-up', campaign: 'Campaign' };
+const SOURCE = { manual: 'Made here', cart: 'Abandoned cart' };
 
 export default {
   key: 'coupons', label: 'Discounts & coupons', icon: 'percent', role: 'manager', group: 'marketing',
@@ -11,7 +11,7 @@ export default {
     if (!alive()) return;
     const offer = (c) => c.type === 'percent' ? `${c.value}% off` : c.type === 'fixed' ? `${money(c.value)} off` : 'Free delivery';
     main.innerHTML = `
-      <div class="phead"><div><h1>Discounts & coupons</h1><p class="sub">Codes customers type at checkout. Personal codes from abandoned-cart emails and the pop-up appear here too.</p></div>
+      <div class="phead"><div><h1>Discounts & coupons</h1><p class="sub">Codes customers type at checkout. Personal codes from abandoned-cart emails appear here too.</p></div>
         <button class="btn btn-primary" id="new">${icon('plus')} New code</button></div>
       <div class="tabs">${[['', 'All'], ...Object.entries(SOURCE)].map(([k, l]) => `<a href="#/coupons${k ? '?source=' + k : ''}"${src === k ? ' aria-current="page"' : ''}>${esc(l)}</a>`).join('')}</div>
       ${r.coupons.length ? `<div class="table-wrap"><table class="t cards"><thead><tr><th>Code</th><th>Gives</th><th>Valid</th><th>Used</th><th>Status</th><th></th></tr></thead><tbody>

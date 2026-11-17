@@ -21,6 +21,6 @@ import coupons from './coupons.js';
 import carts from './carts.js';
 import campaigns from './campaigns.js';
 import reviews from './reviews.js';
-import popup from './popup.js';
+import business from './business.js';
 
-export const sections = [dashboard, orders, products, categories, media, emails, coupons, carts, campaigns, reviews, popup, translations, website, maintenance, payments, shipping, smsa, emailSettings, currencies, staff, activity, account];
+export const sections = [dashboard, orders, products, categories, media, emails, coupons, carts, campaigns, reviews, translations, business, website, maintenance, payments, shipping, smsa, emailSettings, currencies, staff, activity, account];

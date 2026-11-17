@@ -39,7 +39,7 @@ Port 587 with TLS also works if 465 is blocked.
 - If sending fails it is tried again after 1, 5, 30, 120 and 360 minutes (6 tries in all). **Emails › Sent emails** shows every
   email, its status and error, with a **Retry** button.
 - Each event can send its email only once (a duplicate Tap notice never sends a second “paid” email).
-- Offers (campaigns, pop-up and abandoned-cart emails) carry an unsubscribe link and one-click unsubscribe headers. Order emails
+- Offers (campaigns and abandoned-cart emails) carry an unsubscribe link and one-click unsubscribe headers. Order emails
   are always sent. Unsubscribed people are skipped even if an email was already queued.
 - Logs show masked addresses (`sa***@example.com`), never passwords, keys or card data.
 
@@ -61,7 +61,7 @@ Port 587 with TLS also works if 465 is blocked.
 | Order received (not paid online) | A customer orders on WhatsApp (they pay outside the website). Includes how to pay. | No | Emails › Settings: “How to pay” text (AR/EN) |
 | Order confirmation + invoice | The order is paid: Tap confirms the card payment, or staff mark it paid. Once per order. Links to the invoice page. | No | – |
 | Payment reminder | An unpaid card order, N minutes after it was placed, once, while its items are still held. | Yes | Emails › Settings: minutes (default 30) |
-| Payment link | Staff send a payment link by email from the order page or staff board. | No | – |
+| Payment link | Staff press “Payment link…” on the order page (or use the staff board): copy the link, send it on WhatsApp with the message written, or email it. | No | – |
 | Status: preparing | Staff move the order to Preparing with “Email the customer” ticked. | Yes | The tick on the order page |
 | Status: ready to collect | Staff set “Ready to collect” (pick-up orders). | Yes | The tick |
 | Status: shipped | Staff mark shipped, or SMSA picks the parcel up. | Yes | The tick |
@@ -85,10 +85,10 @@ the customer types an email at checkout.
 | Email | Sent when |
 |---|---|
 | Cart email 1 – reminder | Wait 1 after the cart was left (default 1 hour) |
-| Cart email 2 – with a code | Wait 2 after email 1 (default 24 hours), when codes are on and the customer got no code in the cooldown (default 30 days). Makes a personal code: locked to their email, one use, ends after N days (default 7). |
-| Cart email 2 – no code | Same time, when codes are off or they had a code recently |
-| Cart email 3 – your code ends soon | Wait 3 after email 2 (default 3 days), while the code is unused |
-| Cart email 3 – last reminder | Same time, when there is no unused code |
+| Cart email 2 – second reminder | Wait 2 after email 1 (default 24 hours). A plain reminder by default. |
+| Cart email 2 – with a code | Only if you switch on “Give a personal code in email 2” (off by default): a code locked to their email, one use, ends after N days (default 7), not given again within the cooldown (default 30 days). |
+| Cart email 3 – last reminder | Wait 3 after email 2 (default 3 days). |
+| Cart email 3 – your code ends soon | Instead of the last reminder, when they got a code that is still unused. |
 | Unpaid order emails 1–3 (with / without code) | The same series for card orders whose payment was not finished and whose hold ran out (last 3 days), worded for an unfinished order. Orders staff cancel are never emailed. |
 
 Each email links to `/checkout?restore={token}`, which rebuilds the same cart (what is still on sale) and fills in the code on any
@@ -102,7 +102,6 @@ cancelled, a newer cart takes over (it carries the series and code on), the cart
 
 | Email | Sent when | Admin |
 |---|---|---|
-| Pop-up code | A visitor leaves their email in the pop-up and ticks the consent box. One code per address. | Marketing › Pop-up offer (on/off, delay, words, the code) |
 | Campaign | The owner sends a campaign: all customers who paid + consenting subscribers, or chosen countries, or a pasted list – always minus unsubscribed. Sent in batches of 40 a minute, each in the person’s language with their name. | Marketing › Campaigns (write, preview, test to yourself, send) |
 
 ### Store alerts – to the team
@@ -115,7 +114,13 @@ cancelled, a newer cart takes over (it carries the series and code on), the cart
 
 Store notification addresses: **Settings › Email sending**. “Email me about orders”: **My account** (avatar at the top).
 
-## 4. Discount codes
+## 4. Business details
+
+**Settings › Business details** (owners): shop name (EN/AR), logo, legal name, CR number, VAT number, address (EN/AR), area,
+phone, WhatsApp, email, Instagram, TikTok, Google Maps link and time zone. They are used on the website (header, footer, contact
+page), in every email footer and on invoices – there is nothing to change in the code.
+
+## 5. Discount codes
 
 **Marketing › Discounts & coupons**: percentage, fixed amount (BHD) or free delivery; minimum order, largest discount, start and
 end, total uses, uses per customer, locked to emails, limited to categories or products. The server checks the code on every
@@ -123,22 +128,23 @@ checkout price and again when the order is placed (the browser’s total is neve
 and comes back if the order is cancelled. Customers see why a code does not work, in their language (not found, expired, minimum
 not reached, for another email, used up, already used, not for these products, delivery already free).
 
-## 5. Reviews
+## 6. Reviews
 
 Only from buyers, through the link in the review-request email (signed per order and product). Reviews wait for approval in
 **Marketing › Reviews**; approved ones show on the product page with the average. Switch reviews off in Emails › Settings.
 
-## 6. Not built (and why)
+## 7. Not built (and why)
 
 - **Account emails** (welcome, password reset, account changes): the shop has no customer accounts – customers check out as guests.
 - **“Your order was changed” email**: staff cannot edit an order’s items or prices after it is placed, so nothing triggers it.
 - **Enquiry, contact-form, quote or B2B emails**: left out on purpose.
+- **Pop-up discount for a first order**: removed at the owner’s request.
 - **Tax breakdown on the invoice**: VAT is not charged.
 
-## 7. Tests
+## 8. Tests
 
 `backend/tests/Feature/EmailSystemTest.php` covers each trigger above: WhatsApp and paid orders (a duplicate Tap notice sends one
 email), each status with and without the tick, the payment reminder, the three cart emails with and without a code, every stop
-rule, unpaid-order recovery, unsubscribe (link and one-click), the pop-up code (one per email), campaign batches, coupon checks
+rule, unpaid-order recovery, unsubscribe (link and one-click), campaign batches, coupon checks
 and use counting, the outbox (dedupe and back-off), tracking, refunds, payment links, back-in-stock, reviews, the signed invoice
-page and the mail settings (owner only, password never shown).
+page, the mail settings (owner only, password never shown), business details, plain cart reminders by default and the payment-link options.

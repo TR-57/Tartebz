@@ -137,6 +137,7 @@ async function detail(main, route, alive) {
           ${o.paidAt ? `<p class="muted small">Paid <span data-noi18n>${esc(fmtDate(o.paidAt))}</span></p>` : ''}
           ${o.tapChargeId ? `<p class="muted small">Tap charge: ${ltr(o.tapChargeId)} · <span data-noi18n>${esc(o.tapStatus || '')}</span>${o.tapMode === 'test' ? ' · ' + pill('Test', 'amber') : ''}</p>
             <button class="btn btn-sm" id="chk">${icon('check')} Check payment with Tap</button>` : ''}
+          ${!paid && !closed ? `<button class="btn btn-sm" id="plink">${icon('card')} Payment link…</button>` : ''}
           ${!paid && !closed && manager ? `<button class="btn btn-sm" id="mpaid">Mark as paid…</button>` : ''}
           ${refundsBox(o, manager)}
           <p class="btn-row" style="margin-top:10px"><a class="btn btn-sm btn-primary" href="/api/admin/orders/${o.id}/print" target="_blank" rel="noopener">${icon('log')} ${o.abroad && o.shipment && o.shipment.awb && o.shipment.status !== 'cancelled' ? 'Print invoice + SMSA waybill' : 'Print invoice'}</a></p>
@@ -169,6 +170,25 @@ async function detail(main, route, alive) {
   main.querySelector('#nf').addEventListener('submit', (e) => { e.preventDefault(); const v = e.target.note.value.trim(); if (v) act(e.submitter, 'note', { note: v }, 'Note added'); });
   const chk = main.querySelector('#chk');
   if (chk) chk.addEventListener('click', () => act(chk, 'check-payment', {}, 'Checked with Tap'));
+  const pl = main.querySelector('#plink');
+  if (pl) pl.addEventListener('click', () => modal({
+    title: 'Payment link',
+    body: `<p class="muted small">A link to pay this order by card. Send it again for a retry, after the amount changed, or for an order made by the team.</p>
+      ${o.method === 'whatsapp' ? '<div class="box warn small">This WhatsApp order becomes a card order waiting for payment.</div>' : ''}
+      <div class="btn-row"><button class="btn" data-via="copy">${icon('copy')} Copy the link</button><button class="btn" data-via="whatsapp">${icon('phone')} Send on WhatsApp</button>
+      ${o.email ? `<button class="btn btn-primary" data-via="email">${icon('mail')} Send by email</button>` : ''}</div><p class="small" id="plout" data-noi18n></p>`,
+    onOpen: (el, close) => el.querySelectorAll('[data-via]').forEach((b) => b.addEventListener('click', async () => {
+      const via = b.dataset.via;
+      const win = via === 'whatsapp' ? window.open('', '_blank') : null;
+      try {
+        const res = await busy(b, () => api(`orders/${id}/payment-link`, { method: 'POST', body: { via } }));
+        if (via === 'copy') { try { await navigator.clipboard.writeText(res.payUrl); toast('Link copied'); } catch (e) { el.querySelector('#plout').textContent = res.payUrl; } return; }
+        if (via === 'whatsapp') { if (win) win.location = res.whatsappUrl; else location.href = res.whatsappUrl; }
+        else toast('Sent to ' + o.email);
+        close(); reload();
+      } catch (e) { if (win) win.close(); toastErr(e); }
+    })),
+  }));
   const mp = main.querySelector('#mpaid');
   if (mp) mp.addEventListener('click', () => modal({
     title: 'Mark as paid',

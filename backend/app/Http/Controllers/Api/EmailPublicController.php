@@ -8,7 +8,6 @@ use App\Support\ApiError;
 use App\Support\Carts;
 use App\Support\ClientIp;
 use App\Support\OrderMail;
-use App\Support\Popup;
 use App\Support\Reviews;
 use App\Support\Settings;
 use App\Support\Subscribers;
@@ -16,7 +15,7 @@ use App\Support\Throttle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-/** The public side of the email system: unsubscribe, pop-up, cart email, cart restore, reviews, the invoice page. */
+/** The public side of the email system: unsubscribe, cart email, cart restore, reviews, the invoice page. */
 class EmailPublicController extends Controller
 {
     /** GET (the link) and POST (the mail app's one-click button): unsubscribe, no login. */
@@ -42,16 +41,6 @@ class EmailPublicController extends Controller
 
         return response($this->page($ar, $ar ? 'تم إلغاء الاشتراك' : 'You’re unsubscribed',
             ($ar ? 'ما بنرسل لك عروض أو تذكيرات بالسلة بعد الحين. رسائل طلباتك (التأكيد، الشحن) بتوصلك عادي.' : 'We won’t send you offers or cart reminders any more. Emails about your orders (confirmation, shipping) still arrive.'), $again));
-    }
-
-    /** POST {email, consent, lang, country?} – the pop-up. */
-    public function popup(Request $r)
-    {
-        if (! Throttle::attempt('popup:'.ClientIp::of($r), 10, 3600)) {
-            throw new ApiError('too_many', 'Too many tries. Please try again later.', 429);
-        }
-
-        return $this->ok(Popup::submit($this->str($r, 'email', 190), $r->boolean('consent'), $this->str($r, 'lang', 2), strtoupper($this->str($r, 'country', 2))));
     }
 
     /** POST {cart, items, email, lang, country, name, value} – checkout: the email field was filled in. */

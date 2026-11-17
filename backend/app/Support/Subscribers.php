@@ -5,7 +5,7 @@ namespace App\Support;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Marketing consent and unsubscribes. Order emails always go; marketing, abandoned-cart and pop-up emails
+ * Marketing consent and unsubscribes. Order emails always go; marketing and abandoned-cart emails
  * never go to an address that unsubscribed. The unsubscribe link is signed (no login) and works with one click,
  * including the mail app's own "Unsubscribe" button (List-Unsubscribe + List-Unsubscribe-Post).
  */
@@ -16,7 +16,7 @@ class Subscribers
         return DB::table('mail_subscribers')->where('email', strtolower(trim($email)))->whereNotNull('unsubscribed_at')->exists();
     }
 
-    /** Records consent (pop-up, checkout box). Never re-subscribes someone who unsubscribed unless $again. */
+    /** Records consent. Never re-subscribes someone who unsubscribed unless $again. */
     public static function subscribe(string $email, array $data = [], bool $again = false): void
     {
         $email = strtolower(trim($email));

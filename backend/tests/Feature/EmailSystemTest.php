@@ -16,7 +16,7 @@ use Tests\TestCase;
 
 /**
  * Every email trigger (docs/emails.md lists them): orders, statuses, reminders, abandoned carts and their stop rules,
- * unpaid-order recovery, unsubscribe, pop-up codes, campaigns, coupons, the outbox (dedupe, back-off) and mail settings.
+ * unpaid-order recovery, unsubscribe, campaigns, coupons, the outbox (dedupe, back-off) and mail settings.
  */
 class EmailSystemTest extends TestCase
 {
@@ -260,7 +260,7 @@ class EmailSystemTest extends TestCase
         $this->assertSame(0, $this->mails('unpaid_2') + $this->mails('unpaid_2_nocode'));
     }
 
-    // ---------- unsubscribe, pop-up, campaigns ----------
+    // ---------- unsubscribe, campaigns ----------
 
     public function test_unsubscribe_link_and_one_click(): void
     {
@@ -279,23 +279,10 @@ class EmailSystemTest extends TestCase
         $this->assertGreaterThan(0, Outbox::queue('fan@example.com', 'Order', '<p>x</p>', ['kind' => 'order']));
     }
 
-    public function test_popup_gives_one_code_per_email_and_needs_consent(): void
-    {
-        Settings::set('popup', array_merge(Settings::get('popup'), ['enabled' => true]));
-        $this->postJson('/api/popup', ['email' => 'new@example.com', 'consent' => false])->assertStatus(422);
-        $this->postJson('/api/popup', ['email' => 'new@example.com', 'consent' => true, 'lang' => 'ar'])->assertOk()->assertJsonPath('sent', true);
-        $this->postJson('/api/popup', ['email' => 'NEW@example.com', 'consent' => true])->assertOk()->assertJsonPath('already', true);
-        $this->assertSame(1, DB::table('coupons')->where('source', 'popup')->count());
-        $this->assertSame(1, $this->mails('popup_code', 'new@example.com'));
-        $this->assertNotNull(DB::table('mail_subscribers')->where('email', 'new@example.com')->value('consent_at'));
-        Settings::set('popup', array_merge(Settings::get('popup'), ['enabled' => false]));
-        $this->postJson('/api/popup', ['email' => 'late@example.com', 'consent' => true])->assertStatus(409);
-    }
-
     public function test_campaign_goes_out_in_batches_and_skips_unsubscribed(): void
     {
         foreach (['a@example.com', 'b@example.com', 'c@example.com'] as $e) {
-            Subscribers::subscribe($e, ['source' => 'popup', 'consent' => true]);
+            Subscribers::subscribe($e, ['source' => 'import', 'consent' => true]);
         }
         Subscribers::unsubscribe('c@example.com');
         $this->actingAsAdmin($this->makeAdmin('manager'));
@@ -447,5 +434,66 @@ class EmailSystemTest extends TestCase
         $path = parse_url($url, PHP_URL_PATH).'?'.parse_url($url, PHP_URL_QUERY);
         $this->get($path)->assertOk()->assertSee($o->number);
         $this->get(parse_url($url, PHP_URL_PATH).'?s=wrong')->assertNotFound();
+    }
+    public function test_cart_emails_are_plain_reminders_by_default(): void
+    {
+        $c = Settings::get('carts');
+        $c['enabled'] = true;
+        $c['since'] = now()->subMinute()->toDateTimeString();
+        Settings::set('carts', $c);   // coupon settings left at their defaults
+        $this->assertFalse(Settings::get('carts')['coupon']['on'], 'no codes unless the owner switches them on');
+        $this->leaveCart(str_repeat('7', 32));
+        $this->travel(2)->hours();
+        Carts::run();
+        $this->travel(25)->hours();
+        Carts::run();
+        $this->assertSame(1, $this->mails('cart_2_nocode'));
+        $this->assertSame(0, $this->mails('cart_2'));
+        $this->assertSame(0, DB::table('coupons')->count());
+    }
+
+    public function test_business_details_are_edited_by_owners_and_used_everywhere(): void
+    {
+        $this->actingAsAdmin($this->makeAdmin('manager'));
+        $this->getJson('/api/admin/business')->assertForbidden();
+        $this->signOut()->actingAsAdmin($this->makeAdmin('owner'));
+        $this->getJson('/api/admin/business')->assertOk()->assertJsonStructure(['business' => ['phone', 'email', 'cr', 'vat', 'legalName'], 'brand' => ['name', 'logo']]);
+        $this->putJson('/api/admin/business', ['name' => 'Tartebz', 'name_ar' => 'ترتيبز', 'email' => 'not-an-email', 'phone' => 'abc'])
+            ->assertStatus(422)->assertJsonPath('error.fields.email', 'Enter the shop’s email address.');
+        $this->putJson('/api/admin/business', ['name' => 'Tartebz', 'name_ar' => 'ترتيبز', 'legalName' => 'Tartebz Trading W.L.L.', 'cr' => '5-58506',
+            'vat' => '220012345600002', 'addressLine1' => 'Road 1, West Riffa', 'addressLine1_ar' => 'الرفاع الغربي', 'area' => 'Riffa',
+            'phone' => '+973 3999 0000', 'whatsapp' => '+973 3999 1111', 'email' => 'Hello@Tartebz.com', 'instagram' => 'https://www.instagram.com/tartebz',
+            'tiktok' => 'ftp://x', 'timezone' => 'Asia/Bahrain'])->assertStatus(422)->assertJsonPath('error.fields.tiktok', 'Paste the full link, starting with https://');
+        $this->putJson('/api/admin/business', ['name' => 'Tartebz', 'name_ar' => 'ترتيبز', 'legalName' => 'Tartebz Trading W.L.L.', 'cr' => '5-58506',
+            'vat' => '220012345600002', 'addressLine1' => 'Road 1, West Riffa', 'addressLine1_ar' => 'الرفاع الغربي', 'area' => 'Riffa',
+            'phone' => '+973 3999 0000', 'whatsapp' => '+973 3999 1111', 'email' => 'Hello@Tartebz.com', 'instagram' => 'https://www.instagram.com/tartebz',
+            'tiktok' => '', 'timezone' => 'Asia/Bahrain'])->assertOk()->assertJsonPath('business.email', 'hello@tartebz.com');
+        // the website
+        $site = $this->getJson('/api/storefront')->json('site');
+        $this->assertSame('+973 3999 0000', $site['phone']);
+        $this->assertSame('hello@tartebz.com', $site['email']);
+        $this->assertSame('5-58506', $site['cr']);
+        $this->assertSame('الرفاع الغربي', $site['address']['ar']);
+        // emails and invoices
+        $html = \App\Support\EmailLayout::wrap('en', 'x', '<p>x</p>');
+        $this->assertStringContainsString('+973 3999 0000', $html);
+        $this->assertStringContainsString('220012345600002', $html);
+        $o = $this->cardOrder();
+        $url = \App\Support\OrderMail::invoiceUrl($o, 'en');
+        $this->get(parse_url($url, PHP_URL_PATH).'?'.parse_url($url, PHP_URL_QUERY))->assertOk()
+            ->assertSee('Tartebz Trading W.L.L.')->assertSee('220012345600002')->assertSee('+973 3999 0000');
+    }
+
+    public function test_payment_link_can_be_copied_sent_on_whatsapp_or_emailed(): void
+    {
+        $o = $this->cardOrder(['email' => 'pay@example.com']);
+        $this->actingAsAdmin($this->makeAdmin('owner'));
+        $r = $this->postJson("/api/admin/orders/{$o->id}/payment-link", ['via' => 'copy'])->assertOk();
+        $this->assertStringContainsString($o->token, $r->json('payUrl'));
+        $this->assertSame(0, $this->mails('payment_link'));
+        $this->assertStringStartsWith('https://wa.me/', $this->postJson("/api/admin/orders/{$o->id}/payment-link", ['via' => 'whatsapp'])->json('whatsappUrl'));
+        $this->postJson("/api/admin/orders/{$o->id}/payment-link", ['via' => 'email'])->assertOk();
+        $this->assertSame(1, $this->mails('payment_link', 'pay@example.com'));
+        $this->assertSame(3, DB::table('order_events')->where('order_id', $o->id)->where('type', 'payment_link')->count());
     }
 }

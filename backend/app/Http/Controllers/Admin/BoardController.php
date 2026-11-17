@@ -172,7 +172,7 @@ class BoardController extends Controller
             DB::table('orders')->where('id', $id)->update(['payment_method' => 'tap', 'status' => 'pending_payment', 'payment_status' => 'unpaid', 'updated_at' => now()]);
             $o = DB::table('orders')->find($id);
         }
-        $via = $r->input('via') === 'email' ? 'email' : 'whatsapp';
+        $via = in_array($r->input('via'), ['email', 'copy'], true) ? $r->input('via') : 'whatsapp';
         $links = $this->links($o);
         if ($via === 'email') {
             if ($o->email === '') {
@@ -180,7 +180,7 @@ class BoardController extends Controller
             }
             $this->emailLink($o, $links['payUrl']);
         }
-        Orders::event($id, 'payment_link', 'Payment link sent by '.($via === 'email' ? 'email' : 'WhatsApp').'.', [], $this->admin($r));
+        Orders::event($id, 'payment_link', $via === 'copy' ? 'Payment link copied.' : 'Payment link sent by '.($via === 'email' ? 'email' : 'WhatsApp').'.', [], $this->admin($r));
 
         return $this->ok($links + ['sent' => $via]);
     }

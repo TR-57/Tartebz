@@ -201,20 +201,9 @@ return [
             ['on' => true, 'wait' => 24, 'unit' => 'hours'],  // email 2: after email 1 (with a coupon)
             ['on' => true, 'wait' => 3, 'unit' => 'days'],    // email 3: after email 2 (code ends soon)
         ],
-        'coupon' => ['on' => true, 'type' => 'percent', 'value' => 10, 'min' => null, 'days' => 7, 'cooldownDays' => 30],
+        'coupon' => ['on' => false, 'type' => 'percent', 'value' => 10, 'min' => null, 'days' => 7, 'cooldownDays' => 30],
         'unpaidOrders' => true,      // unpaid card orders the system gave up on get the same series
         'batch' => 30,
-    ],
-
-    // Pop-up: an email address in exchange for a code.
-    'popup' => [
-        'enabled' => false,
-        'delaySeconds' => 12,
-        'title' => 'Get 10% off your first order',
-        'title_ar' => 'خصم ١٠٪ على أول طلب',
-        'text' => 'Leave your email and we’ll send you a code.',
-        'text_ar' => 'اترك بريدك ونرسل لك كود الخصم.',
-        'coupon' => ['type' => 'percent', 'value' => 10, 'min' => null, 'days' => 14],
     ],
 
     'reviews' => [

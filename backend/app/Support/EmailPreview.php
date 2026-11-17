@@ -14,7 +14,7 @@ class EmailPreview
     public static function context(string $key, string $lang): array
     {
         $meta = EmailTemplates::meta($key);
-        if ($meta['group'] === 'carts' || in_array($key, ['popup_code'], true)) {
+        if ($meta['group'] === 'carts') {
             return self::cartContext($key, $lang);
         }
         if ($key === 'campaign') {
@@ -120,10 +120,6 @@ class EmailPreview
         $c = Carts::context($cart, $lang, str_contains($key, 'nocode') || in_array($key, ['cart_1', 'unpaid_1'], true) ? null : $coupon);
         if (str_starts_with($key, 'unpaid_')) {
             $c['vars']['order_number'] = '20458';
-        }
-        if ($key === 'popup_code') {
-            $c['vars']['name'] = '';
-            $c['url'] = config('store.store_url').'/shop';
         }
 
         return $c;

@@ -1280,19 +1280,6 @@ html[lang="en"]:not(.tz-text) [data-i18n], html[lang="en"]:not(.tz-text) [data-i
 #co-disc-row dd { color: var(--green); font-weight: 800; }
 #co-disc-row small, .co-result-lines + .totals small { font-weight: 700; letter-spacing: .03em; }
 
-/* ---------- email pop-up ---------- */
-.pop { text-align: center; }
-.pop-x { position: absolute; top: 12px; inset-inline-end: 12px; width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--cream-2); color: var(--ink); cursor: pointer; }
-.pop-x .ico { width: 16px; height: 16px; }
-.pop-ico { background: var(--red); }
-.pop h2 { margin: 0 0 6px; font-size: 1.45rem; }
-.pop-form { display: grid; gap: 10px; margin-top: 14px; text-align: start; }
-.pop-form input[type=email] { width: 100%; min-height: 50px; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: var(--radius-sm); background: #fff; }
-.pop-form input[type=email]:focus { outline: none; border-color: var(--ink); }
-.pop-consent { display: flex; gap: 8px; align-items: flex-start; font-size: .82rem; color: var(--gray); line-height: 1.5; }
-.pop-consent input { margin-top: 3px; width: 18px; height: 18px; flex: none; accent-color: var(--red); }
-.pop-form .field-err:empty { display: none; }
-
 /* ---------- product reviews ---------- */
 .reviews-sec { padding-top: 8px; }
 .stars { display: inline-flex; gap: 1px; color: #D9D9D9; font-size: 1rem; line-height: 1; }

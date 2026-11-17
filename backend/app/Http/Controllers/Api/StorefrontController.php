@@ -76,7 +76,6 @@ class StorefrontController extends Controller
                 ], \App\Support\Shipping::destinations())),
             ],
             'maintenance' => \App\Support\Maintenance::on(),
-            'popup' => \App\Support\Popup::forStorefront(),
             'payments' => \App\Http\Controllers\Api\CheckoutController::methods() + ['testMode' => \App\Support\Tap::enabled() && \App\Support\Tap::mode() === 'test'],
             'baseCurrency' => Currency::base(),
             'currencies' => Currency::forStorefront(),

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Discount codes. Checked on the server at every quote and when the order is placed, with a clear reason when one
  * cannot be used. A use counts only when the order is paid, and is given back if that order is cancelled.
- * Personal codes (abandoned cart, pop-up) are locked to one email address, one use, and run out after N days.
+ * Personal codes (abandoned cart) are locked to one email address, one use, and run out after N days.
  */
 class Coupons
 {
@@ -145,7 +145,7 @@ class Coupons
         do {
             $code = 'TZ'.strtoupper(substr(str_replace(['0', 'O', '1', 'I'], '', bin2hex(random_bytes(6))), 0, 6));
         } while (DB::table('coupons')->where('code', $code)->exists());
-        $titles = ['cart' => ['Come-back code', 'كود العودة'], 'popup' => ['Welcome code', 'كود الترحيب']][$source] ?? ['Personal code', 'كود خاص'];
+        $titles = ['cart' => ['Come-back code', 'كود العودة']][$source] ?? ['Personal code', 'كود خاص'];
         $id = DB::table('coupons')->insertGetId([
             'code' => $code, 'title' => $titles[0], 'title_ar' => $titles[1],
             'type' => in_array($type, ['percent', 'fixed', 'free_shipping'], true) ? $type : 'percent', 'value' => max(0, $value),
@@ -160,7 +160,7 @@ class Coupons
     /** Did this address get a personal code within $days (cool-down)? */
     public static function recentlyGiven(string $email, int $days, ?string $source = null): bool
     {
-        return DB::table('coupons')->whereIn('source', $source ? [$source] : ['cart', 'popup'])->where('created_at', '>', now()->subDays(max(0, $days)))
+        return DB::table('coupons')->whereIn('source', $source ? [$source] : ['cart'])->where('created_at', '>', now()->subDays(max(0, $days)))
             ->whereJsonContains('emails', strtolower(trim($email)))->exists();
     }
 

@@ -58,8 +58,6 @@ class EmailTemplates
             // ---- Marketing ----
             'campaign' => ['marketing', 'Campaign', 'Written and sent in Admin › Campaigns.', 'Chosen audience (never unsubscribed addresses)',
                 ['name'], false, 'marketing'],
-            'popup_code' => ['marketing', 'Pop-up code', 'Someone leaves their email in the pop-up (one code per address).', 'Customer',
-                ['name', 'code', 'code_box', 'offer', 'ends', 'valid_for'], false, 'recovery'],
 
             // ---- Store alerts (to the team) ----
             'staff_new_order' => ['store', 'New order', 'An order is paid, or a WhatsApp order arrives. Reply-To is the customer.', 'Store notification addresses + owners and managers who chose order emails',
@@ -198,10 +196,6 @@ class EmailTemplates
             'campaign' => [
                 'en' => ['subject' => 'News from Tartebz', 'body' => "Hi {name},\n\n…"],
                 'ar' => ['subject' => 'جديد ترتيبز', 'body' => "هلا {name}،\n\n…"],
-            ],
-            'popup_code' => [
-                'en' => ['subject' => 'Your code: {offer} 🎁', 'body' => "Hi{name},\n\nThank you for joining us! Here is your code for **{offer}**, valid until **{ends}**:\n\n{code_box}\n\nAdd it at checkout.\n\n{button: Shop now}"],
-                'ar' => ['subject' => 'كودك: {offer} 🎁', 'body' => "هلا{name}،\n\nشكرًا لانضمامك! هذا كودك لـ **{offer}**، صالح لين **{ends}**:\n\n{code_box}\n\nأضفه عند الدفع.\n\n{button: تسوّق الحين}"],
             ],
 
             'staff_new_order' => [

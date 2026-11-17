@@ -19,7 +19,7 @@ export default {
           ${toggle('whatsappOrders', 'Show “Order on WhatsApp” in the cart', s.whatsappOrders, 'Sends the cart, the delivery country and the total to your WhatsApp as a ready message.')}
           <div class="field" data-field="whatsappNumber"><label for="wn">WhatsApp number for orders</label>
             <input id="wn" name="whatsappNumber" value="${esc(s.whatsappNumber)}" dir="ltr" placeholder="${esc('+' + r.businessWhatsapp.replace(/\D/g, ''))}" inputmode="tel">
-            <span class="hint">With the country code. Leave empty to use the shop’s WhatsApp from Settings.</span></div>
+            <span class="hint">With the country code. Leave empty to use the shop’s WhatsApp from Settings › Business details.</span></div>
         </div>
         <div class="card"><h2>${icon('bell')} Back in stock</h2>
           ${toggle('backInStock', 'Let customers ask to be told when a product is back', s.backInStock, 'On sold-out products. Emails go out by themselves when you put stock back; WhatsApp numbers are listed on the product.')}

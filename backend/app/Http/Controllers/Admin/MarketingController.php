@@ -15,7 +15,7 @@ use App\Support\Settings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-/** Managers: Discounts & coupons, Abandoned carts, Campaigns, Reviews, the pop-up. */
+/** Managers: Discounts & coupons, Abandoned carts, Campaigns, Reviews. */
 class MarketingController extends Controller
 {
     // ---------- coupons ----------
@@ -26,7 +26,7 @@ class MarketingController extends Controller
         if (($s = strtoupper($this->str($r, 'q', 40))) !== '') {
             $q->where('code', 'like', '%'.$s.'%');
         }
-        if (in_array($r->query('source'), ['manual', 'cart', 'popup', 'campaign'], true)) {
+        if (in_array($r->query('source'), ['manual', 'cart', 'campaign'], true)) {
             $q->where('source', $r->query('source'));
         }
 
@@ -330,34 +330,6 @@ class MarketingController extends Controller
         Audit::log($r, 'review_deleted', 'review', $id);
 
         return $this->ok();
-    }
-
-    // ---------- pop-up ----------
-
-    public function popup()
-    {
-        return $this->ok(['popup' => Settings::get('popup'), 'given' => DB::table('coupons')->where('source', 'popup')->count(),
-            'used' => DB::table('coupons')->where('source', 'popup')->where('used_count', '>', 0)->count(),
-            'subscribers' => DB::table('mail_subscribers')->whereNull('unsubscribed_at')->whereNotNull('consent_at')->count()]);
-    }
-
-    public function savePopup(Request $r)
-    {
-        $type = in_array($r->input('coupon.type'), ['percent', 'fixed', 'free_shipping'], true) ? $r->input('coupon.type') : 'percent';
-        $p = [
-            'enabled' => $this->bool($r, 'enabled'), 'delaySeconds' => max(0, min(120, (int) $r->input('delaySeconds', 12))),
-            'title' => $this->str($r, 'title', 120), 'title_ar' => $this->str($r, 'title_ar', 120), 'text' => $this->str($r, 'text', 300), 'text_ar' => $this->str($r, 'text_ar', 300),
-            'coupon' => ['type' => $type, 'value' => max(0, (float) $r->input('coupon.value', 10)),
-                'min' => $r->input('coupon.min') === null || $r->input('coupon.min') === '' ? null : max(0, (float) $r->input('coupon.min')),
-                'days' => max(1, min(365, (int) $r->input('coupon.days', 14)))],
-        ];
-        if ($p['enabled'] && ($p['title'] === '' || $p['title_ar'] === '')) {
-            throw ApiError::validation(['title' => 'Write the title in English and Arabic.']);
-        }
-        Settings::set('popup', $p);
-        Audit::log($r, 'popup_saved', 'settings', 'popup', ['enabled' => $p['enabled']]);
-
-        return $this->popup();
     }
 
     // ---------- carts preview (any of the 10 cart emails, any language) ----------

@@ -23,7 +23,7 @@ export default {
     };
     const cc = s.coupon;
     main.innerHTML = `
-      <div class="phead"><div><h1>Abandoned carts</h1><p class="sub">Up to three emails to people who left items in their cart (or did not finish paying), with an optional personal code.</p></div></div>
+      <div class="phead"><div><h1>Abandoned carts</h1><p class="sub">Up to three reminder emails to people who left items in their cart (or did not finish paying).</p></div></div>
       <div class="kpis">
         <div class="kpi"><div class="k-label">Emails sent</div><div class="k-val" data-noi18n>${st.emailsSent}</div></div>
         <div class="kpi"><div class="k-label">Carts recovered</div><div class="k-val" data-noi18n>${st.recovered}</div></div>
@@ -35,9 +35,9 @@ export default {
         ${toggle('unpaidOrders', 'Also unpaid card orders', s.unpaidOrders, 'Orders whose payment was not finished in time get the same three emails, worded for an unfinished order. Orders you cancel are never emailed.')}</div>
       <div class="grid-3">
         ${step(0, 'Email 1 – reminder', 'The wait counts from when the cart was left.')}
-        ${step(1, 'Email 2 – with a code', 'The wait counts from email 1.')}
-        ${step(2, 'Email 3 – your code ends soon', 'The wait counts from email 2.')}</div>
-      <div class="card"><h2>Personal code (email 2)</h2>
+        ${step(1, 'Email 2 – second reminder', 'The wait counts from email 1. Carries a personal code only if you switch codes on below.')}
+        ${step(2, 'Email 3 – last reminder', 'The wait counts from email 2. With a code: “your code ends soon”.')}</div>
+      <div class="card"><h2>Personal code (optional)</h2><p class="muted small">Off by default: the emails are reminders only. Switch it on to add a discount code to email 2.</p>
         ${toggle('couponOn', 'Give a personal code in email 2', cc.on, 'Locked to the customer’s email, one use, ends after the days below. Without it, email 2 is a reminder without a code.')}
         <div class="form-grid">
           ${field('couponType', 'Gives', cc.type, { options: [['percent', 'A percentage off'], ['fixed', 'An amount off (BHD)'], ['free_shipping', 'Free delivery']] })}

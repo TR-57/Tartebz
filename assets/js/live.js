@@ -70,7 +70,6 @@
       ['fallbackKg', 'cutoffHour', 'weekend'].forEach(function (k) { if (k in d.shipping) TZ.shipping[k] = d.shipping[k]; });
     }
     if (d.payments) TZ.payments = d.payments;
-    TZ.popup = d.popup || null;
     TZ.maintenance = !!d.maintenance; // only signed-in team members get past the "back soon" page
     if (d.shop) {
       TZ.shop = d.shop;
