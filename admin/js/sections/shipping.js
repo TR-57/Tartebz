@@ -20,19 +20,20 @@ function describe(m) {
     : `${bhd(m.base)} covers the first ${n(m.firstKg) || 0} kg, then ${bhd(m.perStep)} for every extra ${n(m.stepKg) || 0} kg (or part of it)`;
   const extra = [];
   if (m.pricing !== 'quoted') {
-    if (n(m.min) != null) extra.push(ar ? `لا يقل عن ${bhd(m.min)}` : `never below ${bhd(m.min)}`);
-    if (n(m.max) != null) extra.push(ar ? `لا يزيد عن ${bhd(m.max)}` : `never above ${bhd(m.max)}`);
-    if (n(m.freeOver) != null) extra.push(ar ? `مجاني للطلبات من ${bhd(m.freeOver)}` : `free once the order reaches ${bhd(m.freeOver)}`);
+    if (n(m.min) > 0) extra.push(ar ? `لا يقل عن ${bhd(m.min)}` : `never below ${bhd(m.min)}`);
+    if (n(m.max) > 0) extra.push(ar ? `لا يزيد عن ${bhd(m.max)}` : `never above ${bhd(m.max)}`);
+    if (n(m.freeOver) > 0) extra.push(ar ? `مجاني للطلبات من ${bhd(m.freeOver)}` : `free once the order reaches ${bhd(m.freeOver)}`);
   }
-  if (n(m.maxKg) != null) extra.push(ar ? `غير متاح فوق ${m.maxKg} كجم` : `not offered above ${m.maxKg} kg`);
+  if (n(m.maxKg) > 0) extra.push(ar ? `غير متاح فوق ${m.maxKg} كجم` : `not offered above ${m.maxKg} kg`);
   return s + (extra.length ? (ar ? '؛ ' : '; ') + extra.join(ar ? '؛ ' : '; ') : '') + '.';
 }
 
 /* The price of one method for a parcel – a twin of App\Support\Shipping::price(). null = not offered (too heavy). */
 function priceOf(m, kg, subtotal) {
   const num = (v) => (v === '' || v == null || isNaN(+v) ? null : +v);
+  const lim = (v) => { const x = num(v); return x != null && x > 0 ? x : null; };   // empty or 0 = no limit
   kg = Math.max(0, kg || 0);
-  if (num(m.maxKg) != null && kg > num(m.maxKg)) return null;
+  if (lim(m.maxKg) != null && kg > lim(m.maxKg)) return null;
   if (m.pricing === 'quoted') return 'quoted';
   const step = num(m.stepKg) || 0; const per = num(m.perStep) || 0;
   const steps = (over) => (step > 0 && over > 0 ? Math.ceil(Math.round((over / step) * 1e6) / 1e6) : 0);
@@ -43,9 +44,9 @@ function priceOf(m, kg, subtotal) {
     const hit = bands.find((b) => kg <= +b[0] + 1e-9);
     if (hit) p = +hit[1]; else { const last = bands[bands.length - 1] || [0, 0]; p = +last[1] + steps(kg - last[0]) * per; }
   } else p = num(m.base) || 0;
-  if (num(m.min) != null && p < num(m.min)) p = num(m.min);
-  if (num(m.max) != null && p > num(m.max)) p = num(m.max);
-  if (num(m.freeOver) != null && subtotal >= num(m.freeOver)) return 0;
+  if (lim(m.min) != null && p < lim(m.min)) p = lim(m.min);
+  if (lim(m.max) != null && p > lim(m.max)) p = lim(m.max);
+  if (lim(m.freeOver) != null && subtotal >= lim(m.freeOver)) return 0;
   return Math.round(Math.max(0, p) * 1000) / 1000;
 }
 

@@ -68,8 +68,8 @@ class StorefrontController extends Controller
                     'methods' => array_values(array_map(fn ($m) => [
                         'id' => (string) $m['id'], 'name' => \App\Support\Shipping::names($m), 'pricing' => $m['pricing'] ?? 'flat',
                         'base' => $m['base'] ?? 0, 'firstKg' => $m['firstKg'] ?? 0, 'stepKg' => $m['stepKg'] ?? 0, 'perStep' => $m['perStep'] ?? 0,
-                        'table' => array_values((array) ($m['table'] ?? [])), 'min' => $m['min'] ?? null, 'max' => $m['max'] ?? null,
-                        'freeOver' => $m['freeOver'] ?? null, 'maxKg' => $m['maxKg'] ?? null, 'etaMin' => $m['etaMin'] ?? null, 'etaMax' => $m['etaMax'] ?? null,
+                        'table' => array_values((array) ($m['table'] ?? [])), 'min' => \App\Support\Shipping::limit($m['min'] ?? null), 'max' => \App\Support\Shipping::limit($m['max'] ?? null),
+                        'freeOver' => \App\Support\Shipping::limit($m['freeOver'] ?? null), 'maxKg' => \App\Support\Shipping::limit($m['maxKg'] ?? null), 'etaMin' => $m['etaMin'] ?? null, 'etaMax' => $m['etaMax'] ?? null,
                         'etaUnit' => \App\Support\Shipping::unit($m),
                     ], array_filter((array) ($d['methods'] ?? []), fn ($m) => ($m['active'] ?? true) !== false))),
                 ], \App\Support\Shipping::destinations())),

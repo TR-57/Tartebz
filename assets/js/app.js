@@ -183,8 +183,9 @@
   /* One delivery method's price – the twin of App\Support\Shipping::price() on the server (keep them in step). */
   TZ.methodPrice = function (m, kg, subtotal) {
     var num = function (v) { return v === '' || v == null || isNaN(+v) ? null : +v; };
+    var lim = function (v) { var n = num(v); return n != null && n > 0 ? n : null; };   // empty or 0 = no limit
     kg = Math.max(0, kg || 0);
-    if (num(m.maxKg) != null && kg > num(m.maxKg)) return null;
+    if (lim(m.maxKg) != null && kg > lim(m.maxKg)) return null;
     if (m.pricing === 'quoted') return 0;   // the team adds the delivery cost after the order
     var step = num(m.stepKg) || 0, per = num(m.perStep) || 0, p;
     var steps = function (over) { return step > 0 && over > 0 ? Math.ceil(Math.round(over / step * 1e6) / 1e6) : 0; };
@@ -194,9 +195,9 @@
       for (var i = 0; i < bands.length; i++) { if (kg <= bands[i][0] + 1e-9) { p = +bands[i][1]; break; } }
       if (p == null) { var last = bands[bands.length - 1] || [0, 0]; p = +last[1] + steps(kg - last[0]) * per; }
     } else p = num(m.base) || 0;
-    if (num(m.min) != null && p < num(m.min)) p = num(m.min);
-    if (num(m.max) != null && p > num(m.max)) p = num(m.max);
-    if (num(m.freeOver) != null && subtotal >= num(m.freeOver)) return 0;
+    if (lim(m.min) != null && p < lim(m.min)) p = lim(m.min);
+    if (lim(m.max) != null && p > lim(m.max)) p = lim(m.max);
+    if (lim(m.freeOver) != null && subtotal >= lim(m.freeOver)) return 0;
     return Math.round(Math.max(0, p) * 1000) / 1000;
   };
   /* The methods on offer for a parcel to a country: [{id, name, price, etaMin, etaMax}]. */
@@ -207,7 +208,7 @@
     return (d.methods || []).map(function (m) {
       var price = TZ.methodPrice(m, kg, subtotal || 0);
       return price == null ? null : { id: m.id, name: m.name, price: price, quoted: m.pricing === 'quoted', free: price === 0 && m.pricing !== 'quoted',
-        freeOver: m.freeOver != null && m.freeOver !== '' ? +m.freeOver : null, etaMin: m.etaMin, etaMax: m.etaMax, etaUnit: m.etaUnit || 'working' };
+        freeOver: +m.freeOver > 0 ? +m.freeOver : null, etaMin: m.etaMin, etaMax: m.etaMax, etaUnit: m.etaUnit || 'working' };
     }).filter(Boolean);
   };
   /* The customer's chosen method for a country (kept in this browser), if it is on offer; else the first. */

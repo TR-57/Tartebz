@@ -13,8 +13,8 @@ namespace App\Support;
  *   table    weight bands [[up to kg, price], …]; above the last band every further `stepKg` adds `perStep`
  *   quoted   no price at checkout – the team adds the delivery cost after the order
  *
- * Then, in order: clamp to `min` / `max` (empty = no limit); free once the subtotal reaches `freeOver`
- * (empty = never); `maxKg` hides the method for heavier parcels. All money is BHD.
+ * Then, in order: clamp to `min` / `max` (empty or 0 = no limit); free once the subtotal reaches `freeOver`
+ * (empty or 0 = never); `maxKg` hides the method for heavier parcels. All money is BHD.
  *
  * Delivery time: `etaMin`–`etaMax` in `etaUnit` – "working" days skip the weekend (Friday and Saturday), "calendar" days
  * do not; 0 = same day. An order after the cut-off hour (Bahrain time) counts from the next day. A product with no weight
@@ -140,11 +140,19 @@ class Shipping
         return $v === '' || $v === null || ! is_numeric($v) ? null : (float) $v;
     }
 
+    /** A limit (lowest/highest price, free from, heaviest parcel): empty or 0 means "no limit", never "limit it to 0". */
+    public static function limit(mixed $v): ?float
+    {
+        $n = self::num($v);
+
+        return $n !== null && $n > 0 ? $n : null;
+    }
+
     /** One method's price for a parcel: ['available' => bool, 'price' => float, 'free' => bool, 'quoted' => bool]. */
     public static function price(array $m, float $kg, float $subtotal): array
     {
         $kg = max(0.0, $kg);
-        $maxKg = self::num($m['maxKg'] ?? null);
+        $maxKg = self::limit($m['maxKg'] ?? null);
         if ($maxKg !== null && $kg > $maxKg) {
             return ['available' => false, 'price' => null, 'free' => false, 'quoted' => false];
         }
@@ -175,15 +183,15 @@ class Shipping
         } else {
             $p = self::num($m['base'] ?? null) ?? 0.0;
         }
-        $min = self::num($m['min'] ?? null);
-        $max = self::num($m['max'] ?? null);
+        $min = self::limit($m['min'] ?? null);
+        $max = self::limit($m['max'] ?? null);
         if ($min !== null && $p < $min) {
             $p = $min;
         }
         if ($max !== null && $p > $max) {
             $p = $max;
         }
-        $freeOver = self::num($m['freeOver'] ?? null);
+        $freeOver = self::limit($m['freeOver'] ?? null);
         if ($freeOver !== null && $subtotal >= $freeOver) {
             return ['available' => true, 'price' => 0.0, 'free' => true, 'quoted' => false];
         }

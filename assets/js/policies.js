@@ -130,9 +130,9 @@
     };
     var extra = function (m) {
       var x = [];
-      if (m.max != null && m.max !== '') x.push((ar ? 'بحد أقصى ' : 'max ') + bhd(m.max));
-      if (m.freeOver != null && m.freeOver !== '') x.push(TZ.t('ship_free_over', { amount: bhd(m.freeOver) }));
-      if (m.maxKg != null && m.maxKg !== '') x.push((ar ? 'حتى ' : 'up to ') + m.maxKg + (ar ? ' كجم' : ' kg'));
+      if (+m.max > 0) x.push((ar ? 'بحد أقصى ' : 'max ') + bhd(m.max));
+      if (+m.freeOver > 0) x.push(TZ.t('ship_free_over', { amount: bhd(m.freeOver) }));
+      if (+m.maxKg > 0) x.push((ar ? 'حتى ' : 'up to ') + m.maxKg + (ar ? ' كجم' : ' kg'));
       return x.join(' · ');
     };
     var rows = (TZ.shipping.destinations || []).map(function (d) {

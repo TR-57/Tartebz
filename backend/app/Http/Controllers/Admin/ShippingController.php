@@ -123,8 +123,9 @@ class ShippingController extends Controller
                 if ($eMin !== null && $eMax !== null && $eMax < $eMin) {
                     $f["$mk.etaMax"] = 'The longest time must not be shorter than the shortest.';
                 }
-                $min = $num($m['min'] ?? null, "$mk.min", true);
-                $max = $num($m['max'] ?? null, "$mk.max", true);
+                // limits: 0 is saved as "no limit" (a highest price of 0 would make every delivery free)
+                $min = Shipping::limit($num($m['min'] ?? null, "$mk.min", true));
+                $max = Shipping::limit($num($m['max'] ?? null, "$mk.max", true));
                 if ($min !== null && $max !== null && $max < $min) {
                     $f["$mk.max"] = 'The highest price must not be below the lowest.';
                 }
@@ -135,8 +136,8 @@ class ShippingController extends Controller
                     'stepKg' => $num($m['stepKg'] ?? 0.5, "$mk.stepKg", true, 1000) ?? 0.0,
                     'perStep' => $num($m['perStep'] ?? 0, "$mk.perStep", true) ?? 0.0,
                     'table' => $table, 'min' => $min, 'max' => $max,
-                    'freeOver' => $num($m['freeOver'] ?? null, "$mk.freeOver", true),
-                    'maxKg' => $num($m['maxKg'] ?? null, "$mk.maxKg", true, 1000),
+                    'freeOver' => Shipping::limit($num($m['freeOver'] ?? null, "$mk.freeOver", true)),
+                    'maxKg' => Shipping::limit($num($m['maxKg'] ?? null, "$mk.maxKg", true, 1000)),
                     'etaMin' => $eMin, 'etaMax' => $eMax, 'etaUnit' => ($m['etaUnit'] ?? 'working') === 'calendar' ? 'calendar' : 'working',
                     'active' => filter_var($m['active'] ?? true, FILTER_VALIDATE_BOOL),
                 ]);

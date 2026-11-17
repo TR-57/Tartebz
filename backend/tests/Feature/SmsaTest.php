@@ -237,4 +237,24 @@ class SmsaTest extends TestCase
         $this->assertEquals(0.0, $ae['shipping']);
         $this->assertSame(1000, $ae['weightGrams']);   // the default weight is now 1 kg
     }
+
+    /** "Highest price 0" in the admin means no highest price – it must not turn a 2.000 delivery into a free one. */
+    public function test_a_limit_of_zero_means_no_limit(): void
+    {
+        $this->actingAsAdmin($this->makeAdmin('owner'));
+        $d = $this->getJson('/api/admin/shipping')->assertOk()->json('destinations');
+        $d[0]['methods'][0] = array_merge($d[0]['methods'][0], ['pricing' => 'flat', 'base' => 2, 'min' => 0, 'max' => 0, 'freeOver' => 25, 'maxKg' => 0]);
+        $saved = $this->putJson('/api/admin/shipping', ['destinations' => $d])->assertOk()->json('destinations.0.methods.0');
+        $this->assertSame([null, null, null, 25], [$saved['min'], $saved['max'], $saved['maxKg'], $saved['freeOver'] + 0]);
+        // and settings saved earlier with a 0 still price correctly
+        $p = \App\Support\Settings::get('shipping');
+        $p['destinations'][0]['methods'][0]['max'] = 0; $p['destinations'][0]['methods'][0]['maxKg'] = 0;
+        \App\Support\Settings::set('shipping', $p);
+        $this->signOut();
+        $quote = $this->postJson('/api/checkout/quote', ['items' => [['id' => $this->productId, 'qty' => 1]], 'country' => 'BH', 'shipping_method' => $d[0]['methods'][0]['id']])->assertOk()->json('quote');
+        $this->assertEquals(2.0, $quote['shipping']);
+        $feed = $this->getJson('/api/storefront')->assertOk()->json();
+        $m = collect(data_get($feed, 'shipping.destinations.0.methods'))->firstWhere('id', $d[0]['methods'][0]['id']);
+        $this->assertNull($m['max']); $this->assertNull($m['maxKg']);
+    }
 }
