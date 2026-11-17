@@ -50,6 +50,8 @@ The storefront pages are still front end only: checkout validates the form and h
 
 `docs/site-reference.md` documents everything recovered from the old site's database.
 
+`docs/emails.md` lists every email the shop sends (trigger, recipient, admin setting), the Hostinger SMTP setup and the cron jobs.
+
 ## Admin panel and backend (custom build, in phases)
 
 ```

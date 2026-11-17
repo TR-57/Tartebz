@@ -1,5 +1,11 @@
 @php
-    $L = fn ($en, $arText) => $ar ? $arText : $en;
+    $both = ($lang ?? '') === 'both';
+    $L = fn ($en, $arText) => $both ? $en.' / '.$arText : ($ar ? $arText : $en);
+    $isPaid = (bool) $o->paid_at;
+    $dec = in_array($o->charge_currency, ['BHD', 'KWD', 'OMR', 'JOD'], true) ? 3 : 2;
+    $cm = fn ($v) => $o->charge_currency.' '.number_format((float) $v, $dec);
+    $refundRows = \Illuminate\Support\Facades\DB::table('order_refunds')->where('order_id', $o->id)->where('status', 'done')->orderBy('id')->get();
+    $local = fn ($d, $f = 'd/m/Y H:i') => \Illuminate\Support\Carbon::parse($d)->setTimezone(\App\Support\Fmt::tz())->format($f);
     $status = [
         'paid' => $L('Paid', 'مدفوع'), 'unpaid' => $L('Not paid yet', 'غير مدفوع'), 'failed' => $L('Not paid yet', 'غير مدفوع'),
         'refunded' => $L('Refunded', 'مسترجع'),
@@ -19,9 +25,9 @@
       </div>
     </div>
     <div class="meta">
-      <h1>{{ $L('Invoice', 'فاتورة') }}</h1>
-      <div>{{ $L('Order', 'رقم الطلب') }}: <b><bdi>{{ $o->number }}</bdi></b></div>
-      <div>{{ $L('Date', 'التاريخ') }}: <bdi>{{ \Illuminate\Support\Carbon::parse($o->created_at)->format('d/m/Y H:i') }}</bdi></div>
+      <h1>{{ $isPaid ? $L('Invoice', 'فاتورة') : $L('Proforma invoice', 'فاتورة مبدئية') }}</h1>
+      <div>{{ $L('Invoice no.', 'رقم الفاتورة') }}: <b><bdi>{{ $o->number }}</bdi></b></div>
+      <div>{{ $L('Date', 'التاريخ') }}: <bdi>{{ $local($o->paid_at ?: $o->created_at) }}</bdi></div>
       <div><span class="pill {{ $o->payment_status === 'paid' ? '' : 'no' }}">{{ $status }}</span></div>
     </div>
   </header>
@@ -55,9 +61,13 @@
   <table class="totals">
     <tr><td>{{ $L('Subtotal', 'المجموع الفرعي') }}</td><td class="num"><bdi>{{ $money((float) $o->subtotal) }}</bdi></td></tr>
     <tr><td>{{ $L('Delivery', 'التوصيل') }} <small>(<bdi>{{ number_format($o->weight_grams / 1000, 2) }} kg</bdi>)</small></td><td class="num">@if (! empty($deliveryQuoted)){{ $L('Quoted after the order', 'يُحدَّد بعد الطلب') }}@elseif ((float) $o->shipping == 0.0){{ $L('Free', 'مجاني') }}@else<bdi>{{ $money((float) $o->shipping) }}</bdi>@endif</td></tr>
-    @if ((float) $o->discount > 0)<tr><td>{{ $L('Discount', 'الخصم') }}</td><td class="num"><bdi>− {{ $money((float) $o->discount) }}</bdi></td></tr>@endif
-    <tr class="grand"><td>{{ $L('Total', 'الإجمالي') }}</td><td class="num"><bdi>{{ $o->charge_currency }} {{ number_format((float) $o->charge_amount, in_array($o->charge_currency, ['BHD', 'KWD', 'OMR', 'JOD'], true) ? 3 : 2) }}</bdi></td></tr>
-    @if ($refunded > 0)<tr><td>{{ $L('Refunded', 'المسترجع') }}</td><td class="num"><bdi>− {{ $o->charge_currency }} {{ number_format($refunded, in_array($o->charge_currency, ['BHD', 'KWD', 'OMR', 'JOD'], true) ? 3 : 2) }}</bdi></td></tr>@endif
+    @if ((float) $o->discount > 0)<tr><td>{{ $L('Discount', 'الخصم') }}@if ($o->coupon_code) <small>(<bdi>{{ $o->coupon_code }}</bdi>)</small>@endif</td><td class="num"><bdi>− {{ $money((float) $o->discount) }}</bdi></td></tr>@endif
+    <tr class="grand"><td>{{ $L('Total', 'الإجمالي') }}</td><td class="num"><bdi>{{ $cm($o->charge_amount) }}</bdi></td></tr>
+    <tr><td>{{ $L('Paid', 'المدفوع') }}</td><td class="num"><bdi>{{ $cm($isPaid ? $o->charge_amount : 0) }}</bdi></td></tr>
+    @foreach ($refundRows as $rf)
+      <tr><td>{{ $L('Refund', 'استرجاع') }} <small><bdi>{{ $local($rf->updated_at, 'd/m/Y') }}</bdi>@if ($rf->reason) – {{ $rf->reason }}@endif</small></td><td class="num"><bdi>− {{ $rf->currency }} {{ number_format((float) $rf->amount, $dec) }}</bdi></td></tr>
+    @endforeach
+    <tr><td><b>{{ $L('Balance due', 'المبلغ المستحق') }}</b></td><td class="num"><b><bdi>{{ $cm($isPaid ? 0 : $o->charge_amount) }}</bdi></b></td></tr>
   </table>
 
   <footer>{{ $L('Thank you for your order!', 'شكرًا لطلبك!') }}</footer>

@@ -1,7 +1,7 @@
 import { api, esc, d, ltr, pill, busy, toast, toastErr, modal, confirmBox, showErrors, clearErrors, fmtDate, money, nf, debounce, setQuery, go, can, icon, isAr } from '../core.js';
 
 const TABS = [['all', 'All'], ['todo', 'To prepare'], ['unpaid', 'Not paid'], ['shipped', 'Shipped'], ['done', 'Delivered'], ['cancelled', 'Cancelled']];
-const PILL = { pending_payment: 'amber', awaiting_whatsapp: 'amber', payment_failed: 'red', paid: 'blue', processing: 'purple', shipped: 'blue', delivered: 'green', cancelled: 'hidden', refunded: 'hidden' };
+const PILL = { pending_payment: 'amber', awaiting_whatsapp: 'amber', payment_failed: 'red', paid: 'blue', processing: 'purple', ready: 'purple', shipped: 'blue', delivered: 'green', cancelled: 'hidden', refunded: 'hidden' };
 
 /* "BHD 7.500" plus the customer's own currency when they paid in another one. */
 function amount(o, bhd) {
@@ -92,13 +92,15 @@ async function detail(main, route, alive) {
   const closed = ['cancelled', 'refunded'].includes(o.status);
   const name = (i) => (isAr() && i.nameAr ? i.nameAr : i.name);
 
-  const steps = paid && !closed ? [['processing', 'Preparing'], ['shipped', 'Shipped'], ['delivered', 'Delivered']].filter(([k]) => k !== o.status) : [];
+  const pickup = /pick|collect/i.test(o.shippingMethod || '');
+  const steps = paid && !closed ? [['processing', 'Preparing'], ...(pickup ? [['ready', 'Ready to collect']] : [['shipped', 'Shipped']]), ['delivered', 'Delivered']].filter(([k]) => k !== o.status) : [];
 
   main.innerHTML = `
     <div class="crumbs"><a href="#/orders">Orders</a> › <span data-noi18n>#${esc(o.number)}</span></div>
     <div class="phead"><div><h1><span>Order</span> <span data-noi18n>#${esc(o.number)}</span></h1>
       <p class="sub">${pill(L[o.status] || o.status, PILL[o.status] || '')} ${o.testMode ? pill('Test payment – no real money', 'amber') : ''} <span class="muted" data-noi18n>${esc(fmtDate(o.createdAt))}</span></p></div>
-      <div class="actions">${steps.map(([k, l]) => `<button class="btn" data-step="${k}">${icon('check')} ${esc(l)}</button>`).join('')}</div></div>
+      <div class="actions">${steps.map(([k, l]) => `<button class="btn" data-step="${k}">${icon('check')} ${esc(l)}</button>`).join('')}
+        ${steps.length && o.email ? '<label class="mini-check"><input type="checkbox" id="notify" checked> <span>Email the customer</span></label>' : ''}</div></div>
     <div class="ed-grid">
       <div class="ed-main">
         <div class="card"><h2>Products</h2>
@@ -108,6 +110,7 @@ async function detail(main, route, alive) {
             <td class="num">${amount(o, i.lineTotal)}</td></tr>`).join('')}
             <tr><td></td><td>Subtotal</td><td class="num">${amount(o, o.subtotal)}</td></tr>
             <tr><td></td><td>Delivery <span class="muted small" data-noi18n>(${nf(o.weightGrams / 1000, 2)} kg)</span></td><td class="num">${amount(o, o.shipping)}</td></tr>
+            ${o.discount > 0 ? `<tr><td></td><td>Discount ${o.couponCode ? ltr('(' + o.couponCode + ')') : ''}</td><td class="num">−${amount(o, o.discount)}</td></tr>` : ''}
             <tr><td></td><td><b>Total</b></td><td class="num"><b>${amount(o, o.total)}</b></td></tr>
           </tbody></table></div>
           <p class="muted small">Charged: <b data-noi18n>${esc(o.chargeCurrency)} ${nf(o.chargeAmount, ['BHD', 'KWD', 'OMR'].includes(o.chargeCurrency) ? 3 : 2)}</b></p>
@@ -115,6 +118,7 @@ async function detail(main, route, alive) {
         <div class="card"><h2>SMSA shipping</h2>${shipBox(o, r.smsa)}</div>
         <div class="card"><h2>History</h2>
           <form id="nf" class="note-row"><input class="input grow" name="note" placeholder="Add a note for the team (not shown to the customer)" aria-label="Add a note"><button class="btn">Add note</button></form>
+          <div id="mails"></div>
           <ul class="timeline">${o.events.map((e) => `<li class="ev-${esc(e.type)}"><span class="muted small"><span data-noi18n>${esc(fmtDate(e.at))}</span>${e.by ? ` · ${d(e.by)}` : ''}</span><div>${e.type === 'note' ? d(e.message) : esc(e.message)}</div></li>`).join('')}</ul>
         </div>
       </div>
@@ -136,7 +140,8 @@ async function detail(main, route, alive) {
           ${!paid && !closed && manager ? `<button class="btn btn-sm" id="mpaid">Mark as paid…</button>` : ''}
           ${refundsBox(o, manager)}
           <p class="btn-row" style="margin-top:10px"><a class="btn btn-sm btn-primary" href="/api/admin/orders/${o.id}/print" target="_blank" rel="noopener">${icon('log')} ${o.abroad && o.shipment && o.shipment.awb && o.shipment.status !== 'cancelled' ? 'Print invoice + SMSA waybill' : 'Print invoice'}</a></p>
-          <p class="muted small" style="margin-top:10px">Customer’s order page: <a href="${esc(o.customerUrl)}" target="_blank" rel="noopener">open</a></p>
+          <p class="muted small" style="margin-top:10px">Customer’s order page: <a href="${esc(o.customerUrl)}" target="_blank" rel="noopener">open</a> · <span>Customer’s invoice link:</span> <a href="${esc(o.invoiceUrl)}" target="_blank" rel="noopener">open</a></p>
+          ${o.email ? `<button class="btn btn-sm" id="resend">${icon('mail')} ${paid ? 'Re-send confirmation' : 'Re-send order email'}</button>` : ''}
         </div>
         ${!closed && manager ? `<div class="card"><button class="btn btn-danger btn-sm" id="cancel">${icon('close')} Cancel order</button>
           <p class="muted small">Gives the stock back. It does not give the money back – use Refund for that.</p></div>` : ''}
@@ -147,7 +152,20 @@ async function detail(main, route, alive) {
   const act = async (btn, path, body, ok) => {
     try { await busy(btn, () => api(`orders/${id}/${path}`, { method: 'POST', body })); toast(ok); reload(); } catch (e) { toastErr(e); }
   };
-  main.querySelectorAll('[data-step]').forEach((b) => b.addEventListener('click', () => act(b, 'status', { status: b.dataset.step }, 'Saved')));
+  main.querySelectorAll('[data-step]').forEach((b) => b.addEventListener('click', () => act(b, 'status', { status: b.dataset.step, notify: (main.querySelector('#notify') || {}).checked !== false }, 'Saved')));
+  const rs = main.querySelector('#resend');
+  if (rs) rs.addEventListener('click', async () => {
+    if (!(await confirmBox(`Email the customer again (${o.email})?`, { ok: 'Send' }))) return;
+    act(rs, 'resend-email', {}, 'Sent');
+  });
+  api(`orders/${id}/emails`).then((m) => {
+    const box = main.querySelector('#mails');
+    if (!box || !m.emails.length) return;
+    const ST = { sent: ['Sent', 'green'], failed: ['Failed', 'red'], queued: ['Waiting', 'amber'], sending: ['Sending', 'amber'], skipped: ['Not sent', 'hidden'] };
+    box.innerHTML = `<details class="method-more"><summary class="muted small">${icon('mail')} <span>Emails about this order</span> <span data-noi18n>(${m.emails.length})</span></summary><ul class="list-rows small">${m.emails.map((x) =>
+      `<li>${pill(...(ST[x.status] || [x.status]))} <span data-noi18n>${esc(x.subject)}</span> <span class="muted" data-noi18n>· ${esc(x.to_email)} · ${esc(fmtDate(x.created_at))}</span>${x.last_error ? `<div class="muted" data-noi18n>${esc(x.last_error)}</div>` : ''}</li>`).join('')}</ul>
+      <a class="btn btn-sm" href="#/emails/log?q=${encodeURIComponent(o.number)}">${icon('log')} Open in Sent emails</a></details>`;
+  }).catch(() => {});
   main.querySelector('#nf').addEventListener('submit', (e) => { e.preventDefault(); const v = e.target.note.value.trim(); if (v) act(e.submitter, 'note', { note: v }, 'Note added'); });
   const chk = main.querySelector('#chk');
   if (chk) chk.addEventListener('click', () => act(chk, 'check-payment', {}, 'Checked with Tap'));
@@ -163,8 +181,20 @@ async function detail(main, route, alive) {
   }));
   const cn = main.querySelector('#cancel');
   if (cn) cn.addEventListener('click', async () => {
-    if (!(await confirmBox('Cancel this order? The stock goes back on sale.', { ok: 'Cancel order', danger: true }))) return;
-    act(cn, 'cancel', {}, 'Order cancelled');
+    modal({
+      title: 'Cancel order',
+      body: `<form class="form-grid" novalidate><p class="full">The stock goes back on sale. It does not give the money back – use Refund for that.</p>
+        <div class="field full"><label for="cr1">Reason (for the team)</label><input id="cr1" class="input"></div>
+        <div class="field full"><label for="cr2">Message to the customer (optional)</label><input id="cr2" class="input" dir="auto"></div>
+        ${o.email ? '<label class="mini-check full"><input type="checkbox" id="cnn" checked> <span>Email the customer</span></label>' : ''}</form>`,
+      foot: '<button class="btn" data-close>Keep the order</button><button class="btn btn-danger" id="cok">Cancel order</button>',
+      onOpen: (el, close) => el.querySelector('#cok').addEventListener('click', async (e) => {
+        try {
+          await busy(e.currentTarget, () => api(`orders/${id}/cancel`, { method: 'POST', body: { reason: el.querySelector('#cr1').value, customerReason: el.querySelector('#cr2').value, notify: (el.querySelector('#cnn') || {}).checked === true } }));
+          close(); toast('Order cancelled'); reload();
+        } catch (err) { toastErr(err); }
+      }),
+    });
   });
   bindShip(main, o, r.smsa, act, reload);
   bindRefunds(main, o, id, act, reload);

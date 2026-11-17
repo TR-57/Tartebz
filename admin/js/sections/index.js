@@ -15,5 +15,12 @@ import smsa from './smsa.js';
 import staff from './staff.js';
 import activity from './activity.js';
 import account from './account.js';
+import emails from './emails.js';
+import emailSettings from './emailsettings.js';
+import coupons from './coupons.js';
+import carts from './carts.js';
+import campaigns from './campaigns.js';
+import reviews from './reviews.js';
+import popup from './popup.js';
 
-export const sections = [dashboard, orders, products, categories, media, translations, website, maintenance, payments, shipping, smsa, currencies, staff, activity, account];
+export const sections = [dashboard, orders, products, categories, media, emails, coupons, carts, campaigns, reviews, popup, translations, website, maintenance, payments, shipping, smsa, emailSettings, currencies, staff, activity, account];

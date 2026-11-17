@@ -151,19 +151,8 @@ class Refunds
 
     public static function emailCustomer(object $o, object $rf): void
     {
-        if ($o->email === '') {
-            return;
-        }
-        $ar = $o->lang !== 'en';
-        $money = e($rf->currency.' '.number_format((float) $rf->amount, self::decimals($rf->currency)));
-        $card = $rf->method === 'tap';
-        $subject = $ar ? "استرجاع مبلغ من طلبك {$o->number}" : "Refund for your order {$o->number}";
-        $body = $ar
-            ? '<h1 style="margin:0 0 10px;font-size:22px;">تم استرجاع المبلغ</h1><p>أرجعنا لك <b><bdi>'.$money.'</bdi></b> من طلبك رقم <b>'.e($o->number).'</b>.</p>'
-                .($card ? '<p>يرجع المبلغ لنفس البطاقة، وقد يحتاج من ٥ إلى ١٠ أيام عمل حتى يظهر في كشف حسابك حسب البنك.</p>' : '')
-            : '<h1 style="margin:0 0 10px;font-size:22px;">Your refund is on its way</h1><p>We’ve refunded <b>'.$money.'</b> for order <b>'.e($o->number).'</b>.</p>'
-                .($card ? '<p>It goes back to the same card and can take 5–10 working days to show on your statement, depending on your bank.</p>' : '');
-        $body .= EmailLayout::button($ar ? 'عرض الطلب' : 'View your order', Orders::customerUrl($o));
-        Outbox::queue($o->email, $subject, EmailLayout::wrap($ar ? 'ar' : 'en', $subject, $body), ['name' => trim($o->first_name.' '.$o->last_name)]);
+        OrderMail::refunded($o, $rf);
+        OrderMail::staffUpdate($o, 'Refunded '.$rf->currency.' '.number_format((float) $rf->amount, self::decimals($rf->currency)),
+            $rf->admin_id ? DB::table('admins')->find($rf->admin_id) : null, "update:refund:{$rf->id}");
     }
 }

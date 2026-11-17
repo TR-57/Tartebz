@@ -13,11 +13,11 @@ use Illuminate\Support\Facades\DB;
  */
 class Orders
 {
-    public const STATUSES = ['pending_payment', 'awaiting_whatsapp', 'payment_failed', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
+    public const STATUSES = ['pending_payment', 'awaiting_whatsapp', 'payment_failed', 'paid', 'processing', 'ready', 'shipped', 'delivered', 'cancelled', 'refunded'];
 
     public const LABELS = [
         'pending_payment' => 'Awaiting payment', 'awaiting_whatsapp' => 'WhatsApp order', 'payment_failed' => 'Payment failed',
-        'paid' => 'Paid', 'processing' => 'Preparing', 'shipped' => 'Shipped', 'delivered' => 'Delivered',
+        'paid' => 'Paid', 'processing' => 'Preparing', 'ready' => 'Ready to collect', 'shipped' => 'Shipped', 'delivered' => 'Delivered',
         'cancelled' => 'Cancelled', 'refunded' => 'Refunded',
     ];
 
@@ -36,6 +36,7 @@ class Orders
                 'notes' => $c['notes'] ?: null, 'lang' => $c['lang'],
                 'currency' => $quote['currency'], 'fx_rate' => $quote['rate'],
                 'subtotal' => $quote['subtotal'], 'shipping' => $quote['shipping'], 'total' => $quote['total'],
+                'discount' => $quote['discount'] ?? 0, 'coupon_id' => ($quote['couponRow'] ?? null)?->id, 'coupon_code' => (string) (($quote['couponRow'] ?? null)?->code ?? ''),
                 'charge_currency' => $quote['chargeCurrency'], 'charge_amount' => $quote['chargeAmount'],
                 'weight_grams' => $quote['weightGrams'], 'ip' => $meta['ip'] ?? '',
                 'shipping_method' => (string) ($quote['method']['id'] ?? ''), 'shipping_method_name' => (string) ($quote['method']['name']['en'] ?? ''),
@@ -57,6 +58,11 @@ class Orders
                 self::event($id, 'created', $method === 'whatsapp' ? 'Order placed – to be confirmed on WhatsApp.' : 'Order placed – waiting for the card payment.');
                 if ($method === 'whatsapp') {
                     self::alert($id); // the team must act on it now; card orders alert once paid
+                    DB::afterCommit(function () use ($id) {
+                        $o = DB::table('orders')->find($id);
+                        OrderMail::received($o);
+                        OrderMail::staffNewOrder($o);
+                    });
                 }
             }
 
@@ -140,8 +146,17 @@ class Orders
             self::event($o->id, 'paid_after_cancel', 'This order was cancelled before the payment arrived. Send it, or refund the payment.');
         }
         $fresh = DB::table('orders')->find($o->id);
-        self::emailCustomer($fresh);
-        self::emailOwners($fresh);
+        Coupons::countUse($fresh);
+        Carts::orderPaid($fresh);
+        DB::afterCommit(function () use ($fresh, $o, $admin) {
+            OrderMail::paid($fresh);
+            if ($o->payment_method === 'whatsapp' || $o->source === 'staff') {
+                // the team heard about it when it was placed: now just "it's paid"
+                OrderMail::staffUpdate($fresh, 'Paid'.($admin ? ' (marked by hand)' : '').' – '.Fmt::money((float) $fresh->charge_amount, $fresh->charge_currency), $admin, "update:paid:{$fresh->id}");
+            } else {
+                OrderMail::staffNewOrder($fresh);
+            }
+        });
     }
 
     public static function takeStock(object $o): void
@@ -200,102 +215,31 @@ class Orders
         return config('store.store_url').'/checkout?order='.$o->token.($o->lang === 'en' ? '&lang=en' : '');
     }
 
-    private static function itemsTable(object $o, bool $ar): string
-    {
-        $rows = '';
-        foreach (DB::table('order_items')->where('order_id', $o->id)->get() as $i) {
-            $name = e($ar && $i->name_ar ? $i->name_ar : $i->name);
-            $rows .= "<tr><td style=\"padding:6px 0;\">{$name} × {$i->qty}</td><td style=\"padding:6px 0;text-align:".($ar ? 'left' : 'right').";\"><bdi>".e(self::chargeMoney($o, (float) $i->line_total)).'</bdi></td></tr>';
-        }
-        $al = $ar ? 'left' : 'right';
-        $rows .= '<tr><td style="padding:6px 0;border-top:1px solid #eee;">'.($ar ? 'التوصيل' : 'Delivery')."</td><td style=\"padding:6px 0;border-top:1px solid #eee;text-align:{$al};\"><bdi>".e(self::chargeMoney($o, (float) $o->shipping)).'</bdi></td></tr>';
-        $rows .= '<tr><td style="padding:6px 0;font-weight:800;">'.($ar ? 'الإجمالي' : 'Total')."</td><td style=\"padding:6px 0;font-weight:800;text-align:{$al};\"><bdi>".e($o->charge_currency.' '.number_format((float) $o->charge_amount, in_array($o->charge_currency, ['BHD', 'KWD', 'OMR'], true) ? 3 : 2)).'</bdi></td></tr>';
-
-        return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:14px 0;font-size:14px;">'.$rows.'</table>';
-    }
-
-    private static function chargeMoney(object $o, float $bhd): string
-    {
-        $dec = in_array($o->charge_currency, ['BHD', 'KWD', 'OMR'], true) ? 3 : 2;
-        $rate = $o->charge_currency === 'BHD' ? 1 : (float) $o->fx_rate;
-
-        return $o->charge_currency.' '.number_format(round($bhd * $rate, $dec), $dec);
-    }
-
+    /** Kept for older callers: the confirmation, the team, tracking, delivered, shipped. */
     public static function emailCustomer(object $o): void
     {
-        if ($o->email === '') {
-            return;
-        }
-        $ar = $o->lang !== 'en';
-        $subject = $ar ? "تم استلام طلبك رقم {$o->number} 🎉" : "We’ve got your order {$o->number} 🎉";
-        $body = ($ar
-            ? '<h1 style="margin:0 0 10px;font-size:22px;">شكرًا '.e($o->first_name).'!</h1><p>استلمنا طلبك رقم <b>'.e($o->number).'</b> وتم الدفع بنجاح. بنجهّزه ونرسل لك رقم الشحنة أول ما يطلع.</p>'
-            : '<h1 style="margin:0 0 10px;font-size:22px;">Thank you, '.e($o->first_name).'!</h1><p>We’ve received your order <b>'.e($o->number).'</b> and your payment. We’re preparing it and will send you the tracking number as soon as it ships.</p>')
-            .self::itemsTable($o, $ar)
-            .EmailLayout::button($ar ? 'عرض الطلب' : 'View your order', self::customerUrl($o));
-        Outbox::queue($o->email, $subject, EmailLayout::wrap($ar ? 'ar' : 'en', $subject, $body), ['name' => trim($o->first_name.' '.$o->last_name)]);
+        OrderMail::paid($o);
     }
 
     public static function emailOwners(object $o): void
     {
-        $to = DB::table('admins')->where('role', 'owner')->where('active', true)->where('order_emails', true)->pluck('email')->all();
-        $extra = Settings::get('mail')['notifyEmail'] ?? '';
-        if ($extra) {
-            $to[] = $extra;
-        }
-        $subject = "New paid order {$o->number} – ".self::money($o, (float) $o->total);
-        $body = '<h1 style="margin:0 0 10px;font-size:20px;">New order '.e($o->number).'</h1><p>'.e(trim($o->first_name.' '.$o->last_name)).' · '.e($o->phone).' · '.e($o->country).'</p>'
-            .self::itemsTable($o, false).EmailLayout::button('Open the order', rtrim(config('store.admin_url'), '/').'/#/orders/'.$o->id);
-        foreach (array_unique(array_filter($to)) as $email) {
-            Outbox::queue($email, $subject, EmailLayout::wrap('en', $subject, $body));
-        }
+        OrderMail::staffNewOrder($o);
     }
 
-    /** The customer hears the tracking number as soon as the waybill exists (the payment email was the confirmation). */
     public static function emailTracking(?object $o): void
     {
-        if (! $o || $o->email === '' || $o->awb === '') {
-            return;
-        }
-        $ar = $o->lang !== 'en';
-        $track = Smsa::TRACK_URL.rawurlencode($o->awb);
-        $subject = $ar ? "رقم تتبّع طلبك {$o->number}" : "Tracking number for order {$o->number}";
-        $body = ($ar
-            ? '<h1 style="margin:0 0 10px;font-size:22px;">نجهّز طلبك للشحن</h1><p>طلبك رقم <b>'.e($o->number).'</b> سيُشحن مع سمسا. رقم الشحنة: <b><bdi>'.e($o->awb).'</bdi></b>. يظهر التتبّع بعد أن تستلم سمسا الطرد.</p>'
-            : '<h1 style="margin:0 0 10px;font-size:22px;">Your order is being packed</h1><p>Order <b>'.e($o->number).'</b> ships with SMSA. Tracking number: <b>'.e($o->awb).'</b>. Tracking shows once SMSA has the parcel.</p>')
-            .EmailLayout::button($ar ? 'تتبّع الشحنة' : 'Track the parcel', $track);
-        Outbox::queue($o->email, $subject, EmailLayout::wrap($ar ? 'ar' : 'en', $subject, $body));
-        self::event($o->id, 'email', 'Customer emailed the tracking number.');
+        OrderMail::tracking($o);
     }
 
-    /** SMSA delivered the parcel. */
     public static function emailDelivered(?object $o): void
     {
-        if (! $o || $o->email === '') {
-            return;
+        if ($o) {
+            OrderMail::status($o, 'delivered');
         }
-        $ar = $o->lang !== 'en';
-        $subject = $ar ? "تم توصيل طلبك {$o->number} 🎉" : "Your order {$o->number} has been delivered 🎉";
-        $body = $ar
-            ? '<h1 style="margin:0 0 10px;font-size:22px;">وصل طلبك!</h1><p>سلّمت سمسا طلبك رقم <b>'.e($o->number).'</b>. نتمنى تستمتع فيه – ولو عندك أي ملاحظة، رد على هذا البريد.</p>'
-            : '<h1 style="margin:0 0 10px;font-size:22px;">Your order has arrived!</h1><p>SMSA has delivered order <b>'.e($o->number).'</b>. Enjoy – and if anything is not right, just reply to this email.</p>';
-        Outbox::queue($o->email, $subject, EmailLayout::wrap($ar ? 'ar' : 'en', $subject, $body));
-        self::event($o->id, 'email', 'Customer emailed: delivered.');
     }
 
     public static function emailShipped(object $o): void
     {
-        if ($o->email === '' || $o->awb === '') {
-            return;
-        }
-        $ar = $o->lang !== 'en';
-        $track = Smsa::TRACK_URL.rawurlencode($o->awb);
-        $subject = $ar ? "طلبك {$o->number} في الطريق 🚚" : "Your order {$o->number} is on its way 🚚";
-        $body = ($ar
-            ? '<h1 style="margin:0 0 10px;font-size:22px;">طلبك في الطريق!</h1><p>شحنّا طلبك رقم <b>'.e($o->number).'</b> مع سمسا. رقم الشحنة: <b><bdi>'.e($o->awb).'</bdi></b></p>'
-            : '<h1 style="margin:0 0 10px;font-size:22px;">Your order is on its way!</h1><p>We’ve shipped order <b>'.e($o->number).'</b> with SMSA. Tracking number: <b>'.e($o->awb).'</b></p>')
-            .EmailLayout::button($ar ? 'تتبّع الشحنة' : 'Track the parcel', $track);
-        Outbox::queue($o->email, $subject, EmailLayout::wrap($ar ? 'ar' : 'en', $subject, $body));
+        OrderMail::status($o, 'shipped');
     }
 }

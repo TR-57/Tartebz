@@ -28,6 +28,7 @@ return [
         'whatsapp' => '',
         'email' => 'hello@example.com',
         'hours' => 'Sat–Thu, 9 am – 9 pm',
+        'timezone' => 'Asia/Bahrain',    // dates and times in emails and invoices
         'freeDeliveryOver' => null,      // advertised free-delivery threshold (BHD) – one value used site-wide
     ],
 
@@ -160,15 +161,64 @@ return [
         ],
     ],
 
+    // Sending email. Saved values win over backend/.env; empty fields fall back to .env. With no SMTP at all the
+    // website sends by itself (the server's own mail program) – fine on Hostinger, but SMTP is more reliable.
     'mail' => [
-        'host' => '',
-        'port' => 587,
-        'scheme' => '',
-        'username' => '',
-        'password' => '',   // sealed
-        'fromAddress' => '',
-        'fromName' => '',
-        'notifyEmail' => '',
+        'host' => '',                // Hostinger: smtp.hostinger.com
+        'port' => 465,               // 465 = SSL, 587 = STARTTLS
+        'scheme' => 'ssl',           // ssl | tls | ''
+        'username' => '',            // the full mailbox address
+        'password' => '',            // sealed, never sent back
+        'fromAddress' => 'sales@tartebz.com',
+        'fromName' => 'Tartebz | ترتيبز',
+        'replyTo' => '',             // empty = the From address
+        'notifyEmail' => '',         // older single address (still read)
+        'notifyEmails' => [],        // store notification addresses: new orders, order updates, reviews waiting
     ],
 
+    // Which emails go out and their words. Templates hold only what staff changed; the defaults live in the code.
+    'emails' => [
+        'templates' => [],           // key => {en: {subject, body}, ar: {subject, body}}
+        'off' => [],                 // keys of optional emails switched off
+        'unknownLang' => 'ar',       // the customer's language is unknown: ar | en | both
+        'reminderMinutes' => 30,     // payment reminder: minutes after an unpaid card order
+        'reviewDays' => 3,           // review request: days after shipping / delivery
+        // the box in "order received" (orders paid outside the website, e.g. on WhatsApp)
+        'payNote' => 'We’ll message you on WhatsApp to confirm your order and how to pay (BenefitPay, bank transfer or cash).',
+        'payNote_ar' => 'بنتواصل معك على واتساب لتأكيد الطلب وطريقة الدفع (بنفت باي، تحويل بنكي أو كاش).',
+        'payMethods' => 'card, Apple Pay or BenefitPay',
+        'payMethods_ar' => 'البطاقة أو Apple Pay أو بنفت باي',
+        'staffLang' => 'en',         // store alert emails: en | ar
+        'utm' => true,               // add utm_source=email to links to the shop
+    ],
+
+    // Abandoned-cart emails (off until the owner switches them on; only carts left after that are emailed).
+    'carts' => [
+        'enabled' => false,
+        'since' => null,             // set when switched on
+        'steps' => [
+            ['on' => true, 'wait' => 1, 'unit' => 'hours'],   // email 1: after the cart was left
+            ['on' => true, 'wait' => 24, 'unit' => 'hours'],  // email 2: after email 1 (with a coupon)
+            ['on' => true, 'wait' => 3, 'unit' => 'days'],    // email 3: after email 2 (code ends soon)
+        ],
+        'coupon' => ['on' => true, 'type' => 'percent', 'value' => 10, 'min' => null, 'days' => 7, 'cooldownDays' => 30],
+        'unpaidOrders' => true,      // unpaid card orders the system gave up on get the same series
+        'batch' => 30,
+    ],
+
+    // Pop-up: an email address in exchange for a code.
+    'popup' => [
+        'enabled' => false,
+        'delaySeconds' => 12,
+        'title' => 'Get 10% off your first order',
+        'title_ar' => 'خصم ١٠٪ على أول طلب',
+        'text' => 'Leave your email and we’ll send you a code.',
+        'text_ar' => 'اترك بريدك ونرسل لك كود الخصم.',
+        'coupon' => ['type' => 'percent', 'value' => 10, 'min' => null, 'days' => 14],
+    ],
+
+    'reviews' => [
+        'enabled' => true,           // review form and stars on product pages
+        'ask' => true,               // review request email
+    ],
 ];

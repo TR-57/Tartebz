@@ -21,14 +21,12 @@ class StockAlerts
         $sent = 0;
         $rows = DB::table('stock_alerts')->where('product_id', $productId)->whereNull('notified_at')->whereNotNull('email')->get();
         foreach ($rows as $a) {
-            $ar = $a->lang !== 'en';
-            $name = $ar && $p->name_ar ? $p->name_ar : $p->name;
-            $url = config('store.store_url').'/product/'.rawurlencode($p->slug).($ar ? '' : '?lang=en');
-            $subject = $ar ? "رجع «{$name}» متوفر من جديد!" : "{$name} is back in stock!";
-            $body = $ar
-                ? '<h1 style="margin:0 0 12px;font-size:22px;">رجع متوفر 🎉</h1><p>طلبت منا نخبرك لما يتوفر <b>'.e($name).'</b> – وهو الحين متوفر. الكمية محدودة، فاطلبه قبل لا يخلص.</p>'.EmailLayout::button('اطلب الآن', $url)
-                : '<h1 style="margin:0 0 12px;font-size:22px;">It’s back 🎉</h1><p>You asked us to tell you when <b>'.e($name).'</b> was back. It is now – stock is limited, so grab it before it’s gone.</p>'.EmailLayout::button('Order now', $url);
-            Outbox::queue($a->email, $subject, EmailLayout::wrap($ar ? 'ar' : 'en', $subject, $body), ['kind' => 'transactional']);
+            $lang = $a->lang === 'en' ? 'en' : 'ar';
+            $name = $lang === 'ar' && $p->name_ar ? $p->name_ar : $p->name;
+            $url = config('store.store_url').'/product/'.rawurlencode($p->slug).($lang === 'ar' ? '' : '?lang=en');
+            EmailSender::send('back_in_stock', $a->email, $lang, [
+                'vars' => ['name' => '', 'product' => $name, 'product_link' => $url], 'url' => $url, 'dedupe' => "back_in_stock:{$a->id}",
+            ]);
             DB::table('stock_alerts')->where('id', $a->id)->update(['notified_at' => now(), 'notified_by' => 'email']);
             $sent++;
         }

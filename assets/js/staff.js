@@ -52,7 +52,7 @@
       link_hint: 'Send the customer a link to pay by card.', saved: 'Saved', err: 'Something went wrong. Try again.', offline: 'No connection. Check the internet.',
       created_by: 'Created by {n}', ago_now: 'just now', ago_m: '{n} min ago', ago_h: '{n} h ago',
       status: { pending_payment: 'Awaiting payment', awaiting_whatsapp: 'WhatsApp – not paid', payment_failed: 'Payment failed', paid: 'Paid – to prepare',
-        processing: 'Preparing', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled', refunded: 'Refunded' },
+        processing: 'Preparing', ready: 'Ready to collect', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled', refunded: 'Refunded' },
       countries: { BH: 'Bahrain', SA: 'Saudi Arabia', AE: 'UAE', QA: 'Qatar', KW: 'Kuwait', OM: 'Oman' }
     },
     ar: {
@@ -94,7 +94,7 @@
       link_hint: 'أرسل للعميل رابطًا ليدفع بالبطاقة.', saved: 'تم الحفظ', err: 'حدث خطأ. حاول مرة أخرى.', offline: 'لا يوجد اتصال. تأكد من الإنترنت.',
       created_by: 'أنشأه {n}', ago_now: 'الآن', ago_m: 'قبل {n} د', ago_h: 'قبل {n} س',
       status: { pending_payment: 'بانتظار الدفع', awaiting_whatsapp: 'واتساب – غير مدفوع', payment_failed: 'فشل الدفع', paid: 'مدفوع – للتجهيز',
-        processing: 'قيد التجهيز', shipped: 'تم الشحن', delivered: 'تم التوصيل', cancelled: 'ملغي', refunded: 'مسترجع' },
+        processing: 'قيد التجهيز', ready: 'جاهز للاستلام', shipped: 'تم الشحن', delivered: 'تم التوصيل', cancelled: 'ملغي', refunded: 'مسترجع' },
       countries: { BH: 'البحرين', SA: 'السعودية', AE: 'الإمارات', QA: 'قطر', KW: 'الكويت', OM: 'عُمان' }
     }
   };
@@ -457,7 +457,7 @@
   /* One or two pills: "Paid – to prepare", or "Paid" + where it is now, or why it is not paid yet. */
   function payPill(o) {
     var st = tr('status')[o.status] || o.status;
-    var tone = { pending_payment: 'amber', awaiting_whatsapp: 'amber', payment_failed: 'red', paid: 'green', processing: 'blue', shipped: 'blue', delivered: 'green' }[o.status] || '';
+    var tone = { pending_payment: 'amber', awaiting_whatsapp: 'amber', payment_failed: 'red', paid: 'green', processing: 'blue', ready: 'blue', shipped: 'blue', delivered: 'green' }[o.status] || '';
     var paidFirst = o.paymentStatus === 'paid' && o.status !== 'paid' ? '<span class="pill green">' + esc(tr('paid')) + '</span>' : '';
     return paidFirst + '<span class="pill ' + tone + '">' + esc(st) + '</span>';
   }

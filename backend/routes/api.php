@@ -40,6 +40,15 @@ Route::middleware(\App\Http\Middleware\StoreOpen::class)->post('orders/{token}/p
 // Tap → us (no Origin header; exempt in config/store.php). The charge is always fetched again from Tap.
 Route::post('payments/tap/webhook', [TapWebhookController::class, 'handle']);
 Route::post('i18n/missing', [I18nController::class, 'missing']);
+// Email system (public): unsubscribe (link + one-click), pop-up code, checkout email, cart restore, reviews, the invoice page.
+Route::match(['get', 'post'], 'email/unsubscribe', [\App\Http\Controllers\Api\EmailPublicController::class, 'unsubscribe']);
+Route::middleware(\App\Http\Middleware\StoreOpen::class)->post('popup', [\App\Http\Controllers\Api\EmailPublicController::class, 'popup']);
+Route::post('cart/email', [\App\Http\Controllers\Api\EmailPublicController::class, 'cartEmail']);
+Route::get('cart/restore/{token}', [\App\Http\Controllers\Api\EmailPublicController::class, 'restore'])->where('token', '[a-f0-9]{40}');
+Route::get('products/{id}/reviews', [\App\Http\Controllers\Api\EmailPublicController::class, 'reviews'])->whereNumber('id');
+Route::get('reviews/check', [\App\Http\Controllers\Api\EmailPublicController::class, 'reviewCheck']);
+Route::post('reviews', [\App\Http\Controllers\Api\EmailPublicController::class, 'submitReview']);
+Route::get('invoice/{token}', [\App\Http\Controllers\Api\EmailPublicController::class, 'invoice'])->where('token', '[a-f0-9]{40}');
 Route::get('i18n/overrides', [I18nController::class, 'overrides']);
 
 // ---- Admin: sign-in (public) ----
@@ -56,6 +65,7 @@ Route::prefix('admin')->group(function () {
 Route::prefix('admin')->middleware('admin')->group(function () {
     // Every role (team roles included) may change their own password and report untranslated admin text.
     Route::post('password', [AuthController::class, 'password']);
+    Route::put('me/preferences', [AuthController::class, 'preferences']);
     Route::post('i18n/missing', [TranslationsController::class, 'reportAdmin']);
 
     Route::middleware('role:staff')->group(function () {
@@ -81,6 +91,8 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::get('orders/{id}', [OrdersController::class, 'show'])->whereNumber('id');
         Route::post('orders/{id}/status', [OrdersController::class, 'status'])->whereNumber('id');
         Route::post('orders/{id}/note', [OrdersController::class, 'note'])->whereNumber('id');
+        Route::post('orders/{id}/resend-email', [OrdersController::class, 'resendEmail'])->whereNumber('id');
+        Route::get('orders/{id}/emails', [OrdersController::class, 'emails'])->whereNumber('id');
         Route::post('orders/{id}/prepared', [OrdersController::class, 'prepared'])->whereNumber('id');
         Route::post('orders/{id}/check-payment', [OrdersController::class, 'refreshPayment'])->whereNumber('id');
         Route::post('orders/{id}/ship', [OrdersController::class, 'ship'])->whereNumber('id');
@@ -134,6 +146,42 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::get('maintenance/preview', [\App\Http\Controllers\Admin\MaintenanceController::class, 'preview']);
         Route::get('website', [WebsiteController::class, 'index']);
         Route::put('website', [WebsiteController::class, 'save']);
+
+        // Emails: words, on/off, preview, test, the outbox log
+        Route::get('emails', [\App\Http\Controllers\Admin\EmailsController::class, 'index']);
+        Route::put('emails/settings', [\App\Http\Controllers\Admin\EmailsController::class, 'saveEmailSettings']);
+        Route::post('emails/preview', [\App\Http\Controllers\Admin\EmailsController::class, 'preview']);
+        Route::post('emails/test', [\App\Http\Controllers\Admin\EmailsController::class, 'test']);
+        Route::post('emails/send-all', [\App\Http\Controllers\Admin\EmailsController::class, 'sendAll']);
+        Route::get('emails/outbox', [\App\Http\Controllers\Admin\EmailsController::class, 'outbox']);
+        Route::get('emails/outbox/{id}', [\App\Http\Controllers\Admin\EmailsController::class, 'outboxShow'])->whereNumber('id');
+        Route::post('emails/outbox/{id}/retry', [\App\Http\Controllers\Admin\EmailsController::class, 'retry'])->whereNumber('id');
+        Route::get('emails/{key}', [\App\Http\Controllers\Admin\EmailsController::class, 'show'])->where('key', '[a-z0-9_]+');
+        Route::put('emails/{key}', [\App\Http\Controllers\Admin\EmailsController::class, 'save'])->where('key', '[a-z0-9_]+');
+        Route::post('emails/{key}/reset', [\App\Http\Controllers\Admin\EmailsController::class, 'reset'])->where('key', '[a-z0-9_]+');
+        Route::post('emails/{key}/toggle', [\App\Http\Controllers\Admin\EmailsController::class, 'toggle'])->where('key', '[a-z0-9_]+');
+        // Discounts & coupons, abandoned carts, campaigns, reviews, pop-up
+        Route::get('coupons', [\App\Http\Controllers\Admin\MarketingController::class, 'coupons']);
+        Route::post('coupons', [\App\Http\Controllers\Admin\MarketingController::class, 'saveCoupon']);
+        Route::put('coupons/{id}', [\App\Http\Controllers\Admin\MarketingController::class, 'saveCoupon'])->whereNumber('id');
+        Route::delete('coupons/{id}', [\App\Http\Controllers\Admin\MarketingController::class, 'deleteCoupon'])->whereNumber('id');
+        Route::get('carts', [\App\Http\Controllers\Admin\MarketingController::class, 'carts']);
+        Route::put('carts/settings', [\App\Http\Controllers\Admin\MarketingController::class, 'saveCartSettings']);
+        Route::post('carts/preview', [\App\Http\Controllers\Admin\MarketingController::class, 'cartPreview']);
+        Route::post('carts/{id}/send', [\App\Http\Controllers\Admin\MarketingController::class, 'sendCart'])->whereNumber('id');
+        Route::get('campaigns', [\App\Http\Controllers\Admin\MarketingController::class, 'campaigns']);
+        Route::post('campaigns', [\App\Http\Controllers\Admin\MarketingController::class, 'saveCampaign']);
+        Route::post('campaigns/audience', [\App\Http\Controllers\Admin\MarketingController::class, 'audienceCount']);
+        Route::put('campaigns/{id}', [\App\Http\Controllers\Admin\MarketingController::class, 'saveCampaign'])->whereNumber('id');
+        Route::delete('campaigns/{id}', [\App\Http\Controllers\Admin\MarketingController::class, 'deleteCampaign'])->whereNumber('id');
+        Route::post('campaigns/{id}/preview', [\App\Http\Controllers\Admin\MarketingController::class, 'previewCampaign'])->whereNumber('id');
+        Route::post('campaigns/{id}/test', [\App\Http\Controllers\Admin\MarketingController::class, 'testCampaign'])->whereNumber('id');
+        Route::post('campaigns/{id}/send', [\App\Http\Controllers\Admin\MarketingController::class, 'sendCampaign'])->whereNumber('id');
+        Route::get('reviews', [\App\Http\Controllers\Admin\MarketingController::class, 'reviews']);
+        Route::post('reviews/{id}', [\App\Http\Controllers\Admin\MarketingController::class, 'moderate'])->whereNumber('id');
+        Route::delete('reviews/{id}', [\App\Http\Controllers\Admin\MarketingController::class, 'deleteReview'])->whereNumber('id');
+        Route::get('popup', [\App\Http\Controllers\Admin\MarketingController::class, 'popup']);
+        Route::put('popup', [\App\Http\Controllers\Admin\MarketingController::class, 'savePopup']);
     });
 
     Route::middleware('role:owner')->group(function () {
@@ -152,5 +200,8 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::get('smsa', [\App\Http\Controllers\Admin\SmsaController::class, 'show']);
         Route::put('smsa', [\App\Http\Controllers\Admin\SmsaController::class, 'save']);
         Route::post('smsa/test', [\App\Http\Controllers\Admin\SmsaController::class, 'test']);
+        Route::get('email-settings', [\App\Http\Controllers\Admin\EmailsController::class, 'settings']);
+        Route::put('email-settings', [\App\Http\Controllers\Admin\EmailsController::class, 'saveSettings']);
+        Route::post('email-settings/test', [\App\Http\Controllers\Admin\EmailsController::class, 'testSend']);
     });
 });

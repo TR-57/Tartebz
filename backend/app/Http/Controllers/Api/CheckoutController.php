@@ -31,7 +31,12 @@ class CheckoutController extends Controller
             throw ApiError::validation(['country' => 'We do not deliver to that country yet.']);
         }
 
-        return $this->ok(['quote' => self::present(Checkout::quote((array) $r->input('items', []), $country, $cart, null, $this->str($r, 'shipping_method', 60) ?: null)), 'payments' => self::methods()]);
+        $q = Checkout::quote((array) $r->input('items', []), $country, $cart, null, $this->str($r, 'shipping_method', 60) ?: null,
+            $this->str($r, 'coupon', 40), mb_strtolower($this->str($r, 'email', 190)));
+        // a typed email is the start of an abandoned-cart reminder (only kept when the feature is on)
+        \App\Support\Carts::touch($cart, (array) $r->input('items', []), mb_strtolower($this->str($r, 'email', 190)), $r->input('lang') === 'en' ? 'en' : 'ar', $country, $this->str($r, 'first_name', 80), (float) $q['subtotal']);
+
+        return $this->ok(['quote' => self::present($q), 'payments' => self::methods()]);
     }
 
     /** POST /api/checkout {items, country, method: tap|whatsapp, first_name, …} */
@@ -88,7 +93,11 @@ class CheckoutController extends Controller
         $result = DB::transaction(function () use ($items, $country, $cart, $seen, $c, $method, $ip, $r, $methodId) {
             $ids = array_values(array_filter(array_map(fn ($i) => (int) (((array) $i)['id'] ?? 0), $items)));
             DB::table('products')->whereIn('id', $ids ?: [0])->orderBy('id')->lockForUpdate()->get(['id']);
-            $quote = Checkout::quote($items, $country, $cart, null, $methodId ?: null);
+            $coupon = $this->str($r, 'coupon', 40);
+            $quote = Checkout::quote($items, $country, $cart, null, $methodId ?: null, $coupon, $c['email']);
+            if ($coupon !== '' && $quote['couponError']) {
+                throw new ApiError('coupon', $quote['couponError'][1], 422, ['coupon' => $quote['couponError'][1]], ['reason' => $quote['couponError'][0]] + $quote['couponError'][2]);
+            }
             if (! $quote['lines']) {
                 throw new ApiError('empty', 'Your cart is empty or its products are sold out.', 409);
             }
@@ -105,6 +114,7 @@ class CheckoutController extends Controller
             }
             $order = Orders::create($quote, $c, $method, ['ip' => $ip, 'ua' => (string) $r->userAgent()]);
             Holds::toOrder($cart, $order, $quote['lines']);
+            \App\Support\Carts::orderPlaced(DB::table('orders')->find($order->id));   // the cart became an order: its reminders stop
 
             return ['order' => $order];
         });
@@ -194,7 +204,11 @@ class CheckoutController extends Controller
             throw ApiError::validation(['cart' => 'Missing cart.']);
         }
 
-        return $this->ok(Holds::syncCart($cart, (array) $r->input('items', []), $ip));
+        $res = Holds::syncCart($cart, (array) $r->input('items', []), $ip);
+        // keeps a saved (abandoned-cart) cart up to date; an emptied cart stops its reminders
+        \App\Support\Carts::touch($cart, (array) $r->input('items', []), '', $r->input('lang') === 'en' ? 'en' : 'ar', '', '', (float) $r->input('value', 0));
+
+        return $this->ok($res);
     }
 
     /** The browser's random cart id (32 hex characters). */
@@ -261,6 +275,8 @@ class CheckoutController extends Controller
     {
         return [
             'lines' => $q['lines'], 'issues' => $q['issues'], 'subtotal' => $q['subtotal'], 'shipping' => $q['shipping'], 'total' => $q['total'],
+            'discount' => $q['discount'] ?? 0, 'coupon' => $q['coupon'] ?? null,
+            'couponError' => ($q['couponError'] ?? null) ? ['reason' => $q['couponError'][0], 'message' => $q['couponError'][1]] + $q['couponError'][2] : null,
             'weightGrams' => $q['weightGrams'], 'country' => $q['country'], 'currency' => $q['currency'], 'rate' => $q['rate'],
             'methods' => $q['methods'] ?? [], 'method' => $q['method'] ?? null,
             'chargeCurrency' => $q['chargeCurrency'], 'chargeAmount' => $q['chargeAmount'],
@@ -275,6 +291,7 @@ class CheckoutController extends Controller
         return [
             'number' => $o->number, 'token' => $o->token, 'status' => $o->status, 'paymentStatus' => $o->payment_status, 'method' => $o->payment_method,
             'subtotal' => (float) $o->subtotal, 'shipping' => (float) $o->shipping, 'total' => (float) $o->total,
+            'discount' => (float) $o->discount, 'couponCode' => $o->coupon_code,
             'currency' => $o->currency, 'rate' => (float) $o->fx_rate, 'chargeCurrency' => $o->charge_currency, 'chargeAmount' => (float) $o->charge_amount,
             'firstName' => $o->first_name, 'country' => $o->country, 'city' => $o->city, 'email' => $o->email,
             'awb' => $o->awb, 'trackingUrl' => $o->awb ? 'https://www.smsaexpress.com/trackingdetails?tracknumbers='.rawurlencode($o->awb) : null,

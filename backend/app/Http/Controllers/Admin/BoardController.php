@@ -189,7 +189,7 @@ class BoardController extends Controller
     public function invoice(Request $r, int $id)
     {
         $o = DB::table('orders')->find($id) ?? throw ApiError::notFound('That order does not exist.');
-        $lang = in_array($r->query('lang'), ['ar', 'en'], true) ? $r->query('lang') : ($o->lang === 'en' ? 'en' : 'ar');
+        $lang = in_array($r->query('lang'), ['ar', 'en', 'both'], true) ? $r->query('lang') : ($o->lang === 'en' ? 'en' : 'ar');
 
         return response()->view('invoice', self::invoiceData($o, $lang), 200, ['Cache-Control' => 'no-store']);
     }
@@ -208,7 +208,7 @@ class BoardController extends Controller
             'o' => $o, 'ar' => $lang === 'ar', 'lang' => $lang, 'money' => $money,
             'items' => DB::table('order_items')->where('order_id', $o->id)->orderBy('id')->get(),
             'shop' => [
-                'name' => $lang === 'ar' ? ($brand['name_ar'] ?: $brand['name']) : $brand['name'], 'legal' => $biz['legalName'], 'cr' => $biz['cr'], 'vat' => $biz['vat'],
+                'name' => $lang === 'ar' ? ($brand['name_ar'] ?: $brand['name']) : ($lang === 'both' ? $brand['name'].' · '.($brand['name_ar'] ?: '') : $brand['name']), 'legal' => $biz['legalName'], 'cr' => $biz['cr'], 'vat' => $biz['vat'],
                 'address' => $lang === 'ar' ? ($biz['addressLine1_ar'] ?: $biz['addressLine1']) : $biz['addressLine1'], 'area' => $biz['area'],
                 'phone' => $biz['phone'], 'email' => $biz['email'], 'logo' => $logo ? Thumbs::url($logo, 400) : '',
             ],
@@ -278,7 +278,7 @@ class BoardController extends Controller
         return $this->ok([
             'now' => now()->toIso8601String(), 'new' => $new,
             'counts' => [
-                'prepare' => DB::table('orders')->whereIn('status', ['paid', 'processing'])->whereNull('prepared_at')->count(),
+                'prepare' => DB::table('orders')->whereIn('status', ['paid', 'processing', 'ready'])->whereNull('prepared_at')->count(),
                 'unpaid' => DB::table('orders')->whereIn('status', ['pending_payment', 'awaiting_whatsapp', 'payment_failed'])->count(),
             ],
         ]);
@@ -341,13 +341,6 @@ class BoardController extends Controller
 
     private function emailLink(object $o, string $url): void
     {
-        $ar = $o->lang !== 'en';
-        $total = e($o->charge_currency.' '.number_format((float) $o->charge_amount, in_array($o->charge_currency, ['BHD', 'KWD', 'OMR'], true) ? 3 : 2));
-        $subject = $ar ? "رابط الدفع لطلبك رقم {$o->number}" : "Pay for your order {$o->number}";
-        $body = ($ar
-            ? '<h1 style="margin:0 0 10px;font-size:22px;">مرحبا '.e($o->first_name).'</h1><p>طلبك رقم <b>'.e($o->number).'</b> جاهز. المبلغ: <b><bdi>'.$total.'</bdi></b>. اضغط الزر للدفع بشكل آمن.</p>'
-            : '<h1 style="margin:0 0 10px;font-size:22px;">Hi '.e($o->first_name).'</h1><p>Your order <b>'.e($o->number).'</b> is ready. Amount: <b>'.$total.'</b>. Press the button to pay securely.</p>')
-            .EmailLayout::button($ar ? 'ادفع الآن' : 'Pay now', $url);
-        Outbox::queue($o->email, $subject, EmailLayout::wrap($ar ? 'ar' : 'en', $subject, $body), ['name' => trim($o->first_name.' '.$o->last_name)]);
+        \App\Support\OrderMail::paymentLink($o, $url);
     }
 }

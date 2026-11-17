@@ -24,9 +24,9 @@ class OrdersController extends Controller
     /** List tabs: status filters. "prepare" and "prepared" follow the tick on the orders board. */
     private const TABS = [
         'all' => null,
-        'todo' => ['paid', 'processing'],
-        'prepare' => ['paid', 'processing'],
-        'prepared' => ['paid', 'processing'],
+        'todo' => ['paid', 'processing', 'ready'],
+        'prepare' => ['paid', 'processing', 'ready'],
+        'prepared' => ['paid', 'processing', 'ready'],
         'unpaid' => ['pending_payment', 'awaiting_whatsapp', 'payment_failed'],
         'shipped' => ['shipped'],
         'sent' => ['shipped', 'delivered'],
@@ -126,12 +126,12 @@ class OrdersController extends Controller
         ]]);
     }
 
-    /** {status: processing|shipped|delivered|paid} – the hand-moved steps. */
+    /** {status: processing|ready|shipped|delivered, notify (default true): email the customer} – the hand-moved steps. */
     public function status(Request $r, int $id)
     {
         $o = $this->find($id);
         $to = $this->str($r, 'status', 30);
-        $allowed = ['processing', 'shipped', 'delivered'];
+        $allowed = ['processing', 'ready', 'shipped', 'delivered'];
         if (! in_array($to, $allowed, true)) {
             throw ApiError::validation(['status' => 'Choose a status.']);
         }
@@ -145,14 +145,45 @@ class OrdersController extends Controller
         if ($to === 'delivered') {
             $upd['delivered_at'] = now();
         }
+        if ($to === 'ready' && ! $o->ready_at) {
+            $upd['ready_at'] = now();
+        }
         DB::table('orders')->where('id', $id)->update($upd);
         Orders::event($id, 'status', 'Status: '.Orders::LABELS[$to].'.', [], $this->admin($r));
         Audit::log($r, 'order_status', 'order', $id, ['from' => $o->status, 'to' => $to]);
-        if ($to === 'shipped' && $o->status !== 'shipped') {
-            Orders::emailShipped(DB::table('orders')->find($id));
+        $fresh = DB::table('orders')->find($id);
+        if ($o->status !== $to) {
+            if ($this->bool($r, 'notify', true)) {
+                \App\Support\OrderMail::status($fresh, $to);
+            }
+            \App\Support\OrderMail::staffUpdate($fresh, 'Status: '.Orders::LABELS[$to], $this->admin($r));
         }
 
         return $this->ok(['order' => $this->full(DB::table('orders')->find($id))]);
+    }
+
+    /** Sends the confirmation (paid), "order received" (WhatsApp) or the payment link email again. */
+    public function resendEmail(Request $r, int $id)
+    {
+        $o = $this->find($id);
+        if (! filter_var($o->email, FILTER_VALIDATE_EMAIL)) {
+            throw ApiError::validation(['email' => 'This order has no email address.']);
+        }
+        if (! \App\Support\OrderMail::resend($o, $this->admin($r))) {
+            throw new ApiError('not_sent', 'Nothing was sent.', 409);
+        }
+        Audit::log($r, 'order_email_resent', 'order', $id);
+
+        return $this->ok(['order' => $this->full(DB::table('orders')->find($id))]);
+    }
+
+    /** The emails sent about this order (outbox), newest first. */
+    public function emails(int $id)
+    {
+        $this->find($id);
+
+        return $this->ok(['emails' => DB::table('mail_outbox')->where('order_id', $id)->orderByDesc('id')->limit(50)
+            ->get(['id', 'email_key', 'to_email', 'subject', 'status', 'attempts', 'last_error', 'created_at', 'sent_at'])]);
     }
 
     public function note(Request $r, int $id)
@@ -219,8 +250,15 @@ class OrdersController extends Controller
             DB::table('orders')->where('id', $id)->update(['status' => 'cancelled', 'updated_at' => now()]);
             Orders::event($id, 'cancelled', 'Cancelled'.($reason ? ': '.$reason : '.').($o->payment_status === 'paid' && $o->tap_charge_id
                 ? ' The payment is not given back by cancelling – use Refund on this order.' : ''), [], $this->admin($r));
+            \App\Support\Coupons::release($o);
+            \App\Support\Carts::orderCancelledByStaff($o);
         });
         Audit::log($r, 'order_cancelled', 'order', $id, ['reason' => $reason]);
+        $fresh = DB::table('orders')->find($id);
+        if ($this->bool($r, 'notify', true)) {
+            \App\Support\OrderMail::status($fresh, 'cancelled', $this->str($r, 'customerReason', 300));
+        }
+        \App\Support\OrderMail::staffUpdate($fresh, 'Cancelled'.($reason ? ': '.$reason : ''), $this->admin($r));
 
         return $this->ok(['order' => $this->full(DB::table('orders')->find($id))]);
     }
@@ -395,7 +433,8 @@ class OrdersController extends Controller
         return $this->row($o) + [
             'firstName' => $o->first_name, 'lastName' => $o->last_name, 'email' => $o->email, 'state' => $o->state, 'city' => $o->city,
             'address1' => $o->address1, 'address2' => $o->address2, 'notes' => (string) $o->notes, 'lang' => $o->lang,
-            'subtotal' => (float) $o->subtotal, 'shipping' => (float) $o->shipping, 'discount' => (float) $o->discount,
+            'subtotal' => (float) $o->subtotal, 'shipping' => (float) $o->shipping, 'discount' => (float) $o->discount, 'couponCode' => (string) $o->coupon_code,
+            'invoiceUrl' => \App\Support\OrderMail::invoiceUrl($o),
             'fxRate' => (float) $o->fx_rate, 'chargeCurrency' => $o->charge_currency, 'chargeAmount' => (float) $o->charge_amount,
             'weightGrams' => (int) $o->weight_grams, 'tapChargeId' => $o->tap_charge_id, 'tapStatus' => $o->tap_status, 'tapMode' => $o->tap_mode,
             'paidAt' => $o->paid_at, 'carrier' => $o->carrier, 'hasLabel' => $o->label_path !== '', 'trackingStatus' => $o->tracking_status,

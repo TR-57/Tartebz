@@ -17,7 +17,7 @@ class Checkout
      * @return array{lines: array, issues: array, subtotal: float, shipping: float, total: float, weightGrams: int,
      *               country: string, currency: string, rate: float, decimals: int, chargeCurrency: string, chargeAmount: float}
      */
-    public static function quote(array $items, string $country, ?string $cart = null, ?int $orderId = null, ?string $methodId = null): array
+    public static function quote(array $items, string $country, ?string $cart = null, ?int $orderId = null, ?string $methodId = null, string $coupon = '', string $email = ''): array
     {
         $country = strtoupper($country);
         $want = [];
@@ -67,7 +67,10 @@ class Checkout
         $methods = $lines ? Shipping::methods($country, $grams / 1000, $subtotal) : [];
         $method = $lines ? Shipping::pick($country, $grams / 1000, $subtotal, $methodId) : null;
         $shipping = $method ? (float) $method['price'] : 0.0;
-        $total = round($subtotal + $shipping, 3);
+        // A discount code (checked here every time – see Coupons).
+        $c = $lines ? Coupons::apply($coupon, $email, $lines, $subtotal, $shipping) : ['coupon' => null, 'discount' => 0.0, 'freeShipping' => false, 'error' => null];
+        $discount = min($c['discount'], round($subtotal + $shipping, 3));
+        $total = round($subtotal + $shipping - $discount, 3);
 
         // The customer's currency (by country) and what the card will actually be charged in.
         $cur = Currency::get(self::currencyFor($country)) ?? Currency::get(Currency::base());
@@ -76,6 +79,9 @@ class Checkout
 
         return [
             'lines' => $lines, 'issues' => $issues, 'subtotal' => $subtotal, 'shipping' => $shipping, 'total' => $total,
+            'discount' => $discount, 'couponRow' => $c['coupon'], 'couponError' => $c['error'],
+            'coupon' => $c['coupon'] ? ['code' => $c['coupon']->code, 'title' => $c['coupon']->title, 'titleAr' => $c['coupon']->title_ar,
+                'type' => $c['coupon']->type, 'freeShipping' => $c['freeShipping'], 'offer' => Coupons::offer($c['coupon'], 'en'), 'offerAr' => Coupons::offer($c['coupon'], 'ar')] : null,
             'weightGrams' => (int) $grams, 'country' => $country, 'methods' => $methods, 'method' => $method,
             'currency' => $cur['code'], 'rate' => (float) $cur['rate'], 'decimals' => (int) $cur['decimals'],
             'chargeCurrency' => $charge['code'],

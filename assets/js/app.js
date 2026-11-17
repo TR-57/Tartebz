@@ -906,6 +906,63 @@
   }
   doc.addEventListener('visibilitychange', function () { if (doc.hidden) store.set('last_seen', Date.now()); });
 
+  /* ---------- email pop-up ----------
+     A code for joining the email list (Admin › Pop-up). Shown once per visitor after a short wait, never on checkout,
+     never again after they close it (for 14 days) or sign up. The code goes to their inbox, not the screen. */
+  function emailPopup() {
+    var page = doc.body.getAttribute('data-page');
+    if (page === 'checkout' || TZ.maintenance) return;
+    var seen = store.get('popup_seen', 0);
+    if (seen === 'done' || (seen && Date.now() - seen < 14 * 864e5)) return;
+    setTimeout(function () {
+      if (doc.querySelector('.modal-wrap.open') || doc.hidden) return;
+      var P = TZ.popup, L = function (o) { return (o && (o[lang] || o.ar || o.en)) || ''; };
+      var wrap = doc.createElement('div');
+      wrap.className = 'modal-wrap pop-wrap';
+      wrap.innerHTML = '<div class="modal pop" role="dialog" aria-modal="true" aria-labelledby="pop-t">' +
+        '<button type="button" class="pop-x" data-pop-close aria-label="' + TZ.esc(TZ.t('close')) + '">' + TZ.icon('close') + '</button>' +
+        '<div class="modal-ico pop-ico">' + TZ.icon('star') + '</div>' +
+        '<h2 id="pop-t">' + TZ.esc(L(P.title) || TZ.t('pop_title')) + '</h2><p>' + TZ.esc(L(P.text) || TZ.t('pop_text')) + '</p>' +
+        '<form class="pop-form" novalidate><input type="email" name="email" dir="ltr" autocomplete="email" required aria-label="' + TZ.esc(TZ.t('f_email')) + '" placeholder="name@example.com">' +
+        '<label class="pop-consent"><input type="checkbox" name="consent"> <span>' + TZ.esc(TZ.t('pop_consent')) + '</span></label>' +
+        '<p class="field-err" role="alert"></p>' +
+        '<button class="btn btn-primary btn-block" type="submit">' + TZ.esc(TZ.t('pop_send')) + '</button></form>' +
+        '<button type="button" class="btn-link" data-pop-close>' + TZ.esc(TZ.t('pop_no')) + '</button></div>';
+      doc.body.appendChild(wrap);
+      requestAnimationFrame(function () { wrap.classList.add('open'); });
+      var form = wrap.querySelector('form'), err = wrap.querySelector('.field-err'), before = doc.activeElement;
+      setTimeout(function () { form.elements.email.focus({ preventScroll: true }); }, 50);
+      function close(done) {
+        store.set('popup_seen', done ? 'done' : Date.now());
+        wrap.classList.remove('open');
+        doc.removeEventListener('keydown', onKey);
+        setTimeout(function () { wrap.remove(); if (before && before.focus) before.focus({ preventScroll: true }); }, 300);
+      }
+      function onKey(ev) { if (ev.key === 'Escape') close(false); }
+      doc.addEventListener('keydown', onKey);
+      wrap.addEventListener('click', function (ev) { if (ev.target === wrap || ev.target.closest('[data-pop-close]')) close(wrap.classList.contains('is-done')); });
+      form.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        var m = form.elements.email.value.trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m)) { err.textContent = TZ.t('err_email'); form.elements.email.focus(); return; }
+        if (!form.elements.consent.checked) { err.textContent = TZ.t('pop_need_consent'); return; }
+        var btn = form.querySelector('button'); btn.disabled = true; err.textContent = '';
+        fetch('/api/popup', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ email: m, consent: true, lang: lang, country: TZ.country().code }) })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            btn.disabled = false;
+            if (!d.ok) { err.textContent = d.error && d.error.code === 'off' ? TZ.t('pop_off') : TZ.t('co_err'); return; }
+            wrap.classList.add('is-done');
+            store.set('popup_seen', 'done');
+            wrap.querySelector('.pop').innerHTML = '<button type="button" class="pop-x" data-pop-close aria-label="' + TZ.esc(TZ.t('close')) + '">' + TZ.icon('close') + '</button>' +
+              '<div class="modal-ico">' + TZ.icon('check') + '</div><h2 id="pop-t">' + TZ.esc(TZ.t(d.already ? 'pop_already' : 'pop_done')) + '</h2>' +
+              '<p>' + TZ.esc(TZ.t('pop_done_text')) + '</p><button type="button" class="btn btn-primary" data-pop-close>' + TZ.esc(TZ.t('pop_shop')) + '</button>';
+          }, function () { btn.disabled = false; err.textContent = TZ.t('co_err'); });
+      });
+    }, Math.max(3, +TZ.popup.delay || 12) * 1000);
+  }
+
   /* ---------- boot ---------- */
   function boot() {
     // The page's own words (headings, buttons) right away; products and prices follow with the live shop data.
@@ -924,6 +981,7 @@
       welcomeBack();
       if (TZ.cart.count() || Object.keys(TZ.holds.mine).length) TZ.holds.sync(true); // a page load counts as activity
       if (TZ.isLive) pendingBar();
+      if (TZ.isLive && TZ.popup && TZ.popup.enabled) emailPopup();
       if (TZ.maintenance) {
         var mb = doc.createElement('div');
         mb.className = 'maint-bar'; mb.setAttribute('role', 'status');

@@ -1262,3 +1262,61 @@ body.has-iab .site-header { top: var(--iab-h); }
 
 /* The Arabic words are written into the built pages (fast first paint); an English visitor sees them only once replaced. */
 html[lang="en"]:not(.tz-text) [data-i18n], html[lang="en"]:not(.tz-text) [data-i18n-html] { visibility: hidden; }
+
+/* ---------- discount code (checkout) ---------- */
+.co-coupon { margin: 0 0 14px; border: 1.5px dashed var(--line); border-radius: var(--radius-sm); padding: 10px 14px; }
+.co-coupon summary { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 800; font-size: .92rem; list-style: none; }
+.co-coupon summary::-webkit-details-marker { display: none; }
+.co-coupon summary .ico { width: 16px; height: 16px; color: var(--red); }
+.co-coupon-row { display: flex; gap: 8px; margin-top: 10px; }
+.co-coupon-row input { flex: 1; min-width: 0; min-height: 46px; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: var(--radius-sm); background: #fff; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.co-coupon-row input:focus { outline: none; border-color: var(--ink); }
+.co-coupon-row .btn { flex: none; min-height: 46px; padding: 0 18px; border: 1.5px solid var(--ink); color: var(--ink); background: #fff; }
+.co-coupon .field-err:empty { display: none; }
+.co-coupon .field-err { margin: 8px 0 0; }
+.co-coupon-ok { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0 0; color: var(--green); font-weight: 800; font-size: .88rem; }
+.co-coupon-ok .ico { width: 16px; height: 16px; }
+.co-coupon-ok .btn-link { margin-inline-start: auto; color: var(--gray); font-weight: 700; }
+#co-disc-row dd { color: var(--green); font-weight: 800; }
+#co-disc-row small, .co-result-lines + .totals small { font-weight: 700; letter-spacing: .03em; }
+
+/* ---------- email pop-up ---------- */
+.pop { text-align: center; }
+.pop-x { position: absolute; top: 12px; inset-inline-end: 12px; width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--cream-2); color: var(--ink); cursor: pointer; }
+.pop-x .ico { width: 16px; height: 16px; }
+.pop-ico { background: var(--red); }
+.pop h2 { margin: 0 0 6px; font-size: 1.45rem; }
+.pop-form { display: grid; gap: 10px; margin-top: 14px; text-align: start; }
+.pop-form input[type=email] { width: 100%; min-height: 50px; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: var(--radius-sm); background: #fff; }
+.pop-form input[type=email]:focus { outline: none; border-color: var(--ink); }
+.pop-consent { display: flex; gap: 8px; align-items: flex-start; font-size: .82rem; color: var(--gray); line-height: 1.5; }
+.pop-consent input { margin-top: 3px; width: 18px; height: 18px; flex: none; accent-color: var(--red); }
+.pop-form .field-err:empty { display: none; }
+
+/* ---------- product reviews ---------- */
+.reviews-sec { padding-top: 8px; }
+.stars { display: inline-flex; gap: 1px; color: #D9D9D9; font-size: 1rem; line-height: 1; }
+.stars .on { color: #F5B301; }
+.stars.lg { font-size: 1.35rem; }
+.rv-avg { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 8px 0 0; color: var(--gray); }
+.rv-avg b { color: var(--ink); font-size: 1.15rem; }
+.rv-list { list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 12px; max-width: 760px; }
+.rv { padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; }
+.rv-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.rv-head time { margin-inline-start: auto; color: var(--gray); font-size: .8rem; }
+.rv p { margin: 8px 0 0; line-height: 1.7; }
+.rv-form { max-width: 760px; margin: 0 auto 18px; padding: 20px; border-radius: var(--radius); background: var(--cream-2); border: 1.5px solid var(--yellow); display: grid; gap: 12px; }
+.rv-form h3 { margin: 0; }
+.rv-form .field-err:empty { display: none; }
+.rv-form .btn { justify-self: start; }
+.rv-note { margin: 0 auto 14px; max-width: 760px; color: var(--gray); text-align: center; }
+.rv-form .rv-note { text-align: start; margin: 0; }
+.rv-pick { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 4px; border: 0; margin: 0; padding: 0; }
+.rv-pick legend { width: 100%; margin-bottom: 6px; font-weight: 800; }
+.rv-pick label { cursor: pointer; font-size: 2rem; line-height: 1; color: #D9D9D9; }
+.rv-pick input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.rv-pick label:hover, .rv-pick label:hover ~ label, .rv-pick label:has(input:checked), .rv-pick label:has(input:checked) ~ label { color: #F5B301; }
+.rv-pick input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 4px; }
+.rv-thanks { text-align: center; justify-items: center; }
+.rv-thanks > .ico { width: 40px; height: 40px; color: var(--green); }
+#co-disc-row[hidden], .reviews-sec[hidden], .co-coupon-ok[hidden] { display: none !important; }

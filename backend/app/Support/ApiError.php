@@ -13,6 +13,7 @@ class ApiError extends \RuntimeException
         string $message,
         public int $status = 400,
         public array $fields = [],
+        public array $data = [],   // extra facts for the page (e.g. why a code was refused)
     ) {
         parent::__construct($message);
     }
@@ -37,6 +38,9 @@ class ApiError extends \RuntimeException
         $e = ['code' => $this->errCode, 'message' => $this->getMessage()];
         if ($this->fields) {
             $e['fields'] = $this->fields;
+        }
+        if ($this->data) {
+            $e['data'] = $this->data;
         }
 
         return ['ok' => false, 'error' => $e];

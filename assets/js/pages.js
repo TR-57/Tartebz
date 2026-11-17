@@ -9,6 +9,7 @@
   function byOrder(a, b) { return a.order - b.order; }
   function inCat(p, cat) { return !cat || cat === 'all' || p.cats.indexOf(cat) > -1; }
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var cpResult = null; // the discount code the server accepted for this cart: {code, discount}
   function store(k, v) {
     try {
       if (arguments.length > 1) { localStorage.setItem('tz_' + k, JSON.stringify(v)); return v; }
@@ -203,7 +204,9 @@
   function orderLines(o) {
     return '<ul class="co-lines co-result-lines">' + o.items.map(function (i) {
       return '<li><span class="co-name">' + e(TZ.lang() === 'ar' && i.nameAr ? i.nameAr : i.name) + ' × ' + i.qty + '</span></li>';
-    }).join('') + '</ul><dl class="totals"><div class="grand"><dt>' + e(t('co_total_paid')) + '</dt><dd dir="ltr">' + e(chargeText(o)) + '</dd></div></dl>';
+    }).join('') + '</ul><dl class="totals">' +
+      (o.discount > 0 ? '<div><dt>' + e(t('cp_discount')) + (o.couponCode ? ' <small dir="ltr">' + e(o.couponCode) + '</small>' : '') + '</dt><dd dir="ltr">−' + e(o.discount.toFixed(3)) + ' BHD</dd></div>' : '') +
+      '<div class="grand"><dt>' + e(t('co_total_paid')) + '</dt><dd dir="ltr">' + e(chargeText(o)) + '</dd></div></dl>';
   }
   function showWhatsapp(root, o, link) {
     root.innerHTML = resultCard(TZ.brandIcon('whatsapp'), 'is-wa', t('co_wa_title', { number: o.number }), t('co_wa_text'),
@@ -279,6 +282,70 @@
         root.innerHTML = ribbon + resultCard('<span class="spinner"></span>', 'is-wait', t('co_pending_title'), t('co_pending_slow'), orderLines(o));
       });
     })();
+  }
+
+  /* Product reviews: approved ones for everyone; the form only from the link in the "how was your order?" email. */
+  var revCache = {};
+  function stars(n, cls) {
+    var h = '';
+    for (var i = 1; i <= 5; i++) h += '<span class="' + (i <= Math.round(n) ? 'on' : '') + '">★</span>';
+    return '<span class="stars ' + (cls || '') + '" role="img" aria-label="' + e(t('rv_stars', { n: n })) + '">' + h + '</span>';
+  }
+  function reviews(p) {
+    if (TZ.shop && TZ.shop.reviews === false) return;
+    var sp = new URLSearchParams(location.search), token = sp.get('review'), rate = +sp.get('rate') || 0;
+    var draw = function (r, form) {
+      var sec = $('#reviews'), box = $('#reviews-body');
+      if (!sec || !box) return;
+      if (!r.count && !form) { sec.hidden = true; return; }
+      sec.hidden = false;
+      box.innerHTML = '<div class="section-head"><span class="kicker">' + TZ.icon('star') + e(t('rv_kicker')) + '</span><h2>' + e(t('rv_title')) + '</h2>' +
+        (r.count ? '<p class="rv-avg">' + stars(r.average, 'lg') + ' <b dir="ltr">' + r.average.toFixed(1) + '</b> <span>' + e(t('rv_count', { n: r.count })) + '</span></p>' : '') + '</div>' +
+        (form || '') +
+        (r.count ? '<ul class="rv-list">' + r.items.map(function (x) {
+          return '<li class="rv"><div class="rv-head">' + stars(x.rating) + '<b>' + e(x.name || t('rv_anon')) + '</b><time dir="ltr">' + e(x.date) + '</time></div>' +
+            (x.body ? '<p dir="auto">' + e(x.body) + '</p>' : '') + '</li>';
+        }).join('') + '</ul>' : '');
+      var f = $('#rv-form');
+      if (f) bindForm(f);
+    };
+    function formHtml(name, mine) {
+      var pick = mine ? mine.rating : rate;
+      return '<form class="rv-form" id="rv-form" novalidate><h3>' + e(t('rv_yours')) + '</h3>' +
+        (mine ? '<p class="rv-note">' + e(t(mine.status === 'approved' ? 'rv_live' : 'rv_waiting')) + '</p>' : '') +
+        '<fieldset class="rv-pick"><legend>' + e(t('rv_rate')) + '</legend>' + [5, 4, 3, 2, 1].map(function (i) {
+          return '<label><input type="radio" name="rating" value="' + i + '"' + (i === pick ? ' checked' : '') + '><span aria-hidden="true">★</span><b class="sr-only">' + e(t('rv_stars', { n: i })) + '</b></label>';
+        }).join('') + '</fieldset>' +
+        '<div class="field"><label for="rv-name">' + e(t('rv_name')) + '</label><input id="rv-name" name="name" maxlength="80" value="' + e(name || '') + '"></div>' +
+        '<div class="field"><label for="rv-body">' + e(t('rv_body')) + '</label><textarea id="rv-body" name="body" rows="3" maxlength="2000" dir="auto">' + e(mine && mine.body || '') + '</textarea></div>' +
+        '<p class="field-err" role="alert"></p><button class="btn btn-primary" type="submit">' + e(t('rv_send')) + '</button></form>';
+    }
+    function bindForm(f) {
+      f.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        var r = f.querySelector('[name=rating]:checked'), err = f.querySelector('.field-err');
+        if (!r) { err.textContent = t('rv_need_rate'); return; }
+        var b = f.querySelector('button'); b.disabled = true;
+        api('/api/reviews', { token: token, rating: +r.value, body: f.elements.body.value.trim(), name: f.elements.name.value.trim(), lang: TZ.lang() }).then(function (res) {
+          b.disabled = false;
+          if (!res.d || !res.d.ok) { err.textContent = (res.d && res.d.error && TZ.lang() === 'en' && res.d.error.message) || t('rv_err'); return; }
+          f.outerHTML = '<div class="rv-form rv-thanks">' + TZ.icon('check') + '<h3>' + e(t('rv_thanks')) + '</h3><p>' + e(t(res.d.status === 'approved' ? 'rv_live' : 'rv_waiting')) + '</p></div>';
+          var u = new URL(location.href); u.searchParams.delete('review'); u.searchParams.delete('rate'); history.replaceState(null, '', u.pathname + u.search + u.hash);
+          token = null;
+        });
+      });
+    }
+    var get = revCache[p.id] ? Promise.resolve(revCache[p.id]) : api('/api/products/' + p.id + '/reviews').then(function (res) {
+      var r = (res.d && res.d.reviews) || { count: 0, items: [] }; revCache[p.id] = r; return r;
+    });
+    if (token && /^[\w.-]{10,80}$/.test(token)) {
+      Promise.all([get, api('/api/reviews/check?token=' + encodeURIComponent(token))]).then(function (x) {
+        var c = x[1].d;
+        if (!c || !c.ok || +c.productId !== +p.id) { draw(x[0], '<p class="rv-note">' + e(t('rv_bad_link')) + '</p>'); return; }
+        draw(x[0], formHtml(c.name, c.review));
+        var sec = $('#reviews'); if (sec && !reviews._scrolled) { reviews._scrolled = true; sec.scrollIntoView({ block: 'start' }); }
+      });
+    } else get.then(function (r) { draw(r, ''); });
   }
 
   TZ.pages = {
@@ -507,6 +574,7 @@
         '<div><dt>' + e(t('weight')) + '</dt><dd>' + p.weight + ' ' + e(t('kg')) + '</dd></div></dl></div>' +
         '<div class="tab-panel" role="tabpanel" id="panel-b" aria-labelledby="tab-b" hidden><p>' + e(t('ship_tab_text')) + '</p><table class="ship-table"><tbody>' + shipRows + '</tbody></table></div></div>' +
         '</div></section>' +
+        '<section class="section reviews-sec" id="reviews" hidden><div class="container" id="reviews-body"></div></section>' +
         '<section class="section section-cream"><div class="container"><div class="section-head reveal"><span class="kicker">' + TZ.icon('sparkle') + e(t('cats_kicker')) + '</span><h2>' + e(t('related')) + '</h2></div>' +
         '<div class="grid products-grid">' + related.map(TZ.card).join('') + '</div></div></section>' +
         (recent.length ? '<section class="section recent-sec"><div class="container"><div class="section-head reveal"><span class="kicker">' + TZ.icon('clock') + e(t('recent_kicker')) + '</span><h2>' + e(t('recent_title')) + '</h2></div>' +
@@ -526,6 +594,7 @@
         root._io.observe(addBtn);
       }
       bindNotify(root, p);
+      reviews(p);
       if (location.hash === '#notify') { var nf = $('#notify'); if (nf) { nf.scrollIntoView({ block: 'center' }); var ni = $('#notify-input'); if (ni) ni.focus({ preventScroll: true }); } }
 
       if (!root._bound) {
@@ -583,6 +652,27 @@
       var root = $('#checkout-root'); if (!root) return;
       var token = new URLSearchParams(location.search).get('order');
       if (token && /^[a-f0-9]{40}$/.test(token)) { orderResult(root, token); return; }
+      // From a reminder email (?restore=…): the same cart and personal code on any device.
+      var restore = new URLSearchParams(location.search).get('restore');
+      if (restore && /^[a-f0-9]{40}$/.test(restore) && !root._restoring) {
+        root._restoring = true;
+        root.innerHTML = '<div class="co-empty"><span class="spinner"></span></div>';
+        api('/api/cart/restore/' + restore).then(function (res) {
+          var cr = res.d && res.d.cart;
+          var u = new URL(location.href); u.searchParams.delete('restore'); history.replaceState(null, '', u.pathname + u.search + u.hash);
+          if (cr) {
+            if (cr.items && cr.items.length) {
+              TZ.cart.clear();
+              cr.items.forEach(function (i) { if (TZ.find(i.id)) TZ.cart.add(i.id, i.qty); });
+            }
+            if (cr.code) store('co_coupon', cr.code);
+            if (cr.email) { var d0 = store('co_details'); d0 = d0 && typeof d0 === 'object' ? d0 : {}; if (!d0.email) { d0.email = cr.email; if (cr.name && !d0.first) d0.first = cr.name; store('co_details', d0); } }
+          } else if (TZ.toast) TZ.toast(t('cp_restore_gone'));
+          root._restoring = false;
+          TZ.pages.checkout();
+        });
+        return;
+      }
       var memo = {};
       root.querySelectorAll('input, textarea, select[name=dial]').forEach(function (f) { if (f.name && f.type !== 'radio' && f.type !== 'checkbox') memo[f.name] = f.value; });
       var oldDial = root.querySelector('select[name=dial]'), dialTouched = !!(oldDial && oldDial.dataset.touched), fromForm = !!oldDial;
@@ -647,7 +737,12 @@
         (TZ.delivery(c) ? '<small class="co-eta">' + e(TZ.delivery(c)) + '</small>' : '') +
         (TZ.cart.method() && TZ.cart.method().quoted ? '<small class="co-eta">' + e(t('ship_quoted_note')) + '</small>' : '') +
         '</dt><dd>' + e(TZ.cart.method() ? TZ.shipPrice(TZ.cart.method()) : TZ.money(0)) + '</dd></div>' +
-        '<div class="grand"><dt>' + e(t('cart_total')) + '</dt><dd>' + e(TZ.money(TZ.cart.total())) + '</dd></div></dl>' +
+        '<div id="co-disc-row" hidden><dt>' + e(t('cp_discount')) + ' <small dir="ltr" id="co-disc-code"></small></dt><dd id="co-disc"></dd></div>' +
+        '<div class="grand"><dt>' + e(t('cart_total')) + '</dt><dd id="co-grand">' + e(TZ.money(TZ.cart.total())) + '</dd></div></dl>' +
+        '<details class="co-coupon" id="co-coupon"' + (store('co_coupon') ? ' open' : '') + '><summary>' + TZ.icon('star') + e(t('cp_have')) + '</summary>' +
+        '<div class="co-coupon-row"><input id="f-coupon" name="coupon" dir="ltr" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" aria-label="' + e(t('cp_label')) + '" placeholder="' + e(t('cp_ph')) + '" value="' + e(store('co_coupon') || '') + '">' +
+        '<button type="button" class="btn btn-ghost" id="cp-apply">' + e(t('cp_apply')) + '</button></div>' +
+        '<p class="field-err" id="err-coupon" role="alert"></p><p class="co-coupon-ok" id="cp-ok" hidden></p></details>' +
         '<p class="co-charge" id="co-charge" hidden></p>' +
         '<div class="co-msg" id="co-msg" role="alert" hidden></div>' +
         '<button class="btn btn-primary btn-block btn-lg" type="submit" form="co-form" id="place-order">' + TZ.icon(chosen === 'tap' ? 'shield' : 'arrow') + e(t(chosen === 'tap' ? 'co_go_pay' : 'co_go_wa')) + '</button>' +
@@ -665,6 +760,68 @@
       $('#place-order').addEventListener('click', function (ev) { ev.preventDefault(); submit(ev); });
       form.addEventListener('input', function (ev) {
         if (ev.target.getAttribute('aria-invalid') === 'true') { ev.target.setAttribute('aria-invalid', 'false'); var er = $('#err-' + ev.target.name); if (er) er.textContent = ''; }
+      });
+
+      /* Discount code: the server checks it on every quote and again when the order is placed. */
+      var cpIn = $('#f-coupon'), cpSeq = 0;
+      function cpReason(err) {
+        var k = 'cp_err_' + (err && err.reason), msg = t(k, { min: err && err.min != null ? TZ.money(err.min) : '' });
+        return msg && msg !== k ? msg : (err && err.message) || t('cp_err_not_found');
+      }
+      function cpShow() {
+        var on = cpResult && cpResult.discount > 0, row = $('#co-disc-row');
+        if (!row) return;
+        row.hidden = !on;
+        $('#co-disc').textContent = on ? '−' + TZ.money(cpResult.discount) : '';
+        $('#co-disc-code').textContent = on ? cpResult.code : '';
+        $('#co-grand').textContent = TZ.money(Math.max(0, TZ.cart.total() - (on ? cpResult.discount : 0)));
+        var ok = $('#cp-ok');
+        ok.hidden = !cpResult;
+        if (cpResult) ok.innerHTML = TZ.icon('check') + e(t('cp_applied', { code: cpResult.code })) + ' <button type="button" class="btn-link" id="cp-remove">' + e(t('cp_remove')) + '</button>';
+        var rm = $('#cp-remove');
+        if (rm) rm.addEventListener('click', function () { store('co_coupon', ''); cpResult = null; cpIn.value = ''; $('#err-coupon').textContent = ''; cpShow(); });
+      }
+      function cpApply(code, quiet) {
+        code = String(code || '').trim().toUpperCase();
+        var errEl = $('#err-coupon');
+        if (!code) { cpResult = null; store('co_coupon', ''); cpShow(); return; }
+        var my = ++cpSeq, btn = $('#cp-apply');
+        if (!quiet) btn.disabled = true;
+        api('/api/checkout/quote', { items: cartItems(), country: TZ.country().code, cart: TZ.cart.key(), lang: TZ.lang(), coupon: code,
+          email: form.elements.email.value.trim(), shipping_method: TZ.cart.method() ? TZ.cart.method().id : '' }).then(function (res) {
+          if (my !== cpSeq || !document.body.contains(cpIn)) return;
+          btn.disabled = false;
+          var q = res.d && res.d.quote;
+          if (!q) { if (!quiet) errEl.textContent = t('co_err'); return; }
+          if (q.couponError) {
+            cpResult = null;
+            var r = q.couponError.reason;
+            // a code that can never work is forgotten; one that may work later (email, minimum) is kept
+            if (['not_found', 'off', 'expired', 'used_up', 'already_used'].indexOf(r) > -1) store('co_coupon', '');
+            else store('co_coupon', code);
+            if (!quiet || r === 'email' || r === 'min' || r === 'items') errEl.textContent = cpReason(q.couponError);
+          } else {
+            errEl.textContent = '';
+            store('co_coupon', code);
+            cpResult = { code: q.coupon ? q.coupon.code : code, discount: q.discount || 0 };
+          }
+          cpShow();
+        });
+      }
+      $('#cp-apply').addEventListener('click', function () { cpApply(cpIn.value); });
+      cpIn.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); cpApply(cpIn.value); } });
+      cpShow();
+      if (store('co_coupon')) cpApply(store('co_coupon'), true);
+
+      // A typed email lets the shop remind the customer about this cart (only when the shop switched that on).
+      var lastMail = '';
+      form.elements.email.addEventListener('change', function () {
+        var m = form.elements.email.value.trim().toLowerCase();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m) || m === lastMail) return;
+        lastMail = m;
+        api('/api/cart/email', { items: cartItems(), cart: TZ.cart.key(), email: m, lang: TZ.lang(), country: TZ.country().code,
+          name: form.elements.first.value.trim(), value: Math.round(TZ.cart.subtotal() * 1000) / 1000 });
+        if (store('co_coupon')) cpApply(store('co_coupon'), true);
       });
 
       // Tell the customer up front when the card is charged in BHD instead of their own currency.
@@ -697,14 +854,16 @@
         var btn = $('#place-order'); btn.disabled = true; btn.classList.add('is-busy'); sending = true;
         hideMsg();
         api('/api/checkout', {
-          items: cartItems(), cart: TZ.cart.key(), country: TZ.country().code, method: chosen, lang: TZ.lang(), expected_total: Math.round(TZ.cart.total() * 1000) / 1000,
+          items: cartItems(), cart: TZ.cart.key(), country: TZ.country().code, method: chosen, lang: TZ.lang(),
+          expected_total: Math.round(Math.max(0, TZ.cart.total() - (cpResult ? cpResult.discount : 0)) * 1000) / 1000,
+          coupon: cpResult ? cpResult.code : '',
           shipping_method: TZ.cart.method() ? TZ.cart.method().id : '',
           first_name: v('first'), last_name: v('last'), email: v('email'), phone: ph.full,
           address1: v('addr1'), address2: v('addr2'), city: v('city'), state: v('state'), notes: v('notes')
         }).then(function (res) {
           sending = false; btn.disabled = false; btn.classList.remove('is-busy');
           var d = res.d || {};
-          if (d.ok) rememberDetails();
+          if (d.ok) { rememberDetails(); store('co_coupon', ''); cpResult = null; }
           if (d.ok && d.redirect) {
             btn.disabled = true;
             TZ.pending.set(d.order); // reminds them on any page if they leave the payment page without paying
@@ -717,6 +876,12 @@
             return;
           }
           var err = d.error || {};
+          if (err.code === 'coupon') {
+            cpResult = null; cpShow(); $('#co-coupon').open = true;
+            $('#err-coupon').textContent = cpReason(err.data || {});
+            showMsg(cpReason(err.data || {}));
+            return;
+          }
           if (err.code === 'changed' && d.quote) { if (d.quote.method) TZ.chooseMethod(d.quote.method.id); syncCart(d.quote); showMsg(t('co_changed')); TZ.pages.checkout(); showMsg(t('co_changed')); return; }
           if (err.fields) {
             var map = { first_name: 'first', last_name: 'last', address1: 'addr1', address2: 'addr2' };

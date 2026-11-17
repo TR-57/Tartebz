@@ -58,6 +58,7 @@ class StorefrontController extends Controller
                     'whatsapp' => $sf['whatsappNumber'] ?: preg_replace('/\D/', '', $biz['whatsapp'] ?: $biz['phone']),
                     'backInStock' => (bool) $sf['backInStock'],
                     'paymentLogos' => array_values($sf['paymentLogos']),
+                    'reviews' => (bool) (Settings::get('reviews')['enabled'] ?? true),
                 ];
             })(),
             // Delivery methods per destination; the storefront prices them exactly like App\Support\Shipping::price().
@@ -75,6 +76,7 @@ class StorefrontController extends Controller
                 ], \App\Support\Shipping::destinations())),
             ],
             'maintenance' => \App\Support\Maintenance::on(),
+            'popup' => \App\Support\Popup::forStorefront(),
             'payments' => \App\Http\Controllers\Api\CheckoutController::methods() + ['testMode' => \App\Support\Tap::enabled() && \App\Support\Tap::mode() === 'test'],
             'baseCurrency' => Currency::base(),
             'currencies' => Currency::forStorefront(),

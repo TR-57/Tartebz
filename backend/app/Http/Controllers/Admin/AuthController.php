@@ -27,8 +27,17 @@ class AuthController extends Controller
     {
         $a = AdminAuth::resolve($r);
 
-        return $this->ok(['admin' => $a ? ['id' => $a->id, 'name' => $a->name, 'email' => $a->email, 'role' => $a->role] : null,
+        return $this->ok(['admin' => $a ? ['id' => $a->id, 'name' => $a->name, 'email' => $a->email, 'role' => $a->role, 'orderEmails' => (bool) ($a->order_emails ?? true)] : null,
             'maintenance' => $a ? \App\Support\Maintenance::on() : null]);
+    }
+
+    /** {orderEmails} – "Email me about orders" (new orders, order updates). */
+    public function preferences(Request $r)
+    {
+        $a = $this->admin($r);
+        DB::table('admins')->where('id', $a->id)->update(['order_emails' => $this->bool($r, 'orderEmails'), 'updated_at' => now()]);
+
+        return $this->ok(['orderEmails' => $this->bool($r, 'orderEmails')]);
     }
 
     public function login(Request $r)

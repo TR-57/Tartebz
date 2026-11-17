@@ -17,7 +17,7 @@ class RolePermissionsTest extends TestCase
     private const PUBLIC = ['api/admin/me', 'api/admin/login', 'api/admin/logout', 'api/admin/forgot', 'api/admin/reset', 'api/admin/i18n.js'];
 
     /** Signed-in routes open to every role (own password, reporting untranslated admin text). */
-    private const ANY_SIGNED_IN = ['api/admin/password', 'api/admin/i18n/missing'];
+    private const ANY_SIGNED_IN = ['api/admin/password', 'api/admin/i18n/missing', 'api/admin/me/preferences'];
 
     private const LADDER = ['staff' => 1, 'manager' => 2, 'owner' => 3];
 

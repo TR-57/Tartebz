@@ -20,7 +20,7 @@ class DashboardController extends Controller
             'unhandled' => DB::table('orders')->where('status', 'paid')->count(),
             'refundsPending' => DB::table('order_refunds')->where('status', 'pending')->count(),
             'awaitingPayment' => DB::table('orders')->whereIn('status', ['pending_payment', 'awaiting_whatsapp'])->where('created_at', '>', now()->subDays(3))->count(),
-            'toShip' => DB::table('orders')->whereIn('status', ['paid', 'processing'])->count(),
+            'toShip' => DB::table('orders')->whereIn('status', ['paid', 'processing', 'ready'])->count(),
             'lowStock' => DB::table('products')->where('status', 'active')->where('type', 'simple')->where('manage_stock', true)->whereBetween('stock_qty', [1, \App\Support\Catalog::LOW_STOCK])->count(),
             'customers' => DB::table('orders')->where('payment_status', 'paid')->distinct()->count('email'),
             'enquiries' => $has('enquiries') ? DB::table('enquiries')->where('status', 'new')->count() : 0,
