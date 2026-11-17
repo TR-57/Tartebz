@@ -47,23 +47,38 @@ class Tap
         return (bool) self::cfg()['enabled'] && self::secret() !== '';
     }
 
+    /** Removes spaces, line breaks and invisible characters that come along when a key is copied from a page or a PDF. */
+    public static function cleanKey(string $key): string
+    {
+        return (string) preg_replace('/[\s\x{00A0}\x{200B}-\x{200F}\x{2028}\x{2029}\x{202A}-\x{202E}\x{2060}\x{FEFF}]+/u', '', $key);
+    }
+
     /** Checks a key's shape before it is saved: sk_test_… for test, sk_live_… for live. */
-    public static function keyProblem(string $key, string $mode): ?string
+    public static function keyProblem(string $key, string $mode, string $kind = 'sk'): ?string
     {
         if ($key === '') {
             return null;
         }
-        $want = $mode === 'live' ? 'sk_live_' : 'sk_test_';
+        $other = $mode === 'live' ? 'test' : 'live';
+        $want = $kind.'_'.$mode.'_';
+        $name = $kind === 'pk' ? 'publishable' : 'secret';
+        if (str_starts_with($key, $kind.'_'.$other.'_')) {
+            return "This is a {$other} key – paste it in the ".ucfirst($other)." box. A {$mode} {$name} key starts with {$want}.";
+        }
+        $swap = $kind === 'pk' ? 'sk' : 'pk';
+        if (str_starts_with($key, $swap.'_')) {
+            return 'This is the '.($swap === 'pk' ? 'publishable' : 'secret')." key – it goes in the other field. A {$mode} {$name} key starts with {$want}.";
+        }
         if (! str_starts_with($key, $want)) {
-            return "This does not look like a {$mode} secret key – it should start with {$want}.";
+            return "This does not look like a {$mode} {$name} key – it should start with {$want}.";
         }
 
         return null;
     }
 
-    public static function request(string $method, string $path, ?array $body = null, ?string $mode = null): array
+    public static function request(string $method, string $path, ?array $body = null, ?string $mode = null, ?string $key = null): array
     {
-        $key = self::secret($mode);
+        $key ??= self::secret($mode);
         if ($key === '') {
             throw new ApiError('tap_not_set', 'Tap is not set up: save the secret key for '.($mode ?? self::mode()).' mode in Payments.', 409);
         }
@@ -168,13 +183,17 @@ class Tap
     }
 
     /**
-     * Checks the saved key for a mode without charging anything: asks Tap for a charge that does not exist.
+     * Checks a key without charging anything: asks Tap for a charge that does not exist.
      * A wrong key answers 401; a right key answers "not found".
+     * $key: a key typed in the admin but not saved yet; without it the saved key for the mode is used.
      */
-    public static function test(string $mode): array
+    public static function test(string $mode, ?string $key = null): array
     {
+        if ($key !== null && ($why = self::keyProblem($key, $mode))) {
+            return ['connected' => false, 'message' => $why];
+        }
         try {
-            self::request('GET', 'charges/chg_TZconnectioncheck0000000000', null, $mode);
+            self::request('GET', 'charges/chg_TZconnectioncheck0000000000', null, $mode, $key);
 
             return ['connected' => true, 'message' => 'Connected to Tap.'];
         } catch (ApiError $e) {

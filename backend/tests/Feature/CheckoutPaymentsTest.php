@@ -134,8 +134,16 @@ class CheckoutPaymentsTest extends TestCase
         $this->getJson('/api/admin/payments')->assertStatus(403);
         $this->actingAsAdmin($this->makeAdmin('owner'));
         $this->putJson('/api/admin/payments', ['mode' => 'live', 'liveSecret' => 'sk_test_oops', 'enabled' => true])
+            ->assertStatus(422)->assertJsonPath('error.fields.liveSecret', 'This is a test key – paste it in the Test box. A live secret key starts with sk_live_.');
+        $this->putJson('/api/admin/payments', ['liveSecret' => 'oops'])
             ->assertStatus(422)->assertJsonPath('error.fields.liveSecret', 'This does not look like a live secret key – it should start with sk_live_.');
-        $r = $this->putJson('/api/admin/payments', ['mode' => 'live', 'liveSecret' => 'sk_live_REAL99998888', 'enabled' => true])->assertOk();
+        $this->putJson('/api/admin/payments', ['livePublishable' => 'sk_live_x'])
+            ->assertStatus(422)->assertJsonPath('error.fields.livePublishable', 'This is the secret key – it goes in the other field. A live publishable key starts with pk_live_.');
+        $this->putJson('/api/admin/payments', ['merchantId' => 'merchant 8o?'])->assertStatus(422)->assertJsonPath('error.fields.merchantId', fn ($m) => str_contains($m, 'Merchant ID'));
+        // a key copied with a stray space, line break and an invisible character is cleaned before it is saved
+        $r = $this->putJson('/api/admin/payments', ['mode' => 'live', 'liveSecret' => " sk_live_REAL9999\u{200B}8888\n", 'enabled' => true, 'merchantId' => ' merchant_8oRhB3426825hPxO94j10f359 '])->assertOk();
+        $r->assertJsonPath('tap.merchantId', 'merchant_8oRhB3426825hPxO94j10f359');
+        $this->assertSame('sk_live_REAL99998888', \App\Support\Tap::secret('live'));
         $this->assertStringNotContainsString('sk_live_REAL99998888', $r->getContent());
         $r->assertJsonPath('tap.liveSecret.set', true)->assertJsonPath('tap.liveSecret.last4', '8888')->assertJsonPath('tap.mode', 'live');
         $this->assertStringNotContainsString('REAL9999', (string) DB::table('settings')->where('k', 'payments')->value('v'));
@@ -150,6 +158,16 @@ class CheckoutPaymentsTest extends TestCase
         $this->postJson('/api/admin/payments/test', ['mode' => 'live'])->assertOk()->assertJsonPath('connected', true);
         $keyOk = false;
         $this->postJson('/api/admin/payments/test', ['mode' => 'live'])->assertOk()->assertJsonPath('connected', false);
+
+        // a key typed but not saved yet is tested as it is, with that key, and nothing is saved
+        $keyOk = true; $sent = null;
+        Http::fake(function ($req) use (&$sent) { $sent = $req->header('Authorization')[0] ?? ''; return Http::response(['errors' => [['description' => 'Not found']]], 404); });
+        $this->postJson('/api/admin/payments/test', ['mode' => 'live', 'key' => 'sk_live_TYPED1234'])->assertOk()
+            ->assertJsonPath('connected', true)->assertJsonPath('message', 'Connected to Tap – the key is accepted. Press Save to keep this key.');
+        $this->assertSame('Bearer sk_live_TYPED1234', $sent);
+        $this->assertSame('sk_live_REAL99998888', \App\Support\Tap::secret('live'));
+        $this->postJson('/api/admin/payments/test', ['mode' => 'test', 'key' => 'sk_live_TYPED1234'])->assertOk()
+            ->assertJsonPath('connected', false)->assertJsonPath('message', 'This is a live key – paste it in the Live box. A test secret key starts with sk_test_.');
     }
 
     public function test_sync_job_catches_payments_whose_notification_was_lost(): void

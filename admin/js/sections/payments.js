@@ -28,7 +28,7 @@ export default {
               <label><input type="radio" name="mode" value="test" ${t.mode !== 'live' ? 'checked' : ''}><span>Test</span></label>
               <label><input type="radio" name="mode" value="live" ${t.mode === 'live' ? 'checked' : ''}><span>Live</span></label></div>
             <span class="hint">Test mode uses the test keys: Tap test cards only, no real money.</span></div>
-          <div class="field"><label for="merchantId">Merchant ID (optional)</label><input id="merchantId" name="merchantId" value="${esc(t.merchantId)}" dir="ltr"><span class="hint">Only if Tap gave you one for this shop.</span></div>
+          <div class="field" data-field="merchantId"><label for="merchantId">Merchant ID</label><input id="merchantId" name="merchantId" value="${esc(t.merchantId)}" dir="ltr" autocomplete="off" spellcheck="false" placeholder="merchant_…"><span class="hint">From your Tap dashboard (goSell › API credentials). Sent with every payment. Leave empty only if Tap did not give you one.</span></div>
           <div class="field"><span class="field-label">Charge in these currencies</span>
             <div class="logo-picks">${r.currencies.map((c) => `<label class="chip-check"><input type="checkbox" name="cur" value="${c}" ${t.chargeCurrencies.includes(c) || c === 'BHD' ? 'checked' : ''} ${c === 'BHD' ? 'disabled' : ''}><span data-noi18n>${esc(c)}</span></label>`).join('')}</div>
             <span class="hint">Tick only currencies your Tap account can accept. Customers from other countries are charged in BHD (the same price, converted).</span></div>
@@ -42,7 +42,7 @@ export default {
           ${keyField('liveSecret', 'Secret key (sk_live_…)', t.liveSecret, 'sk_live_…')}
           ${keyField('livePublishable', 'Publishable key (pk_live_…)', t.livePublishable, 'pk_live_…')}
           <button type="button" class="btn btn-sm" data-test="live">${icon('check')} Test connection (live keys)</button> <span class="test-res" data-res="live"></span>
-          <p class="muted small">Keys are stored encrypted and never shown again. Save before testing a new key.</p>
+          <p class="muted small">Keys are stored encrypted and never shown again. “Test connection” checks the key typed in the box, or the saved key when the box is empty.</p>
         </div>
       </div>
       <div class="card"><h2>WhatsApp orders</h2>
@@ -78,7 +78,13 @@ export default {
         if (cl) body['clear' + k[0].toUpperCase() + k.slice(1)] = cl.checked;
       });
       if (body.mode === 'live' && body.enabled && !(await confirmBox('Switch to LIVE? Customers will be charged real money.', { ok: 'Go live' }))) return;
-      try { await busy(main.querySelector('#save'), () => api('payments', { method: 'PUT', body })); toast('Saved'); this.view(main, route, alive); } catch (err) { showErrors(form, err); }
+      try { await busy(main.querySelector('#save'), () => api('payments', { method: 'PUT', body })); toast('Saved'); this.view(main, route, alive); } catch (err) {
+        showErrors(form, err);
+        // nothing is saved while a field is wrong: say so plainly and take them to it
+        toast(err && err.fields ? 'Nothing was saved – fix the field marked in red, then press Save again.' : (err.message || 'Not saved'), 'err');
+        const bad = form.querySelector('.has-err input, .has-err textarea');
+        if (bad) { bad.scrollIntoView({ block: 'center', behavior: 'smooth' }); bad.focus({ preventScroll: true }); }
+      }
     });
     main.querySelector('#apfile').addEventListener('change', async (e) => {
       const f = e.target.files[0];
@@ -94,7 +100,8 @@ export default {
       const out = main.querySelector(`[data-res="${b.dataset.test}"]`);
       out.textContent = '…';
       try {
-        const res = await busy(b, () => api('payments/test', { method: 'POST', body: { mode: b.dataset.test } }));
+        const typed = form.querySelector(`[name="${b.dataset.test}Secret"]`).value.trim();
+        const res = await busy(b, () => api('payments/test', { method: 'POST', body: { mode: b.dataset.test, key: typed } }));
         out.className = 'test-res ' + (res.connected ? 'ok' : 'err'); out.textContent = res.message; out.dataset.mark = res.connected ? '✓' : '✗';
       } catch (err) { out.className = 'test-res err'; out.textContent = err.message; toastErr(err); }
     }));

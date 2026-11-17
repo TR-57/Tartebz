@@ -562,12 +562,9 @@
     "Mode": "الوضع",
     "Live": "مباشر",
     "Test mode uses the test keys: Tap test cards only, no real money.": "الوضع التجريبي يستخدم المفاتيح التجريبية: بطاقات Tap التجريبية فقط، بدون مبالغ حقيقية.",
-    "Merchant ID (optional)": "رقم التاجر (اختياري)",
-    "Only if Tap gave you one for this shop.": "فقط إذا أعطتك Tap رقمًا لهذا المتجر.",
     "Charge in these currencies": "الدفع بهذه العملات",
     "Tick only currencies your Tap account can accept. Customers from other countries are charged in BHD (the same price, converted).": "اختر فقط العملات التي يقبلها حسابك في Tap. العملاء من الدول الأخرى يدفعون بالدينار البحريني (نفس السعر محوّلًا).",
     "Keys": "المفاتيح",
-    "Keys are stored encrypted and never shown again. Save before testing a new key.": "تُحفظ المفاتيح مشفرة ولا تظهر مرة أخرى. احفظ قبل اختبار مفتاح جديد.",
     "Test connection (test keys)": "اختبار الاتصال (المفاتيح التجريبية)",
     "Test connection (live keys)": "اختبار الاتصال (المفاتيح المباشرة)",
     "WhatsApp orders": "طلبات واتساب",
@@ -1006,7 +1003,15 @@
     "the customer’s phone is empty": "هاتف العميل فارغ",
     "Customer emailed: delivered.": "أُرسل بريد للعميل: تم التوصيل.",
     "An hour from 0 to 24, or empty for no cut-off.": "ساعة من 0 إلى 24، أو فارغ بلا موعد.",
-    "Keep at least two working days.": "أبقِ يومي عمل على الأقل."
+    "Keep at least two working days.": "أبقِ يومي عمل على الأقل.",
+    "Merchant ID": "رقم التاجر (Merchant ID)",
+    "From your Tap dashboard (goSell › API credentials). Sent with every payment. Leave empty only if Tap did not give you one.": "من لوحة تحكم Tap (goSell › API credentials). يُرسل مع كل عملية دفع. اتركه فارغًا فقط إذا لم تعطك Tap رقمًا.",
+    "Keys are stored encrypted and never shown again. “Test connection” checks the key typed in the box, or the saved key when the box is empty.": "تُحفظ المفاتيح مشفرة ولا تظهر مرة أخرى. «اختبار الاتصال» يفحص المفتاح المكتوب في الخانة، أو المفتاح المحفوظ إذا كانت الخانة فارغة.",
+    "Nothing was saved – fix the field marked in red, then press Save again.": "لم يُحفظ شيء – صحّح الحقل المحدد باللون الأحمر، ثم اضغط حفظ مرة أخرى.",
+    "Not saved": "لم يُحفظ",
+    "A Tap Merchant ID has only letters, numbers and _ (for example merchant_… or 1234567).": "رقم التاجر في Tap يحتوي فقط على حروف وأرقام و _ (مثل merchant_… أو 1234567).",
+    "Connected to Tap – the key is accepted. Press Save to keep this key.": "تم الاتصال بـ Tap – المفتاح مقبول. اضغط حفظ للاحتفاظ بهذا المفتاح.",
+    "Connected to Tap. Press Save to keep this key.": "تم الاتصال بـ Tap. اضغط حفظ للاحتفاظ بهذا المفتاح."
   },
   "patterns": [
     [
@@ -1214,14 +1219,6 @@
       "احفظ مفتاح API ($1) قبل تفعيل سمسا في هذا الوضع."
     ],
     [
-      "This does not look like a (test|live) secret key – it should start with (\\S+)\\.",
-      "هذا لا يبدو مفتاحًا سريًا ($1) – يجب أن يبدأ بـ $2."
-    ],
-    [
-      "A (test|live) publishable key starts with (\\S+)\\.",
-      "المفتاح العام ($1) يبدأ بـ $2."
-    ],
-    [
       "Tap is not set up: save the secret key for (\\w+) mode in Payments\\.",
       "Tap غير مُعدّ: احفظ المفتاح السري للوضع $1 في صفحة الدفع."
     ],
@@ -1288,6 +1285,18 @@
     [
       "This mobile number does not look right for the country code chosen \\(example: (.+)\\)\\.",
       "رقم الجوال غير صحيح لرمز الدولة المختار (مثال: $1)."
+    ],
+    [
+      "This does not look like a (test|live) (secret|publishable) key – it should start with (\\S+)\\.",
+      "هذا لا يبدو مفتاحًا ($1) صحيحًا – يجب أن يبدأ بـ $3."
+    ],
+    [
+      "This is a (test|live) key – paste it in the (Test|Live) box\\. A (test|live) (secret|publishable) key starts with (\\S+)\\.",
+      "هذا مفتاح ($1) – الصقه في خانة $2. المفتاح ($3) يبدأ بـ $5."
+    ],
+    [
+      "This is the (secret|publishable) key – it goes in the other field\\. A (test|live) (secret|publishable) key starts with (\\S+)\\.",
+      "هذا المفتاح ($1) – مكانه في الخانة الثانية. المفتاح ($2) يبدأ بـ $4."
     ]
   ]
 }

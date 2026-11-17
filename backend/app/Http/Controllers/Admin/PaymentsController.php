@@ -32,15 +32,12 @@ class PaymentsController extends Controller
 
                     continue;
                 }
-                $v = trim((string) $r->input($k, ''));
+                $v = Tap::cleanKey((string) $r->input($k, ''));
                 if ($v === '') {
                     continue; // empty = keep the saved key
                 }
-                if ($kind === 'Secret' && ($why = Tap::keyProblem($v, $mode))) {
+                if ($why = Tap::keyProblem($v, $mode, $kind === 'Secret' ? 'sk' : 'pk')) {
                     $f[$k] = $why;
-                }
-                if ($kind === 'Publishable' && ! str_starts_with($v, $mode === 'live' ? 'pk_live_' : 'pk_test_')) {
-                    $f[$k] = 'A '.$mode.' publishable key starts with '.($mode === 'live' ? 'pk_live_' : 'pk_test_').'.';
                 }
                 $tap[$k] = $kind === 'Secret' ? Secret::seal($v) : $v;
             }
@@ -54,13 +51,18 @@ class PaymentsController extends Controller
         if (! in_array('BHD', $curs, true)) {
             array_unshift($curs, 'BHD');
         }
+        // Merchant ID from the Tap dashboard (e.g. merchant_… or a number). Sent with every charge when set.
+        $merchant = Tap::cleanKey((string) $r->input('merchantId', ''));
+        if ($merchant !== '' && ! preg_match('/^[A-Za-z0-9_-]{3,64}$/', $merchant)) {
+            $f['merchantId'] = 'A Tap Merchant ID has only letters, numbers and _ (for example merchant_… or 1234567).';
+        }
         if ($f) {
             throw ApiError::validation($f);
         }
         $was = ['enabled' => $tap['enabled'], 'mode' => $tap['mode']];
         $tap['enabled'] = $enabled;
         $tap['mode'] = $mode;
-        $tap['merchantId'] = $this->str($r, 'merchantId', 40);
+        $tap['merchantId'] = $merchant;
         $tap['chargeCurrencies'] = $curs;
         $p['tap'] = $tap;
         $p['whatsapp'] = ['enabled' => $this->bool($r, 'whatsappEnabled', (bool) ($p['whatsapp']['enabled'] ?? true))];
@@ -73,8 +75,12 @@ class PaymentsController extends Controller
     public function test(Request $r)
     {
         $mode = $r->input('mode') === 'live' ? 'live' : 'test';
-        $res = Tap::test($mode);
-        Audit::log($r, 'payments_tested', 'settings', 'payments', ['mode' => $mode, 'connected' => $res['connected']]);
+        $typed = Tap::cleanKey((string) $r->input('key', ''));   // a key typed but not saved yet: test it as it is
+        $res = Tap::test($mode, $typed !== '' ? $typed : null);
+        if ($typed !== '' && $res['connected']) {
+            $res['message'] .= ' Press Save to keep this key.';
+        }
+        Audit::log($r, 'payments_tested', 'settings', 'payments', ['mode' => $mode, 'connected' => $res['connected'], 'unsaved' => $typed !== '']);
 
         return $this->ok($res);
     }
