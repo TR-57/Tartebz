@@ -90,15 +90,15 @@ function paint(main, d, reload) {
       <div class="smsa-duties">${Object.entries(DUTIES).map(([k, [t, x]]) => `<label class="smsa-duty${s.dutiesBy === k ? ' on' : ''}"><input type="radio" name="dutiesBy" value="${k}" ${s.dutiesBy === k ? 'checked' : ''}>
         <span><b>${esc(t)}</b><small>${esc(x)}</small></span></label>`).join('')}</div></div>
     <div class="card"><h2>${icon('truck')} Pickups</h2>
-      <p class="muted small">Each order with a waybill has “Book SMSA pickup”: the day and a time window inside the hours below. SMSA’s API cannot take pickup bookings, so the request goes to SMSA by email (or WhatsApp). Ask your SMSA account manager which address takes pickup requests.</p>
+      <p class="muted small">“Book SMSA pickup” at the top of the orders list plans the collection, opens SMSA’s dashboard and gives the answers for its form (Manage Pickup › Initiate Pickup Request). SMSA’s API cannot book a collection by itself. The booking number SMSA gives is kept here for the whole team.</p>
       <div class="form-grid">
-        ${field('pickup.email', 'SMSA pickup email', s.pickup.email, { dir: 'ltr', hint: 'One or more, separated by commas. A copy goes to the store notification addresses.' })}
-        ${field('pickup.whatsapp', 'SMSA WhatsApp number (optional)', s.pickup.whatsapp, { dir: 'ltr', type: 'tel', hint: 'With the country code. Used when you choose “On WhatsApp”.' })}
+        ${field('pickup.dashboardUrl', 'SMSA dashboard link', s.pickup.dashboardUrl, { dir: 'ltr', full: true, hint: 'Opened when you book. If you can, paste the address of the Initiate Pickup Request page itself.' })}
         ${field('pickup.from', 'Pickup hours from', s.pickup.from, { type: 'time', dir: 'ltr' })}
         ${field('pickup.until', 'Pickup hours until', s.pickup.until, { type: 'time', dir: 'ltr' })}
         ${field('pickup.minHours', 'Shortest window (hours)', s.pickup.minHours, { type: 'number', step: '0.5', min: '0.5', max: '8', dir: 'ltr' })}
+        ${field('pickup.heavyKg', 'Heavy from (kg)', s.pickup.heavyKg, { type: 'number', step: '1', min: '1', dir: 'ltr', hint: 'The “Heavy shipment” answer is ticked by itself from this weight.' })}
       </div>
-      ${d.pickups.length ? `<h3>Booked</h3><ul class="list-rows small">${d.pickups.map((p) => `<li><b data-noi18n>#${p.id} · ${esc(p.when)}</b> ${p.mode !== 'live' ? pill('Sandbox', 'amber') : ''}
+      ${d.pickups.length ? `<h3>Booked</h3><ul class="list-rows small">${d.pickups.map((p) => `<li><b data-noi18n>#${p.id} · ${esc(p.when)}</b> ${p.mode !== 'live' ? pill('Sandbox', 'amber') : p.smsaRef ? `<span>SMSA booking no.</span> <b data-noi18n>${esc(p.smsaRef)}</b>` : pill('Not booked in SMSA yet', 'amber')}
         <span data-noi18n>${p.awbs.map((x) => `<a href="#/orders/${x.orderId}">#${esc(x.number)}</a>`).join(', ')}</span> <span class="muted" data-noi18n>· ${nf(p.parcels)} × · ${esc(p.by)}</span></li>`).join('')}</ul>` : '<p class="muted small">No pickups booked.</p>'}
     </div>
     <div class="savebar"><button type="submit" class="btn btn-primary" id="save">Save</button></div>
@@ -121,7 +121,7 @@ function paint(main, d, reload) {
       services: Object.fromEntries(d.methods.filter((m) => m.abroad && v('svc_' + m.id)).map((m) => [m.id, v('svc_' + m.id).value])),
       shipper: Object.fromEntries(['name', 'phone', 'country', 'city', 'district', 'address1', 'address2', 'postalCode'].map((k) => [k, v('shipper.' + k).value])),
       testKey: v('testKey').value.trim(), liveKey: v('liveKey').value.trim(),
-      pickup: { email: v('pickup.email').value, whatsapp: v('pickup.whatsapp').value, from: v('pickup.from').value, until: v('pickup.until').value, minHours: +v('pickup.minHours').value || 1 },
+      pickup: { dashboardUrl: v('pickup.dashboardUrl').value.trim(), from: v('pickup.from').value, until: v('pickup.until').value, minHours: +v('pickup.minHours').value || 1, heavyKg: +v('pickup.heavyKg').value || 30 },
     };
     ['clearTestKey', 'clearLiveKey'].forEach((k) => { if (v(k)) body[k] = v(k).checked; });
     if (duties !== s.dutiesBy && !(await confirmBox(`Import VAT and duty on shipments outside Bahrain will be paid by: ${DUTIES[duties][0]}. This applies to waybills created from now on.`, { ok: 'Continue' }))) return;

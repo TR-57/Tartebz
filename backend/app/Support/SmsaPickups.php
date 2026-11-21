@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\DB;
 /**
  * SMSA pickup bookings: "come and collect these waybills from the shop on <day> between <from> and <until>".
  *
- * SMSA's eCom API has no pickup endpoint (only waybills, tracking and customer returns), so the booking is sent to
- * SMSA's pickup desk or account manager by email (Settings › SMSA shipping › Pickups), or written out for WhatsApp.
- * The window is inside the shop's pickup hours (09:00–17:00 by default), on the same day or a later one; a booking can
- * carry several waybills, so one courier visit collects them all. Sandbox waybills are booked here but never sent.
- * A booking is done by itself once SMSA has scanned every parcel in it (tracking), and can be cancelled before that.
+ * SMSA's eCom API cannot book a courier collection (its "pickup" endpoints are customer returns); collections are booked
+ * in SMSA's e-commerce dashboard under Manage Pickup › Initiate Pickup Request. So a booking here keeps the day, the
+ * window (inside 09:00–17:00 by default) and the waybills, opens SMSA's dashboard, gives the exact answers for that form
+ * (each with a copy button) and keeps SMSA's booking number once it is pasted back, for the whole team to see.
+ * A booking can carry several waybills (one courier visit); it closes by itself once SMSA has scanned every parcel.
  */
 class SmsaPickups
 {
@@ -25,17 +25,11 @@ class SmsaPickups
         $p = (array) (Smsa::cfg()['pickup'] ?? []);
 
         return [
-            'email' => (string) ($p['email'] ?? ''), 'whatsapp' => (string) ($p['whatsapp'] ?? ''),
+            'dashboardUrl' => (string) (($p['dashboardUrl'] ?? '') ?: 'https://ecom.smsaexpress.com/'),
+            'heavyKg' => max(1, (float) ($p['heavyKg'] ?? 30)),
             'from' => self::hhmm($p['from'] ?? '09:00') ?? '09:00', 'until' => self::hhmm($p['until'] ?? '17:00') ?? '17:00',
             'minHours' => max(0.5, min(8, (float) ($p['minHours'] ?? 1))),
         ];
-    }
-
-    /** SMSA pickup email addresses (one or more, comma separated). */
-    public static function emails(): array
-    {
-        return array_values(array_filter(array_map(fn ($e) => strtolower(trim($e)), preg_split('/[\s,;]+/', self::cfg()['email'])),
-            fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL) !== false));
     }
 
     public static function hhmm(mixed $v): ?string
@@ -136,26 +130,24 @@ class SmsaPickups
             ->when($mode, fn ($q) => $q->where('sh.mode', $mode))->when($exceptOrder, fn ($q) => $q->where('o.id', '<>', $exceptOrder))
             ->whereNotIn('o.status', ['cancelled', 'refunded'])
             ->orderBy('sh.created_at')->limit(50)
-            ->get(['o.id', 'o.number', 'o.first_name', 'o.last_name', 'o.city', 'o.country', 'sh.awb', 'sh.mode', 'sh.parcels', 'sh.created_at'])
+            ->get(['o.id', 'o.number', 'o.first_name', 'o.last_name', 'o.city', 'o.country', 'o.weight_grams', 'sh.awb', 'sh.mode', 'sh.parcels', 'sh.weight_kg', 'sh.created_at'])
             ->map(fn ($x) => ['orderId' => (int) $x->id, 'number' => $x->number, 'name' => trim($x->first_name.' '.$x->last_name),
-                'place' => trim($x->city.', '.$x->country, ', '), 'awb' => $x->awb, 'mode' => $x->mode, 'parcels' => max(1, (int) $x->parcels)])->all();
+                'place' => trim($x->city.', '.$x->country, ', '), 'awb' => $x->awb, 'mode' => $x->mode, 'parcels' => max(1, (int) $x->parcels),
+                'kg' => round($x->weight_kg !== null && (float) $x->weight_kg > 0 ? (float) $x->weight_kg : max(0.1, (int) $x->weight_grams / 1000), 2)])->all();
     }
 
     /**
      * Books one SMSA pickup (a day and a window) for the waybills of $orderIds that are waiting for the courier.
      * Empty $orderIds = every waybill waiting and not booked yet. $parcels overrides the box count (0 = from the waybills).
-     * $via: email (to SMSA's pickup address) | whatsapp (returns the link) | copy (returns the text).
-     *
-     * @return array{pickup: object, text: string, whatsappUrl: ?string, emailed: bool}
+     * $heavy: null = by weight (Settings › SMSA shipping › Pickups). Returns the booking; its form answers are in present().
      */
-    public static function book(array $orderIds, string $date, string $from, string $until, string $note, string $via, ?object $admin, int $parcels = 0): array
+    public static function book(array $orderIds, string $date, string $from, string $until, string $note, ?object $admin, int $parcels = 0, ?bool $heavy = null): object
     {
         [$date, $from, $until] = self::validWindow($date, $from, $until);
-        $via = in_array($via, ['email', 'whatsapp', 'copy'], true) ? $via : 'email';
         $note = mb_substr(trim($note), 0, 300);
         $ids = array_values(array_unique(array_filter(array_map('intval', $orderIds), fn ($i) => $i > 0)));
 
-        return DB::transaction(function () use ($ids, $date, $from, $until, $note, $via, $admin, $parcels) {
+        return DB::transaction(function () use ($ids, $date, $from, $until, $note, $admin, $parcels, $heavy) {
             $free = fn ($q) => $q->whereNull('pickup_id')->orWhereIn('pickup_id', DB::table('smsa_pickups')->where('status', '<>', 'requested')->select('id'));
             $ships = DB::table('shipments')->where('carrier', 'smsa')->where('status', 'created')->where('awb', '<>', '')->where($free)
                 ->when($ids, fn ($q) => $q->whereIn('order_id', $ids))
@@ -184,39 +176,21 @@ class SmsaPickups
             $sandbox = $mode !== 'live';
             $id = DB::table('smsa_pickups')->insertGetId([
                 'mode' => $mode, 'pickup_date' => $date, 'ready_from' => $from, 'ready_until' => $until, 'status' => 'requested',
-                'parcels' => $parcels, 'weight_kg' => round($kg, 2), 'note' => $note,
-                'sent_via' => $sandbox ? 'sandbox' : $via, 'sent_to' => '', 'created_by' => $admin->name ?? '', 'created_at' => now(), 'updated_at' => now(),
+                'parcels' => $parcels, 'weight_kg' => round($kg, 2), 'note' => $note, 'heavy' => $heavy ?? ($kg >= self::cfg()['heavyKg']),
+                'sent_via' => $sandbox ? 'sandbox' : 'dashboard', 'sent_to' => '', 'created_by' => $admin->name ?? '', 'created_at' => now(), 'updated_at' => now(),
             ]);
             DB::table('shipments')->whereIn('id', $ships->pluck('id'))->update(['pickup_id' => $id, 'updated_at' => now()]);
             $p = DB::table('smsa_pickups')->find($id);
-            $text = self::message($p, $lines, $admin);
-            $emailed = false;
-            $to = '';
-            if (! $sandbox && $via === 'email') {
-                $to = implode(', ', self::emails());
-                if ($to === '') {
-                    throw ApiError::validation(['via' => 'Add SMSA’s pickup email in Settings › SMSA shipping first – or send the request on WhatsApp.']);
-                }
-                $emailed = self::send($p, $text, self::emails(), 'Pickup request');
-            } elseif (! $sandbox && $via === 'whatsapp') {
-                $to = self::cfg()['whatsapp'];
-            }
-            DB::table('smsa_pickups')->where('id', $id)->update(['message' => $text, 'sent_to' => mb_substr($to, 0, 255)]);
-            $when = self::when($p);
+            DB::table('smsa_pickups')->where('id', $id)->update(['message' => self::notes($p, $lines)]);
             foreach ($ships as $sh) {
-                Orders::event((int) $sh->order_id, 'smsa_pickup', 'SMSA pickup booked for '.$when.' (request #'.$id.', '.($sandbox ? 'sandbox – not sent to SMSA' : ['email' => 'emailed to SMSA', 'whatsapp' => 'sent on WhatsApp', 'copy' => 'copied to send'][$via]).').', [], $admin);
-            }
-            $wa = self::cfg()['whatsapp'];
-            $waUrl = ! $sandbox && $via === 'whatsapp' ? 'https://wa.me/'.preg_replace('/\D/', '', $wa).'?text='.rawurlencode($text) : null;
-            if ($via === 'whatsapp' && ! $sandbox && preg_replace('/\D/', '', $wa) === '') {
-                $waUrl = 'https://wa.me/?text='.rawurlencode($text);   // no SMSA number saved: WhatsApp asks whom to send it to
+                Orders::event((int) $sh->order_id, 'smsa_pickup', 'SMSA pickup planned for '.self::when($p).' (#'.$id.($sandbox ? ', sandbox' : '').').', [], $admin);
             }
 
-            return ['pickup' => DB::table('smsa_pickups')->find($id), 'text' => $text, 'whatsappUrl' => $waUrl, 'emailed' => $emailed];
+            return DB::table('smsa_pickups')->find($id);
         });
     }
 
-    /** Cancels a booking (tells SMSA by email when it was emailed); its waybills can be booked again. */
+    /** Cancels a booking here (it must also be cancelled in SMSA's dashboard); its waybills can be booked again. */
     public static function cancel(int $pickupId, ?object $admin): object
     {
         $p = DB::table('smsa_pickups')->find($pickupId) ?? throw ApiError::notFound('That pickup does not exist.');
@@ -226,14 +200,8 @@ class SmsaPickups
         $orderIds = DB::table('shipments')->where('pickup_id', $p->id)->pluck('order_id');
         DB::table('smsa_pickups')->where('id', $p->id)->update(['status' => 'cancelled', 'cancelled_at' => now(), 'updated_at' => now()]);
         DB::table('shipments')->where('pickup_id', $p->id)->where('status', 'created')->update(['pickup_id' => null]);
-        if ($p->sent_via === 'email' && self::emails()) {
-            $awbs = DB::table('shipments')->whereIn('order_id', $orderIds)->pluck('awb')->implode(', ');
-            $shop = Settings::get('brand')['name'];
-            $text = "Hello SMSA team,\n\nPlease CANCEL pickup request #{$p->id} for {$shop} on ".self::when($p).".\nWaybills: {$awbs}\n\nThank you.";
-            self::send($p, $text, self::emails(), 'CANCEL pickup request', 'cancel');
-        }
         foreach ($orderIds as $oid) {
-            Orders::event((int) $oid, 'smsa_pickup', 'SMSA pickup #'.$p->id.' cancelled'.($p->sent_via === 'email' ? ' (SMSA emailed).' : ' – tell SMSA if you sent it on WhatsApp.'), [], $admin);
+            Orders::event((int) $oid, 'smsa_pickup', 'SMSA pickup #'.$p->id.' cancelled.', [], $admin);
         }
 
         return DB::table('smsa_pickups')->find($p->id);
@@ -264,48 +232,62 @@ class SmsaPickups
         return $d->translatedFormat('D j M Y').', '.$p->ready_from.'–'.$p->ready_until;
     }
 
-    /** The request, in English (SMSA's operations team), the same for email, WhatsApp and copy. */
-    public static function message(object $p, array $lines, ?object $admin): string
+    /** SMSA's booking number (pasted from their dashboard after booking). */
+    public static function setRef(int $pickupId, string $ref, ?object $admin): object
     {
-        $s = (array) (Smsa::cfg()['shipper'] ?? []) + ['name' => '', 'phone' => '', 'address1' => '', 'address2' => '', 'district' => '', 'city' => '', 'country' => '', 'postalCode' => ''];
-        $cfg = Smsa::cfg();
-        $shop = Settings::get('brand')['name'];
-        $biz = Settings::get('business');
-        $addr = implode(', ', array_filter([$s['address1'] ?? '', $s['address2'] ?? '', $s['district'] ?? '', $s['city'] ?? '', $s['country'] ?? '', $s['postalCode'] ?? '']));
-        $out = "Hello SMSA team,\n\nPlease collect our shipments:\n\n";
-        $out .= 'Pickup request: #'.$p->id."\n";
-        $out .= 'Date and time: '.self::when($p)."\n";
-        $out .= 'Shipper: '.($s['name'] ?: $shop).(($cfg['retailId'] ?? '') !== '' ? ' (account '.$cfg['retailId'].')' : '')."\n";
-        $out .= 'Pickup address: '.$addr."\n";
-        $out .= 'Contact: '.trim(($admin->name ?? '').' '.($s['phone'] ?: ($biz['phone'] ?? '')))."\n";
-        $out .= 'Parcels: '.$p->parcels.' · about '.rtrim(rtrim(number_format((float) $p->weight_kg, 2), '0'), '.')." kg\n\n";
-        $out .= "Waybills:\n";
-        foreach ($lines as $l) {
-            $out .= '- '.$l['awb'].' (order '.$l['number'].', '.$l['parcels'].' '.($l['parcels'] === 1 ? 'parcel' : 'parcels').', '.$l['kg'].' kg'.($l['to'] !== '' ? ' → '.$l['to'] : '').")\n";
+        $p = DB::table('smsa_pickups')->find($pickupId) ?? throw ApiError::notFound('That pickup does not exist.');
+        $ref = trim($ref);
+        if ($ref === '' || ! preg_match('/^[A-Za-z0-9 \/_.-]{2,60}$/', $ref)) {
+            throw ApiError::validation(['ref' => 'Paste the booking number SMSA showed (letters and numbers).']);
         }
-        if ($p->note !== '') {
-            $out .= "\nNote: ".$p->note."\n";
+        DB::table('smsa_pickups')->where('id', $p->id)->update(['smsa_ref' => $ref, 'updated_at' => now()]);
+        foreach (DB::table('shipments')->where('pickup_id', $p->id)->pluck('order_id') as $oid) {
+            Orders::event((int) $oid, 'smsa_pickup', 'SMSA booking number '.$ref.' (pickup #'.$p->id.').', [], $admin);
         }
-        $out .= "\nPlease confirm. Thank you.\n".($s['name'] ?: $shop);
+
+        return DB::table('smsa_pickups')->find($p->id);
+    }
+
+    /** The "Notes" for SMSA's form: parcels, waybills and the team's note. */
+    public static function notes(object $p, array $lines): string
+    {
+        $out = $p->parcels.' '.((int) $p->parcels === 1 ? 'parcel' : 'parcels').', about '.rtrim(rtrim(number_format((float) $p->weight_kg, 2), '0'), '.').' kg. Waybills: '
+            .implode(', ', array_column($lines, 'awb')).'.';
+
+        return $p->note !== '' ? $out.' '.$p->note : $out;
+    }
+
+    /** "Road 1, West Riffa" + "West Riffa" → once only. */
+    private static function joinParts(array $parts): string
+    {
+        $out = '';
+        foreach (array_filter(array_map(fn ($x) => trim((string) $x), $parts)) as $x) {
+            if ($out === '' || mb_stripos($out, $x) === false) {
+                $out .= ($out === '' ? '' : ', ').$x;
+            }
+        }
 
         return $out;
     }
 
-    /** Emails SMSA (plain words in the shop's email layout), Reply-To the shop, a copy to the store notification addresses. */
-    private static function send(object $p, string $text, array $to, string $what, string $tag = 'book'): bool
+    /** The answers for SMSA's "Initiate Pickup Request" form, in its order. */
+    public static function fields(object $p): array
     {
-        $shop = Settings::get('brand')['name'];
-        $subject = $what.' #'.$p->id.' – '.$shop.' – '.self::when($p).' – '.$p->parcels.' '.((int) $p->parcels === 1 ? 'parcel' : 'parcels');
-        $html = EmailLayout::wrap('en', $subject, '<div style="white-space:pre-line;font-size:15px;line-height:1.6;">'.e($text).'</div>', ['title' => $subject]);
-        $reply = (string) (Settings::get('business')['email'] ?? '');
-        $sent = false;
-        foreach (array_merge($to, array_diff(Mailer::notifyAddresses(), $to)) as $i => $addr) {
-            $id = Outbox::queue($addr, ($i >= count($to) ? '[Copy] ' : '').$subject, $html, ['kind' => 'transactional', 'key' => 'smsa_pickup', 'text' => $text,
-                'dedupe' => 'smsa_pickup:'.$p->id.':'.$tag.':'.$addr, 'replyTo' => filter_var($reply, FILTER_VALIDATE_EMAIL) ? $reply : null]);
-            $sent = $sent || ($i < count($to) && $id > 0);
-        }
+        $s = (array) (Smsa::cfg()['shipper'] ?? []) + ['name' => '', 'phone' => '', 'address1' => '', 'address2' => '', 'district' => '', 'city' => '', 'postalCode' => ''];
+        $biz = Settings::get('business');
+        $day = Carbon::createFromFormat('Y-m-d', substr((string) $p->pickup_date, 0, 10), Fmt::tz())->locale('en');
 
-        return $sent;
+        return [
+            ['key' => 'contact', 'label' => 'Contact name', 'value' => (string) ($s['name'] ?: Settings::get('brand')['name'])],
+            ['key' => 'phone', 'label' => 'Contact phone', 'value' => (string) ($s['phone'] ?: ($biz['phone'] ?? ''))],
+            ['key' => 'address', 'label' => 'Pickup address', 'value' => self::joinParts([$s['address1'], $s['address2'], $s['district']])],
+            ['key' => 'postal', 'label' => 'Postal code', 'value' => (string) $s['postalCode']],
+            ['key' => 'city', 'label' => 'Origin city', 'value' => (string) $s['city']],
+            ['key' => 'heavy', 'label' => 'Heavy shipment', 'value' => ! empty($p->heavy) ? 'Yes' : 'No'],
+            ['key' => 'ready', 'label' => 'Shipment ready time', 'value' => $day->translatedFormat('D j M Y').', '.$p->ready_from],
+            ['key' => 'closing', 'label' => 'Branch closing time', 'value' => $p->ready_until],
+            ['key' => 'notes', 'label' => 'Notes', 'value' => (string) $p->message],
+        ];
     }
 
     /** Bookings still waiting for the courier (orders list, staff board, SMSA settings). */
@@ -329,7 +311,8 @@ class SmsaPickups
         return [
             'id' => (int) $p->id, 'mode' => $p->mode, 'smsaRef' => (string) ($p->smsa_ref ?? ''), 'date' => substr((string) $p->pickup_date, 0, 10), 'from' => $p->ready_from, 'until' => $p->ready_until,
             'when' => self::when($p), 'status' => $p->status, 'parcels' => (int) $p->parcels, 'weightKg' => (float) $p->weight_kg, 'note' => $p->note,
-            'sentVia' => $p->sent_via, 'sentTo' => $p->sent_to, 'by' => $p->created_by, 'createdAt' => $p->created_at, 'message' => (string) $p->message,
+            'sentVia' => $p->sent_via, 'by' => $p->created_by, 'createdAt' => $p->created_at, 'heavy' => ! empty($p->heavy),
+            'fields' => self::fields($p), 'dashboardUrl' => self::cfg()['dashboardUrl'],
             'awbs' => DB::table('shipments as sh')->join('orders as o', 'o.id', '=', 'sh.order_id')->where('sh.pickup_id', $p->id)
                 ->get(['o.id', 'o.number', 'sh.awb', 'sh.status'])->map(fn ($x) => ['orderId' => (int) $x->id, 'number' => $x->number, 'awb' => $x->awb, 'status' => $x->status])->all(),
         ];

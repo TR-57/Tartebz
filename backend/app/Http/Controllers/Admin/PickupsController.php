@@ -9,18 +9,20 @@ use App\Support\Smsa;
 use App\Support\SmsaPickups;
 use Illuminate\Http\Request;
 
-/** SMSA pickups for the whole shop: one button at the top of the orders list (admin) and the orders board (/staff). */
+/**
+ * SMSA pickups for the whole shop: one button at the top of the orders list (admin) and the orders board (/staff).
+ * SMSA's API cannot book a collection, so the booking is made in SMSA's dashboard with the answers given here.
+ */
 class PickupsController extends Controller
 {
-    /** GET – days and times on offer, the waybills waiting for the courier, open bookings, how requests reach SMSA. */
+    /** GET – days and times on offer, the waybills waiting for the courier, open bookings. */
     public function form()
     {
-        $waiting = SmsaPickups::waiting();
         $c = SmsaPickups::cfg();
 
         return $this->ok(SmsaPickups::options() + [
-            'waiting' => $waiting, 'open' => SmsaPickups::open(), 'mode' => Smsa::mode(), 'configured' => Smsa::configured(),
-            'email' => SmsaPickups::emails(), 'whatsapp' => $c['whatsapp'],
+            'waiting' => SmsaPickups::waiting(), 'open' => SmsaPickups::open(), 'mode' => Smsa::mode(), 'configured' => Smsa::configured(),
+            'heavyKg' => $c['heavyKg'], 'dashboardUrl' => $c['dashboardUrl'],
         ]);
     }
 
@@ -30,14 +32,23 @@ class PickupsController extends Controller
         return $this->ok(['open' => SmsaPickups::open(), 'waiting' => count(SmsaPickups::waiting())]);
     }
 
-    /** {date, from, until, orderIds[] (empty = all waiting), parcels?, note, via} */
+    /** {date, from (ready time), until (closing time), orderIds[] (empty = all waiting), parcels?, heavy?, note} */
     public function store(Request $r)
     {
-        $res = SmsaPickups::book((array) $r->input('orderIds', []), $this->str($r, 'date', 10), $this->str($r, 'from', 5), $this->str($r, 'until', 5),
-            $this->str($r, 'note', 300), $this->str($r, 'via', 10), $this->admin($r), max(0, (int) $r->input('parcels', 0)));
-        Audit::log($r, 'smsa_pickup_booked', 'smsa_pickup', $res['pickup']->id, ['date' => $res['pickup']->pickup_date, 'via' => $res['pickup']->sent_via]);
+        $p = SmsaPickups::book((array) $r->input('orderIds', []), $this->str($r, 'date', 10), $this->str($r, 'from', 5), $this->str($r, 'until', 5),
+            $this->str($r, 'note', 300), $this->admin($r), max(0, (int) $r->input('parcels', 0)), $r->has('heavy') ? $this->bool($r, 'heavy') : null);
+        Audit::log($r, 'smsa_pickup_booked', 'smsa_pickup', $p->id, ['date' => $p->pickup_date]);
 
-        return $this->ok(['pickup' => SmsaPickups::present($res['pickup']), 'text' => $res['text'], 'whatsappUrl' => $res['whatsappUrl'], 'emailed' => $res['emailed']]);
+        return $this->ok(['pickup' => SmsaPickups::present($p)]);
+    }
+
+    /** {ref} – SMSA's booking number, pasted from their dashboard. */
+    public function ref(Request $r, int $id)
+    {
+        $p = SmsaPickups::setRef($id, $this->str($r, 'ref', 60), $this->admin($r));
+        Audit::log($r, 'smsa_pickup_ref', 'smsa_pickup', $id, ['ref' => $p->smsa_ref]);
+
+        return $this->ok(['pickup' => SmsaPickups::present($p)]);
     }
 
     public function cancel(Request $r, int $id)

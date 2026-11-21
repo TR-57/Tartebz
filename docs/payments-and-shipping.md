@@ -155,22 +155,27 @@ billable parcel**. Only orders placed after SMSA was switched on are sent by the
 
 ### Pickups – “Book SMSA pickup” at the top of the orders list
 
-One button for the whole shop: at the top of **Admin › Orders** and of the **orders board** (/staff), for everyone who
-works on orders. It books one SMSA collection for every waybill waiting for the courier:
+SMSA does not let any website book a courier collection: its eCom API has no function for it (what the API calls
+“pickup” is SMSA collecting a return from a customer). Collections are booked in SMSA’s e-commerce dashboard under
+**Manage Pickup › Initiate Pickup Request**. The button makes that quick and keeps the result for the whole team:
 
-1. Choose the day – today by default, or one of the next 6 days – and the window the parcels are ready: inside the pickup
-   hours (**09:00–17:00** by default), at least 1 hour long. Today starts at the next half hour; after 16:00 the first
-   choice is tomorrow.
-2. All waybills waiting for collection are ticked; untick any that are not ready. The number of parcels fills in from them
-   and can be changed.
-3. Book it. Open bookings show above the list (with SMSA’s booking number once SMSA gives one), with “See the request” and
-   “Cancel pickup”. Each order shows its booking too, and its history says so.
+1. **Book SMSA pickup** (top of Admin › Orders, and of the orders board /staff – for everyone who works on orders).
+2. Choose the day (today by default, or one of the next 6 days), the **ready time** and the **closing time** – inside the
+   pickup hours (**09:00–17:00** by default), at least 1 hour apart. All waybills waiting for the courier are ticked; untick
+   any that are not ready. Parcels and “heavy” fill in by themselves and can be changed.
+3. **Continue in SMSA** opens SMSA’s dashboard in a new tab and shows the answers for its form in the same order (contact
+   name, phone, pickup address, postal code, origin city, heavy, ready time, closing time, notes with the waybills), each
+   with a **Copy** button.
+4. Submit SMSA’s form, paste the **booking number** SMSA shows, and save. It shows above the orders list, on each order
+   and in its history. “Finish in SMSA” reopens the answers if you closed them before saving the number.
 
-How the request reaches SMSA: SMSA’s public eCom API (the API key in Settings › SMSA shipping) has no pickup function –
-only waybills, tracking and customer returns. Bookings made in SMSA’s e-commerce dashboard (Manage Pickup › Initiate
-Pickup Request) use the dashboard itself. Until SMSA confirms an API for it, the request goes to SMSA **by email**
-(Settings › SMSA shipping › Pickups: SMSA’s pickup email), **on WhatsApp**, or as text to copy. The booking closes by
-itself when SMSA’s tracking shows the parcels were collected. Sandbox waybills can be booked to try it; nothing is sent.
+**Cancel pickup** frees the waybills here (cancel it in SMSA’s dashboard too). A booking closes by itself when SMSA’s
+tracking shows the parcels were collected. Sandbox waybills can be booked to try it; there is nothing to book in SMSA.
+Settings › SMSA shipping › Pickups: the dashboard link (paste the Initiate Pickup Request page’s own address if you have
+it), the pickup hours, the shortest window and the weight from which “heavy” is ticked. The answers come from the sender
+address in the same screen.
+
+If SMSA ever offers a pickup-booking API, the button can book directly and fill in the booking number by itself.
 
 ## Pages Tap asks for
 

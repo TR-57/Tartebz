@@ -47,10 +47,16 @@
       st_created: 'Waiting for SMSA pickup', st_moving: 'On the way with SMSA', st_delivered: 'Delivered by SMSA', st_failed: 'Refused by SMSA', st_cancelled: 'Waybill cancelled',
       sv_EIDL: 'By air (EIDL)', sv_EIED: 'By road (EIED)', sv_EDDL: 'Inside Bahrain (EDDL)', duties_c: 'Import VAT and duty: the customer pays on delivery', duties_s: 'Import VAT and duty: we pay',
       sandbox: 'Sandbox', del_method: 'Delivery', free: 'Free', quoted: 'Quoted after order', shipped: 'Mark as shipped', delivered: 'Mark as delivered',
-      pk_book: 'Book SMSA pickup', pk_day: 'Day', pk_from: 'Ready from', pk_until: 'Until', pk_send: 'Send the request', pk_email: 'By email', pk_wa: 'On WhatsApp',
+      pk_book: 'Book SMSA pickup', pk_day: 'Day', pk_from: 'Ready time', pk_until: 'Closing time', pk_send: 'Send the request', pk_email: 'By email', pk_wa: 'On WhatsApp',
       pk_copy: 'Copy the text', pk_booked: 'SMSA pickup booked', pk_cancel: 'Cancel pickup', pk_hours: 'SMSA collects between {a} and {b}.', pk_today: 'Today',
       pk_ok: 'Pickup booked', pk_done: 'Collected by SMSA', pk_sandbox: 'Sandbox – saved here, not sent to SMSA.', pk_no_email: 'No SMSA pickup email yet – choose WhatsApp or Copy.',
       pk_cancel_q: 'Cancel this SMSA pickup?', pk_none: 'No pickup times left in the next days.', pk_confirm: 'Book pickup',
+      pk_title: 'SMSA pickup', pk_not_yet: 'Not booked in SMSA yet', pk_finish: 'Finish in SMSA', pk_answers: 'Form answers', pk_in_smsa: 'Book it in SMSA',
+      pk_opened: 'SMSA’s dashboard opened in a new tab.', pk_open: 'Open SMSA’s dashboard.', pk_go: 'Go to Manage Pickup › Initiate Pickup Request.',
+      pk_step2: 'Copy each answer below into SMSA’s form, then submit it.', pk_step3: 'Paste the booking number SMSA shows, and save.',
+      pk_save_ref: 'Save booking number', pk_continue: 'Continue in SMSA', pk_heavy_yes: 'Yes, it is heavy', pk_note: 'Note for SMSA (optional)', copy: 'Copy', copied: 'Copied',
+      pkf_contact: 'Contact name', pkf_phone: 'Contact phone', pkf_address: 'Pickup address', pkf_postal: 'Postal code', pkf_city: 'Origin city',
+      pkf_heavy: 'Heavy shipment', pkf_ready: 'Shipment ready time', pkf_closing: 'Branch closing time', pkf_notes: 'Notes',
       pk_ref: 'SMSA booking no.', pk_parcels: 'parcels', pk_parcels_n: 'Parcels', pk_waybills: 'Waybills to collect', pk_tick: 'Tick at least one waybill.',
       pk_no_waybills: 'No SMSA waybills are waiting for collection. Send the orders to SMSA first.',
       boxes: 'Boxes', weight_kg: 'Weight (kg)', smsa_off: 'SMSA is not switched on yet (Settings › Shipping).', live_ship: 'This books a real SMSA parcel. Continue?',
@@ -95,10 +101,16 @@
       st_created: 'بانتظار استلام سمسا', st_moving: 'في الطريق مع سمسا', st_delivered: 'سلّمته سمسا', st_failed: 'رفضته سمسا', st_cancelled: 'البوليصة ملغاة',
       sv_EIDL: 'شحن جوي (EIDL)', sv_EIED: 'شحن بري (EIED)', sv_EDDL: 'داخل البحرين (EDDL)', duties_c: 'ضريبة الاستيراد والجمارك: يدفعها العميل عند الاستلام', duties_s: 'ضريبة الاستيراد والجمارك: ندفعها نحن',
       sandbox: 'تجريبي', del_method: 'التوصيل', free: 'مجاني', quoted: 'يُحدَّد بعد الطلب', shipped: 'تم الشحن', delivered: 'تم التوصيل',
-      pk_book: 'حجز استلام من سمسا', pk_day: 'اليوم', pk_from: 'جاهز من', pk_until: 'إلى', pk_send: 'إرسال الطلب', pk_email: 'بالبريد', pk_wa: 'عبر واتساب',
+      pk_book: 'حجز استلام من سمسا', pk_day: 'اليوم', pk_from: 'وقت الجاهزية', pk_until: 'وقت الإغلاق', pk_send: 'إرسال الطلب', pk_email: 'بالبريد', pk_wa: 'عبر واتساب',
       pk_copy: 'نسخ النص', pk_booked: 'تم حجز استلام سمسا', pk_cancel: 'إلغاء الاستلام', pk_hours: 'سمسا تستلم بين {a} و{b}.', pk_today: 'اليوم',
       pk_ok: 'تم حجز الاستلام', pk_done: 'استلمتها سمسا', pk_sandbox: 'تجريبي – محفوظ هنا ولا يُرسل إلى سمسا.', pk_no_email: 'لا يوجد بريد استلام لسمسا بعد – اختر واتساب أو النسخ.',
       pk_cancel_q: 'إلغاء استلام سمسا هذا؟', pk_none: 'لا توجد أوقات استلام متاحة في الأيام القادمة.', pk_confirm: 'احجز الاستلام',
+      pk_title: 'استلام سمسا', pk_not_yet: 'لم يُحجز في سمسا بعد', pk_finish: 'أكمل في سمسا', pk_answers: 'إجابات النموذج', pk_in_smsa: 'احجزه في سمسا',
+      pk_opened: 'فُتحت لوحة سمسا في تبويب جديد.', pk_open: 'افتح لوحة سمسا.', pk_go: 'اذهب إلى Manage Pickup › Initiate Pickup Request.',
+      pk_step2: 'انسخ كل إجابة أدناه إلى نموذج سمسا، ثم أرسله.', pk_step3: 'الصق رقم الحجز الذي تعطيه سمسا، واحفظ.',
+      pk_save_ref: 'احفظ رقم الحجز', pk_continue: 'أكمل في سمسا', pk_heavy_yes: 'نعم، الشحنة ثقيلة', pk_note: 'ملاحظة لسمسا (اختياري)', copy: 'نسخ', copied: 'تم النسخ',
+      pkf_contact: 'اسم جهة الاتصال', pkf_phone: 'هاتف جهة الاتصال', pkf_address: 'عنوان الاستلام', pkf_postal: 'الرمز البريدي', pkf_city: 'مدينة الإرسال',
+      pkf_heavy: 'شحنة ثقيلة', pkf_ready: 'وقت جاهزية الشحنة', pkf_closing: 'وقت إغلاق الفرع', pkf_notes: 'ملاحظات',
       pk_ref: 'رقم حجز سمسا', pk_parcels: 'طرود', pk_parcels_n: 'عدد الطرود', pk_waybills: 'البوالص المطلوب استلامها', pk_tick: 'اختر بوليصة واحدة على الأقل.',
       pk_no_waybills: 'لا توجد بوالص سمسا بانتظار الاستلام. أرسل الطلبات إلى سمسا أولاً.',
       boxes: 'عدد الصناديق', weight_kg: 'الوزن (كجم)', smsa_off: 'سمسا غير مفعّلة بعد (الإعدادات › الشحن).', live_ship: 'سيتم حجز شحنة حقيقية مع سمسا. متابعة؟',
@@ -684,17 +696,25 @@
     if (tk) tk.onclick = function () { busy(tk, api('orders/' + o.id + '/track', { body: {} })).then(function () { toast(tr('saved')); reload(); }, function (e) { toast(e.message, true); }); };
   }
 
-  /* SMSA pickups for the whole shop: the bar above the list (what is booked + "Book SMSA pickup") and the booking sheet. */
+  /* SMSA pickups for the whole shop: the bar above the list and the booking sheet. SMSA's API cannot book a collection,
+     so the sheet opens SMSA's dashboard and gives the answers for its form; SMSA's booking number is saved back here. */
+  var PK = [];
   function paintPickups() {
     var bar = doc.getElementById('pk-bar');
     if (!bar) return;
     api('pickups').then(function (r) {
+      PK = r.open;
       bar.innerHTML = r.open.map(function (p) {
-        return '<div class="pk-item">' + icon('truck') + '<span class="grow"><b>' + esc(tr('pk_booked')) + '</b> <bdi>' + esc(p.when) + '</bdi>' +
-          (p.smsaRef ? ' · ' + esc(tr('pk_ref')) + ' <b><bdi>' + esc(p.smsaRef) + '</bdi></b>' : '') + ' · <bdi>' + p.parcels + '</bdi> ' + esc(tr('pk_parcels')) + '</span>' +
+        var state = p.smsaRef ? esc(tr('pk_ref')) + ' <b><bdi>' + esc(p.smsaRef) + '</bdi></b>' : p.mode !== 'live' ? esc(tr('sandbox')) : '<b>' + esc(tr('pk_not_yet')) + '</b>';
+        return '<div class="pk-item' + (p.smsaRef || p.mode !== 'live' ? '' : ' warn') + '">' + icon('truck') + '<span class="grow"><b>' + esc(tr('pk_title')) + '</b> <bdi>' + esc(p.when) + '</bdi> · ' + state +
+          ' · <bdi>' + p.parcels + '</bdi> ' + esc(tr('pk_parcels')) + '</span>' +
+          '<button class="btn btn-sm' + (p.smsaRef ? '' : ' btn-red') + '" data-pkf="' + p.id + '">' + esc(tr(p.smsaRef ? 'pk_answers' : 'pk_finish')) + '</button>' +
           '<button class="btn btn-sm" data-pkc="' + p.id + '">' + esc(tr('pk_cancel')) + '</button></div>';
       }).join('') + '<button class="btn btn-dark btn-block" id="pk-new">' + icon('truck') + esc(tr('pk_book')) + (r.waiting ? ' <span class="pk-count">' + r.waiting + '</span>' : '') + '</button>';
       doc.getElementById('pk-new').onclick = pickupSheet;
+      [].forEach.call(bar.querySelectorAll('[data-pkf]'), function (b) {
+        b.onclick = function () { answersSheet(PK.filter(function (p) { return p.id === +b.dataset.pkf; })[0], false); };
+      });
       [].forEach.call(bar.querySelectorAll('[data-pkc]'), function (b) {
         b.onclick = function () {
           if (!window.confirm(tr('pk_cancel_q'))) return;
@@ -702,6 +722,30 @@
         };
       });
     }, function () { bar.innerHTML = ''; });
+  }
+  function answersSheet(p, opened) {
+    var live = p.mode === 'live';
+    var el = sheet(esc(tr('pk_in_smsa')),
+      (live ? '<ol class="pk-steps"><li>' + (opened ? esc(tr('pk_opened')) : '<a href="' + esc(p.dashboardUrl) + '" target="_blank" rel="noopener">' + esc(tr('pk_open')) + '</a>') + ' ' + esc(tr('pk_go')) + '</li>' +
+        '<li>' + esc(tr('pk_step2')) + '</li><li>' + esc(tr('pk_step3')) + '</li></ol>' : '<p class="note">' + esc(tr('pk_sandbox')) + '</p>') +
+      p.fields.map(function (x, k) {
+        return '<div class="pk-field"><span class="pk-label">' + esc(tr('pkf_' + x.key)) + '</span><span class="pk-value" dir="auto">' + esc(x.value || '—') + '</span>' +
+          '<button class="btn btn-sm" data-cp="' + k + '"' + (x.value ? '' : ' disabled') + '>' + icon('copy') + esc(tr('copy')) + '</button></div>';
+      }).join('') +
+      (live ? '<div class="field" style="margin-top:12px"><label for="pk-r">' + esc(tr('pk_ref')) + '</label><input id="pk-r" dir="ltr" autocomplete="off" value="' + esc(p.smsaRef) + '"></div>' : ''),
+      live ? '<button class="btn btn-red btn-block btn-lg" id="pk-save">' + icon('check') + esc(tr('pk_save_ref')) + '</button>' : '');
+    [].forEach.call(el.querySelectorAll('[data-cp]'), function (b) {
+      b.onclick = function () {
+        var v = p.fields[+b.dataset.cp].value;
+        (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject(new Error('copy'))).then(function () { b.classList.add('btn-dark'); toast(tr('copied')); }, function () { toast(v); });
+      };
+    });
+    var sv = el.querySelector('#pk-save');
+    if (sv) sv.onclick = function () {
+      busy(sv, api('pickups/' + p.id + '/ref', { body: { ref: el.querySelector('#pk-r').value } })).then(function (r) {
+        toast(tr('pk_ref') + ' ' + r.pickup.smsaRef); closeSheet(); paintPickups();
+      }, function (e) { toast(srv(e.message), true); });
+    };
   }
   function pickupSheet() {
     api('pickups/form').then(function (f) {
@@ -717,13 +761,13 @@
         '<div class="row2"><div class="field"><label for="pk-f">' + esc(tr('pk_from')) + '</label><select id="pk-f" dir="ltr"></select></div>' +
         '<div class="field"><label for="pk-u">' + esc(tr('pk_until')) + '</label><select id="pk-u" dir="ltr"></select></div></div>' +
         '<div class="field"><label>' + esc(tr('pk_waybills')) + '</label>' + f.waiting.map(function (x) {
-          return '<label class="check"><input type="checkbox" data-wb="' + x.orderId + '" data-n="' + x.parcels + '" checked> <bdi>#' + esc(x.number) + ' · ' + esc(x.awb) + '</bdi>' + (x.name ? ' · ' + esc(x.name) : '') + '</label>'; }).join('') + '</div>' +
-        '<div class="field"><label for="pk-n">' + esc(tr('pk_parcels_n')) + '</label><input id="pk-n" type="number" min="1" max="999" dir="ltr"></div>' +
-        (live ? '<div class="field"><label for="pk-v">' + esc(tr('pk_send')) + '</label><select id="pk-v">' +
-          (f.email.length ? '<option value="email">' + esc(tr('pk_email')) + '</option>' : '') + '<option value="whatsapp">' + esc(tr('pk_wa')) + '</option><option value="copy">' + esc(tr('pk_copy')) + '</option></select>' +
-          (f.email.length ? '' : '<p class="muted small">' + esc(tr('pk_no_email')) + '</p>') + '</div>' : ''),
-        '<button class="btn btn-red btn-block btn-lg" id="pk-ok">' + icon('check') + esc(tr('pk_confirm')) + '</button>');
-      var dS = el.querySelector('#pk-d'), fS = el.querySelector('#pk-f'), uS = el.querySelector('#pk-u'), nI = el.querySelector('#pk-n');
+          return '<label class="check"><input type="checkbox" data-wb="' + x.orderId + '" data-n="' + x.parcels + '" data-kg="' + x.kg + '" checked> <bdi>#' + esc(x.number) + ' · ' + esc(x.awb) + '</bdi>' + (x.name ? ' · ' + esc(x.name) : '') + '</label>'; }).join('') + '</div>' +
+        '<div class="row2"><div class="field"><label for="pk-n">' + esc(tr('pk_parcels_n')) + '</label><input id="pk-n" type="number" min="1" max="999" dir="ltr"></div>' +
+        '<div class="field"><label>' + esc(tr('pkf_heavy')) + '</label><label class="check"><input type="checkbox" id="pk-h"> ' + esc(tr('pk_heavy_yes')) + '</label></div></div>' +
+        '<div class="field"><label for="pk-note">' + esc(tr('pk_note')) + '</label><input id="pk-note" maxlength="300" dir="auto"></div>',
+        '<button class="btn btn-red btn-block btn-lg" id="pk-ok">' + icon('check') + esc(tr(live ? 'pk_continue' : 'save')) + '</button>');
+      var dS = el.querySelector('#pk-d'), fS = el.querySelector('#pk-f'), uS = el.querySelector('#pk-u'), nI = el.querySelector('#pk-n'), hv = el.querySelector('#pk-h'), hvT = false;
+      hv.onchange = function () { hvT = true; };
       var mins = function (t) { var x = String(t).split(':'); return +x[0] * 60 + +x[1]; };
       function fix() {
         var minEnd = mins(fS.value) + Math.round(f.minHours * 60);
@@ -734,20 +778,21 @@
         var d = f.days.filter(function (x) { return x.date === dS.value; })[0] || f.days[0];
         fS.innerHTML = opt(d.from, d.from[0]); uS.innerHTML = opt(d.until, d.until[d.until.length - 1]); fix();
       }
-      function boxes() { nI.value = Math.max(1, [].reduce.call(el.querySelectorAll('[data-wb]:checked'), function (n, c) { return n + (+c.dataset.n || 1); }, 0)); }
+      function boxes() {
+        var on = el.querySelectorAll('[data-wb]:checked');
+        nI.value = Math.max(1, [].reduce.call(on, function (n, c) { return n + (+c.dataset.n || 1); }, 0));
+        if (!hvT) hv.checked = [].reduce.call(on, function (n, c) { return n + (+c.dataset.kg || 0); }, 0) >= f.heavyKg;
+      }
       [].forEach.call(el.querySelectorAll('[data-wb]'), function (c) { c.onchange = boxes; });
       dS.onchange = fill; fS.onchange = fix; fill(); boxes();
       var ok = el.querySelector('#pk-ok');
       ok.onclick = function () {
         var ids = [].map.call(el.querySelectorAll('[data-wb]:checked'), function (c) { return +c.dataset.wb; });
         if (!ids.length) { toast(tr('pk_tick'), true); return; }
-        var vEl = el.querySelector('#pk-v'), via = vEl ? vEl.value : 'email';
-        var win = via === 'whatsapp' ? window.open('', '_blank') : null;
-        busy(ok, api('pickups', { body: { date: dS.value, from: fS.value, until: uS.value, via: via, orderIds: ids, parcels: +nI.value || 0 } })).then(function (r) {
-          if (r.whatsappUrl) { if (win) win.location = r.whatsappUrl; else window.open(r.whatsappUrl, '_blank'); } else if (win) win.close();
-          if (via === 'copy' && navigator.clipboard) navigator.clipboard.writeText(r.text).catch(function () {});
-          toast(r.pickup.smsaRef ? tr('pk_ref') + ' ' + r.pickup.smsaRef : tr('pk_ok'));
-          closeSheet(); paintPickups();
+        var win = live ? window.open('', '_blank') : null;   // opened now, so the browser does not block it
+        busy(ok, api('pickups', { body: { date: dS.value, from: fS.value, until: uS.value, orderIds: ids, parcels: +nI.value || 0, heavy: hv.checked, note: el.querySelector('#pk-note').value } })).then(function (r) {
+          if (win) { try { win.opener = null; } catch (x) { /* ignore */ } win.location = r.pickup.dashboardUrl; }
+          paintPickups(); answersSheet(r.pickup, !!win);
         }, function (e) { if (win) win.close(); toast(srv(e.message), true); });
       };
     }, function (e) { toast(srv(e.message), true); });

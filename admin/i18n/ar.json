@@ -1515,9 +1515,61 @@
   "Tick at least one waybill.": "اختر بوليصة واحدة على الأقل.",
   "No SMSA waybills are waiting for collection. Send the orders to SMSA first.": "لا توجد بوالص سمسا بانتظار الاستلام. أرسل الطلبات إلى سمسا أولاً.",
   "No SMSA waybills are waiting for collection. Send the orders to SMSA first (their waybills), then book the pickup.": "لا توجد بوالص سمسا بانتظار الاستلام. أرسل الطلبات إلى سمسا أولاً (بوالصها)، ثم احجز الاستلام.",
-  "Sandbox waybills: the booking is saved here but not sent to SMSA.": "بوالص تجريبية: الحجز يُحفظ هنا ولا يُرسل إلى سمسا."
+  "Sandbox waybills: the booking is saved here but not sent to SMSA.": "بوالص تجريبية: الحجز يُحفظ هنا ولا يُرسل إلى سمسا.",
+  "Form answers": "إجابات النموذج",
+  "Finish in SMSA": "أكمل في سمسا",
+  "Cancel this pickup here? Cancel it in SMSA’s dashboard too.": "إلغاء هذا الاستلام هنا؟ ألغه في لوحة سمسا أيضاً.",
+  "Cancel this pickup?": "إلغاء هذا الاستلام؟",
+  "Book it in SMSA": "احجزه في سمسا",
+  "Paste it here": "الصقه هنا",
+  "Continue in SMSA": "أكمل في سمسا",
+  "SMSA pickup": "استلام سمسا",
+  "Sandbox – not for SMSA": "تجريبي – ليس لسمسا",
+  "Not booked in SMSA yet – finish it from the orders list.": "لم يُحجز في سمسا بعد – أكمله من قائمة الطلبات.",
+  "Not booked in SMSA yet": "لم يُحجز في سمسا بعد",
+  "SMSA’s dashboard opened in a new tab.": "فُتحت لوحة سمسا في تبويب جديد.",
+  "Open SMSA’s dashboard": "افتح لوحة سمسا",
+  "Go to": "اذهب إلى",
+  "Manage Pickup › Initiate Pickup Request": "Manage Pickup › Initiate Pickup Request",
+  "Copy each answer below into SMSA’s form, then submit it.": "انسخ كل إجابة أدناه إلى نموذج سمسا، ثم أرسله.",
+  "Paste the booking number SMSA shows, and save.": "الصق رقم الحجز الذي تعطيه سمسا، واحفظ.",
+  "Sandbox waybills: nothing to book in SMSA. This is only to try it.": "بوالص تجريبية: لا شيء يُحجز في سمسا. هذا للتجربة فقط.",
+  "SMSA booking number": "رقم حجز سمسا",
+  "Save booking number": "احفظ رقم الحجز",
+  "Choose the day, when the parcels are ready and when the shop closes for the courier.": "اختر اليوم، ووقت جاهزية الطرود، ووقت إغلاق المحل للمندوب.",
+  "Ready time": "وقت الجاهزية",
+  "Closing time": "وقت الإغلاق",
+  "Heavy shipment": "شحنة ثقيلة",
+  "Yes, it is heavy": "نعم، الشحنة ثقيلة",
+  "SMSA dashboard link": "رابط لوحة سمسا",
+  "Opened when you book. If you can, paste the address of the Initiate Pickup Request page itself.": "يُفتح عند الحجز. إن أمكن، الصق عنوان صفحة Initiate Pickup Request نفسها.",
+  "Heavy from (kg)": "ثقيلة ابتداءً من (كجم)",
+  "The “Heavy shipment” answer is ticked by itself from this weight.": "إجابة «شحنة ثقيلة» تُحدَّد تلقائياً ابتداءً من هذا الوزن.",
+  "“Book SMSA pickup” at the top of the orders list plans the collection, opens SMSA’s dashboard and gives the answers for its form (Manage Pickup › Initiate Pickup Request). SMSA’s API cannot book a collection by itself. The booking number SMSA gives is kept here for the whole team.": "زر «حجز استلام من سمسا» أعلى قائمة الطلبات يجهّز الاستلام، ويفتح لوحة سمسا، ويعطيك إجابات نموذجها (Manage Pickup › Initiate Pickup Request). نظام سمسا (API) لا يستطيع حجز الاستلام بنفسه. رقم الحجز الذي تعطيه سمسا يُحفظ هنا ليراه كل الفريق.",
+  "Paste the address of SMSA’s pickup page (it starts with https:// and is on smsaexpress.com).": "الصق عنوان صفحة الاستلام في سمسا (يبدأ بـ https:// وعلى smsaexpress.com).",
+  "Paste the booking number SMSA showed (letters and numbers).": "الصق رقم الحجز الذي أظهرته سمسا (حروف وأرقام).",
+  "Contact name": "اسم جهة الاتصال",
+  "Contact phone": "هاتف جهة الاتصال",
+  "Pickup address": "عنوان الاستلام",
+  "Origin city": "مدينة الإرسال",
+  "Shipment ready time": "وقت جاهزية الشحنة",
+  "Branch closing time": "وقت إغلاق الفرع",
+  "Notes": "ملاحظات",
+  ", sandbox": "، تجريبي"
  },
  "patterns": [
+  [
+   "SMSA pickup planned for (.+) \\(#(\\d+)(, sandbox)?\\)\\.",
+   "تم تجهيز استلام سمسا في $1 (#$2$3)."
+  ],
+  [
+   "SMSA booking number (.+) \\(pickup #(\\d+)\\)\\.",
+   "رقم حجز سمسا $1 (الاستلام #$2)."
+  ],
+  [
+   "SMSA pickup #(\\d+) cancelled\\.",
+   "أُلغي استلام سمسا #$1."
+  ],
   [
    "SMSA booking no\\. (.+)",
    "رقم حجز سمسا $1"

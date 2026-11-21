@@ -297,7 +297,6 @@ function bindRefunds(main, o, id, act, reload) {
 /* SMSA (as in Sniper Safety): the waybill, its label, tracking – or why SMSA refused it, and "Try again". */
 const SMSA_STATUS = { created: ['Waiting for SMSA pickup', 'amber'], moving: ['On the way with SMSA', 'blue'], delivered: ['Delivered by SMSA', 'green'], failed: ['Refused by SMSA', 'red'], cancelled: ['Waybill cancelled', 'hidden'] };
 const SERVICE = { EIDL: 'By air (EIDL)', EIED: 'By road (EIED)', EDDL: 'Inside Bahrain (EDDL)' };
-const PICKUP_VIA = { email: 'Emailed to SMSA', whatsapp: 'Sent on WhatsApp', copy: 'Copied to send', sandbox: 'Sandbox – not sent to SMSA' };
 
 function shipBox(o, smsa) {
   const sh = o.shipment;
@@ -324,8 +323,8 @@ function shipBox(o, smsa) {
   }
   const pk = smsa.pickup;
   if (live && pk && pk.status === 'requested') {
-    h += `<div class="box info small pickup-box">${icon('truck')} <b>SMSA pickup booked</b> <span data-noi18n dir="ltr">${esc(pk.when)}</span>
-      <div class="muted"><span>${esc(PICKUP_VIA[pk.sentVia] || pk.sentVia)}</span>${pk.sentTo ? ` <span data-noi18n>(${esc(pk.sentTo)})</span>` : ''} · <span>Request</span> <span data-noi18n>#${pk.id}</span> · <span data-noi18n>${nf(pk.awbs.length)}</span> <span>${pk.awbs.length === 1 ? 'waybill' : 'waybills'}</span>${pk.awbs.length > 1 ? ` <span class="muted" data-noi18n>(${pk.awbs.map((x) => esc(x.number)).join(', ')})</span>` : ''}</div></div>`;
+    h += `<div class="box info small pickup-box">${icon('truck')} <b>SMSA pickup</b> <span data-noi18n dir="ltr">${esc(pk.when)}</span>
+      <div class="muted">${pk.smsaRef ? `<span>SMSA booking no.</span> <b data-noi18n dir="ltr">${esc(pk.smsaRef)}</b>` : pk.mode !== 'live' ? '<span>Sandbox – not for SMSA</span>' : '<span>Not booked in SMSA yet – finish it from the orders list.</span>'} · <span>Request</span> <span data-noi18n>#${pk.id}</span>${pk.awbs.length > 1 ? ` · <span data-noi18n>${nf(pk.awbs.length)}</span> <span>waybills</span> <span class="muted" data-noi18n>(${pk.awbs.map((x) => esc(x.number)).join(', ')})</span>` : ''}</div></div>`;
   } else if (live && pk && pk.status === 'done') {
     h += `<p class="muted small">${icon('check')} <span>Collected by SMSA (pickup</span> <span data-noi18n>#${pk.id}, ${esc(pk.when)}</span>)</p>`;
   }
@@ -341,31 +340,54 @@ function shipBox(o, smsa) {
       <button class="btn btn-sm" id="track">${icon('truck')} Refresh tracking</button>
       <a class="btn btn-sm" href="${esc(sh.trackUrl)}" target="_blank" rel="noopener">SMSA tracking page</a>` : ''}
     ${canSend && smsa.configured ? `<button class="btn btn-sm${live ? '' : ' btn-primary'}" id="ship" ${smsa.problems.length ? 'disabled' : ''}>${icon('truck')} ${sh && sh.status === 'failed' ? 'Try again' : 'Send to SMSA now'}</button>` : ''}
-    ${live && pk && pk.status === 'requested' ? `<button class="btn btn-sm" id="vpick">${icon('eye')} See the request</button>` : ''}
     ${live && can('manager') && ['created'].includes(sh.status) ? '<button class="btn btn-sm btn-ghost" id="cship">Cancel waybill</button>' : ''}</div>`;
   return h;
 }
 
-/* The shop's SMSA pickups: what is booked (banner above the list) and "Book SMSA pickup" for everything waiting. */
+/* The shop's SMSA pickups. SMSA's API cannot book a collection, so "Book SMSA pickup" plans it here (day, ready time,
+   closing time, waybills), opens SMSA's dashboard (Manage Pickup › Initiate Pickup Request) and gives the answers for its
+   form with copy buttons; SMSA's booking number is pasted back so the whole team sees it above the list. */
 export async function pickupBanner(box, onChange) {
   if (!box) return;
   let r;
   try { r = await api('pickups'); } catch (e) { return; }
-  box.innerHTML = r.open.map((p) => `<div class="box info small pickup-box">${icon('truck')} <b>SMSA pickup booked</b> <span data-noi18n dir="ltr">${esc(p.when)}</span>
-    ${p.smsaRef ? ` · <span>SMSA booking no.</span> <b data-noi18n dir="ltr">${esc(p.smsaRef)}</b>` : ''}
-    <span class="muted"> · <span>${esc(PICKUP_VIA[p.sentVia] || p.sentVia)}</span> · <span data-noi18n>${nf(p.parcels)}</span> <span>${p.parcels === 1 ? 'parcel' : 'parcels'}</span> · <span>Request</span> <span data-noi18n>#${p.id}</span></span>
-    <span class="btn-row" style="display:inline-flex;margin-inline-start:8px"><button class="btn btn-sm" data-pkview="${p.id}">${icon('eye')} See the request</button><button class="btn btn-sm btn-ghost" data-pkcancel="${p.id}">Cancel pickup</button></span></div>`).join('');
-  box.querySelectorAll('[data-pkview]').forEach((b) => b.addEventListener('click', () => {
-    const p = r.open.find((x) => x.id === +b.dataset.pkview);
-    modal({ title: 'SMSA pickup request', wide: true, body: `<pre class="pickup-text" dir="ltr" data-noi18n>${esc(p.message)}</pre>`,
-      foot: '<button class="btn" data-close>Close</button><button class="btn btn-primary" id="pcopy">Copy</button>',
-      onOpen: (el) => el.querySelector('#pcopy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(p.message); toast('Copied'); } catch (e) { toastErr(e); } }) });
-  }));
+  box.innerHTML = r.open.map((p) => `<div class="box ${p.smsaRef || p.mode !== 'live' ? 'info' : 'warn'} small pickup-box">${icon('truck')} <b>SMSA pickup</b> <span data-noi18n dir="ltr">${esc(p.when)}</span>
+    · ${p.smsaRef ? `<span>SMSA booking no.</span> <b data-noi18n dir="ltr">${esc(p.smsaRef)}</b>` : p.mode !== 'live' ? '<span>Sandbox – not for SMSA</span>' : '<b>Not booked in SMSA yet</b>'}
+    <span class="muted"> · <span data-noi18n>${nf(p.parcels)}</span> <span>${p.parcels === 1 ? 'parcel' : 'parcels'}</span> · <span>Request</span> <span data-noi18n>#${p.id}</span></span>
+    <span class="btn-row" style="display:inline-flex;margin-inline-start:8px"><button class="btn btn-sm${p.smsaRef ? '' : ' btn-primary'}" data-pkfill="${p.id}">${icon('edit')} ${p.smsaRef ? 'Form answers' : 'Finish in SMSA'}</button><button class="btn btn-sm btn-ghost" data-pkcancel="${p.id}">Cancel pickup</button></span></div>`).join('');
+  box.querySelectorAll('[data-pkfill]').forEach((b) => b.addEventListener('click', () => fillModal(r.open.find((x) => x.id === +b.dataset.pkfill), false, onChange)));
   box.querySelectorAll('[data-pkcancel]').forEach((b) => b.addEventListener('click', async () => {
     const p = r.open.find((x) => x.id === +b.dataset.pkcancel);
-    if (!(await confirmBox(p.sentVia === 'email' ? 'Cancel this SMSA pickup? SMSA is emailed that it is cancelled.' : 'Cancel this SMSA pickup? If you sent it on WhatsApp, tell SMSA too.', { ok: 'Cancel pickup', danger: true }))) return;
+    if (!(await confirmBox(p.smsaRef ? 'Cancel this pickup here? Cancel it in SMSA’s dashboard too.' : 'Cancel this pickup?', { ok: 'Cancel pickup', danger: true }))) return;
     try { await busy(b, () => api(`pickups/${p.id}/cancel`, { method: 'POST', body: {} })); toast('Pickup cancelled'); onChange(); } catch (e) { toastErr(e); }
   }));
+}
+
+/* SMSA's form answers (copy buttons, in the form's order) and the box for SMSA's booking number. */
+function fillModal(p, opened, done) {
+  const live = p.mode === 'live';
+  modal({
+    title: 'Book it in SMSA', wide: true,
+    body: `${live ? `<ol class="pk-steps small"><li>${opened ? '<span>SMSA’s dashboard opened in a new tab.</span>' : `<a href="${esc(p.dashboardUrl)}" target="_blank" rel="noopener">Open SMSA’s dashboard</a>`} <span>Go to</span> <b>Manage Pickup › Initiate Pickup Request</b>.</li>
+        <li>Copy each answer below into SMSA’s form, then submit it.</li><li>Paste the booking number SMSA shows, and save.</li></ol>`
+      : '<div class="box warn small">Sandbox waybills: nothing to book in SMSA. This is only to try it.</div>'}
+      <div class="pk-fields">${p.fields.map((x) => `<div class="pk-field"><span class="pk-label">${esc(x.label)}</span><span class="pk-value" data-noi18n dir="auto">${esc(x.value || '—')}</span>
+        <button class="btn btn-sm" type="button" data-copy="${esc(x.key)}" ${x.value ? '' : 'disabled'}>${icon('copy')} Copy</button></div>`).join('')}</div>
+      ${live ? `<form id="pkref" class="form-grid" novalidate><div class="field" data-field="ref"><label for="pkr">SMSA booking number</label>
+        <input class="input" id="pkr" name="ref" dir="ltr" autocomplete="off" value="${esc(p.smsaRef)}" placeholder="${esc(isAr() ? 'الصقه هنا' : 'Paste it here')}"></div></form>` : ''}`,
+    foot: `<button class="btn" data-close>Close</button>${live ? '<button class="btn btn-primary" id="pkrsave">Save booking number</button>' : ''}`,
+    onOpen: (el, close) => {
+      el.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', async () => {
+        const f = p.fields.find((x) => x.key === b.dataset.copy);
+        try { await navigator.clipboard.writeText(f.value); b.classList.add('btn-primary'); toast('Copied'); } catch (e) { toastErr(e); }
+      }));
+      const sv = el.querySelector('#pkrsave');
+      if (sv) sv.addEventListener('click', async () => {
+        const form = el.querySelector('#pkref'); clearErrors(form);
+        try { const res = await busy(sv, () => api(`pickups/${p.id}/ref`, { method: 'POST', body: { ref: form.ref.value } })); toast(`SMSA booking no. ${res.pickup.smsaRef}`); close(); done(); } catch (err) { showErrors(form, err); }
+      });
+    },
+  });
 }
 
 export async function pickupModal(done) {
@@ -379,26 +401,28 @@ export async function pickupModal(done) {
   modal({
     title: 'Book SMSA pickup', wide: true,
     body: `<form id="pkf" class="form-grid" novalidate>
-      <p class="muted small full"><span>SMSA collects between</span> <b data-noi18n dir="ltr">${esc(f.open)}–${esc(f.close)}</b>. <span>Choose the day and when the parcels are ready.</span></p>
+      <p class="muted small full"><span>SMSA collects between</span> <b data-noi18n dir="ltr">${esc(f.open)}–${esc(f.close)}</b>. <span>Choose the day, when the parcels are ready and when the shop closes for the courier.</span></p>
       ${live ? '' : '<div class="box warn small full">Sandbox waybills: the booking is saved here but not sent to SMSA.</div>'}
       <div class="field" data-field="date"><label for="pkd">Day</label><select class="input" id="pkd" name="date">${f.days.map((d) => `<option value="${d.date}">${esc(d.today ? (ar ? 'اليوم – ' : 'Today – ') : '')}${esc(ar ? d.label.ar : d.label.en)}</option>`).join('')}</select></div>
-      <div class="field" data-field="from"><label for="pkfrom">Ready from</label><select class="input" id="pkfrom" name="from" dir="ltr" data-noi18n></select></div>
-      <div class="field" data-field="until"><label for="pkuntil">Until</label><select class="input" id="pkuntil" name="until" dir="ltr" data-noi18n></select></div>
+      <div class="field" data-field="from"><label for="pkfrom">Ready time</label><select class="input" id="pkfrom" name="from" dir="ltr" data-noi18n></select></div>
+      <div class="field" data-field="until"><label for="pkuntil">Closing time</label><select class="input" id="pkuntil" name="until" dir="ltr" data-noi18n></select></div>
       <div class="field full"><span class="field-label">Waybills to collect</span><div class="chips">${f.waiting.map((x) => `<label class="chip-check"><input type="checkbox" data-wb="${x.orderId}" checked><span data-noi18n>#${esc(x.number)} · ${esc(x.awb)}${x.name ? ' · ' + esc(x.name) : ''}</span></label>`).join('')}</div></div>
       <div class="field" data-field="parcels"><label for="pkn">Parcels</label><input class="input" id="pkn" name="parcels" type="number" min="1" max="999" dir="ltr"></div>
+      <div class="field"><span class="field-label">Heavy shipment</span><label class="mini-check"><input type="checkbox" id="pkh"> <span>Yes, it is heavy</span></label></div>
       <div class="field full" data-field="note"><label for="pknote">Note for SMSA (optional)</label><input class="input" id="pknote" name="note" maxlength="300" dir="auto" placeholder="${esc(ar ? 'مثال: اتصل عند الوصول' : 'e.g. call when you arrive')}"></div>
-      ${live ? `<div class="field full" data-field="via"><span class="field-label">Send the request</span><div class="seg" role="radiogroup" aria-label="Send the request">
-        <label><input type="radio" name="via" value="email"${f.email.length ? ' checked' : ' disabled'}><span>By email</span></label>
-        <label><input type="radio" name="via" value="whatsapp"${f.email.length ? '' : ' checked'}><span>On WhatsApp</span></label>
-        <label><input type="radio" name="via" value="copy"><span>Copy the text</span></label></div>
-        <span class="hint">${f.email.length ? `<span>To</span> <span data-noi18n>${esc(f.email.join(', '))}</span>` : '<span>No SMSA pickup email yet – add it in Settings › SMSA shipping.</span>'}</span></div>` : ''}
     </form>`,
-    foot: '<button class="btn" data-close>Cancel</button><button class="btn btn-primary" id="pkok">Book pickup</button>',
+    foot: `<button class="btn" data-close>Cancel</button><button class="btn btn-primary" id="pkok">${live ? 'Continue in SMSA' : 'Save'}</button>`,
     onOpen: (el, close) => {
       const form = el.querySelector('#pkf');
       const dSel = el.querySelector('#pkd'), fSel = el.querySelector('#pkfrom'), uSel = el.querySelector('#pkuntil'), nIn = el.querySelector('#pkn');
       const boxes = () => f.waiting.filter((x) => form.querySelector(`[data-wb="${x.orderId}"]`).checked).reduce((n, x) => n + (x.parcels || 1), 0);
-      const syncBoxes = () => { nIn.value = Math.max(1, boxes()); };
+      const hv = el.querySelector('#pkh');
+      let hvTouched = false; hv.addEventListener('change', () => { hvTouched = true; });
+      const syncBoxes = () => {
+        nIn.value = Math.max(1, boxes());
+        const kg = f.waiting.filter((x) => form.querySelector(`[data-wb="${x.orderId}"]`).checked).reduce((n, x) => n + (x.kg || 0), 0);
+        if (!hvTouched) hv.checked = kg >= f.heavyKg;
+      };
       form.querySelectorAll('[data-wb]').forEach((c) => c.addEventListener('change', syncBoxes)); syncBoxes();
       const fixUntil = () => {
         const minEnd = toMin(fSel.value) + Math.round(f.minHours * 60);
@@ -416,15 +440,13 @@ export async function pickupModal(done) {
         clearErrors(form);
         const ids = [...form.querySelectorAll('[data-wb]:checked')].map((x) => +x.dataset.wb);
         if (!ids.length) { toast('Tick at least one waybill.', 'err'); return; }
-        const via = (form.querySelector('[name=via]:checked') || {}).value || 'email';
-        const win = via === 'whatsapp' ? window.open('', '_blank') : null;
+        const win = live ? window.open('', '_blank') : null;   // opened now, so the browser does not block it
         try {
           const res = await busy(e.currentTarget, () => api('pickups', { method: 'POST', body: {
-            date: dSel.value, from: fSel.value, until: uSel.value, note: form.note.value, via, orderIds: ids, parcels: +nIn.value || 0 } }));
-          if (res.whatsappUrl) { if (win) win.location = res.whatsappUrl; else window.open(res.whatsappUrl, '_blank', 'noopener'); } else if (win) win.close();
-          if (via === 'copy' && live) { try { await navigator.clipboard.writeText(res.text); } catch (err) { /* "See the request" shows it */ } }
-          toast(!live ? 'Pickup saved (sandbox – not sent)' : res.pickup.smsaRef ? `SMSA booking no. ${res.pickup.smsaRef}` : res.emailed ? 'Pickup request emailed to SMSA' : via === 'copy' ? 'Pickup saved – text copied' : 'Pickup saved');
+            date: dSel.value, from: fSel.value, until: uSel.value, note: form.note.value, orderIds: ids, parcels: +nIn.value || 0, heavy: hv.checked } }));
+          if (win) { try { win.opener = null; } catch (x) { /* ignore */ } win.location = res.pickup.dashboardUrl; }
           close(); done();
+          fillModal(res.pickup, !!win, done);
         } catch (err) { if (win) win.close(); showErrors(form, err); toastErr(err); }
       });
     },
@@ -467,11 +489,6 @@ function bindShip(main, o, smsa, act, reload) {
   if (lb) lb.addEventListener('click', () => labelModal(o.id, o.subtotal - o.discount));
   const tr = main.querySelector('#track');
   if (tr) tr.addEventListener('click', () => act(tr, 'track', {}, 'Tracking updated'));
-  const vp = main.querySelector('#vpick');
-  if (vp) vp.addEventListener('click', () => modal({ title: 'SMSA pickup request', wide: true,
-    body: `<pre class="pickup-text" dir="ltr" data-noi18n>${esc(smsa.pickup.message)}</pre>`,
-    foot: '<button class="btn" data-close>Close</button><button class="btn btn-primary" id="pcopy">Copy</button>',
-    onOpen: (el) => el.querySelector('#pcopy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(smsa.pickup.message); toast('Copied'); } catch (e) { toastErr(e); } }) }));
 
   const cs = main.querySelector('#cship');
   if (cs) cs.addEventListener('click', async () => {

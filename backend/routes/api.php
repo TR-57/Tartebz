@@ -99,6 +99,7 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::get('pickups/form', [\App\Http\Controllers\Admin\PickupsController::class, 'form']);
         Route::post('pickups', [\App\Http\Controllers\Admin\PickupsController::class, 'store']);
         Route::post('pickups/{id}/cancel', [\App\Http\Controllers\Admin\PickupsController::class, 'cancel'])->whereNumber('id');
+        Route::post('pickups/{id}/ref', [\App\Http\Controllers\Admin\PickupsController::class, 'ref'])->whereNumber('id');
         Route::get('orders/{id}/label', [OrdersController::class, 'label'])->whereNumber('id');
         Route::get('orders/labels', [OrdersController::class, 'labels']);
         Route::post('orders/ship', [OrdersController::class, 'shipMany']);

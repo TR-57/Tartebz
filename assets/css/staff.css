@@ -219,3 +219,8 @@ bdi { unicode-bidi: isolate; }
 .check { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 14px; }
 .check input { width: 18px; height: 18px; flex: none; }
 .btn.btn-sm { min-height: 36px; padding: 6px 12px; font-size: 13px; }
+.pk-item.warn { background: #FDE7E7; }
+.pk-steps { margin: 0 0 12px; padding-inline-start: 20px; line-height: 1.7; font-size: 14px; }
+.pk-field { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; padding: 8px 10px; margin: 0 0 6px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.pk-label { grid-column: 1 / -1; font-size: 12px; font-weight: 700; opacity: .7; }
+.pk-value { font-weight: 600; word-break: break-word; }

@@ -72,13 +72,6 @@ class SmsaPickupTest extends TestCase
         return $id;
     }
 
-    private function pickupEmail(string $to = 'pickup@smsa.test'): void
-    {
-        $s = Settings::get('smsa');
-        $s['pickup'] = ['email' => $to, 'whatsapp' => '+973 1700 0000', 'from' => '09:00', 'until' => '17:00', 'minHours' => 1];
-        Settings::set('smsa', $s);
-    }
-
     public function test_times_on_offer_follow_the_clock_and_the_9_to_5_window(): void
     {
         $id = $this->shipped();
@@ -98,55 +91,73 @@ class SmsaPickupTest extends TestCase
         $this->assertFalse($f['days'][0]['today']);
     }
 
-    public function test_booking_by_email_sends_smsa_the_waybills_and_the_window(): void
+    public function test_one_booking_for_all_waiting_waybills_with_the_answers_for_smsa_and_the_booking_number(): void
     {
         $id = $this->shipped(true, 2);
         $other = $this->shipped();
-        $this->postJson("/api/admin/pickups", ['orderIds' => [$id], 'date' => '2026-11-23', 'from' => '11:00', 'until' => '17:00', 'via' => 'email'])
-            ->assertStatus(422)->assertJsonPath('error.fields.via', 'Add SMSA’s pickup email in Settings › SMSA shipping first – or send the request on WhatsApp.');
-        $this->assertSame(0, DB::table('smsa_pickups')->count(), 'nothing saved when it cannot be sent');
-        $this->pickupEmail('pickup@smsa.test, ops@smsa.test');
         // the button on the orders list: every waybill waiting, both ticked
-        $this->assertSame([$id, $other], array_column($this->getJson('/api/admin/pickups/form')->json('waiting'), 'orderId'));
-        $r = $this->postJson('/api/admin/pickups', ['orderIds' => [$id, $other], 'date' => '2026-11-23', 'from' => '11:00', 'until' => '17:00', 'via' => 'email',
-            'note' => 'Call on arrival'])->assertOk();
-        $r->assertJsonPath('emailed', true)->assertJsonPath('pickup.status', 'requested')->assertJsonPath('pickup.parcels', 3);
+        $f = $this->getJson('/api/admin/pickups/form')->assertOk();
+        $this->assertSame([$id, $other], array_column($f->json('waiting'), 'orderId'));
+        $this->assertSame('https://ecom.smsaexpress.com/', $f->json('dashboardUrl'));
+        $r = $this->postJson('/api/admin/pickups', ['orderIds' => [$id, $other], 'date' => '2026-11-23', 'from' => '11:00', 'until' => '17:00', 'note' => 'Call on arrival'])->assertOk();
+        $r->assertJsonPath('pickup.status', 'requested')->assertJsonPath('pickup.parcels', 3)->assertJsonPath('pickup.smsaRef', '')
+            ->assertJsonPath('pickup.heavy', false)->assertJsonPath('pickup.dashboardUrl', 'https://ecom.smsaexpress.com/');
         $p = DB::table('smsa_pickups')->first();
         $this->assertSame(['11:00', '17:00'], [$p->ready_from, $p->ready_until]);
         $this->assertSame(2, DB::table('shipments')->where('pickup_id', $p->id)->count());
-        $mail = DB::table('mail_outbox')->where('to_email', 'pickup@smsa.test')->first();
-        $this->assertNotNull($mail);
-        $this->assertStringContainsString('Mon 23 Nov 2026, 11:00–17:00', $mail->subject);
-        $this->assertStringContainsString('3 parcels', $mail->subject);
-        $awbs = DB::table('shipments')->pluck('awb')->all();
-        foreach ($awbs as $a) {
-            $this->assertStringContainsString($a, $mail->html);
+        // the answers for SMSA's "Initiate Pickup Request" form, in its order
+        $fields = array_column($r->json('pickup.fields'), 'value', 'key');
+        $this->assertSame(['contact', 'phone', 'address', 'postal', 'city', 'heavy', 'ready', 'closing', 'notes'], array_keys($fields));
+        $this->assertSame('Tartebz Sweets', $fields['contact']);
+        $this->assertSame('+973 3753 3757', $fields['phone']);
+        $this->assertSame('Al-Ajeera Street, West Riffa', $fields['address']);
+        $this->assertSame('Riffa', $fields['city']);
+        $this->assertSame('No', $fields['heavy']);
+        $this->assertSame('Mon 23 Nov 2026, 11:00', $fields['ready']);
+        $this->assertSame('17:00', $fields['closing']);
+        foreach (DB::table('shipments')->pluck('awb') as $a) {
+            $this->assertStringContainsString($a, $fields['notes']);
         }
-        foreach (['Al-Ajeera Street', 'BH-12345', 'Call on arrival', 'Huda', '+973 3753 3757'] as $w) {
-            $this->assertStringContainsString($w, $mail->text_body, $w);
-        }
-        $this->assertSame(1, DB::table('mail_outbox')->where('to_email', 'ops@smsa.test')->count());
-        $this->assertSame(1, DB::table('mail_outbox')->where('to_email', 'orders@tartebz.test')->where('subject', 'like', '[Copy]%')->count());
+        $this->assertStringContainsString('3 parcels', $fields['notes']);
+        $this->assertStringContainsString('Call on arrival', $fields['notes']);
+        // nothing is emailed or sent anywhere
+        $this->assertSame(0, DB::table('mail_outbox')->where('email_key', 'smsa_pickup')->count());
         $this->assertSame(2, DB::table('order_events')->where('type', 'smsa_pickup')->count(), 'both orders show it on their history');
-        $this->getJson("/api/admin/orders/$id")->assertJsonPath('smsa.pickup.id', $p->id)->assertJsonPath('smsa.pickup.when', 'Mon 23 Nov 2026, 11:00–17:00');
+        // SMSA's booking number, pasted back from the dashboard
+        $this->postJson("/api/admin/pickups/{$p->id}/ref", ['ref' => ''])->assertStatus(422);
+        $this->postJson("/api/admin/pickups/{$p->id}/ref", ['ref' => '<script>'])->assertStatus(422);
+        $this->postJson("/api/admin/pickups/{$p->id}/ref", ['ref' => 'PU-2241-88771'])->assertOk()->assertJsonPath('pickup.smsaRef', 'PU-2241-88771');
+        $this->getJson('/api/admin/pickups')->assertJsonPath('open.0.smsaRef', 'PU-2241-88771');
+        $this->getJson("/api/admin/orders/$id")->assertJsonPath('smsa.pickup.id', $p->id)->assertJsonPath('smsa.pickup.smsaRef', 'PU-2241-88771')
+            ->assertJsonPath('smsa.pickup.when', 'Mon 23 Nov 2026, 11:00–17:00');
         $this->getJson("/api/admin/orders/$other")->assertJsonPath('smsa.pickup.id', $p->id);
+        $this->assertSame(2, DB::table('order_events')->where('type', 'smsa_pickup')->where('message', 'like', '%PU-2241-88771%')->count());
         // a booked waybill is not booked twice
-        $this->postJson('/api/admin/pickups', ['orderIds' => [$id], 'date' => '2026-11-23', 'from' => '11:00', 'until' => '17:00', 'via' => 'email'])
+        $this->postJson('/api/admin/pickups', ['orderIds' => [$id], 'date' => '2026-11-23', 'from' => '11:00', 'until' => '17:00'])
             ->assertStatus(409)->assertJsonPath('error.code', 'no_waybill');
-        // only new waybills are offered next time; the open booking shows above the list
+        // only new waybills are offered next time; empty list = every waybill waiting; parcels and "heavy" can be set
         $third = $this->shipped();
         $this->assertSame([$third], array_column($this->getJson('/api/admin/pickups/form')->json('waiting'), 'orderId'));
-        $this->getJson('/api/admin/pickups')->assertJsonPath('open.0.id', $p->id)->assertJsonPath('waiting', 1);
-        // empty list = every waybill waiting; the box count can be changed
-        $this->postJson('/api/admin/pickups', ['date' => '2026-11-24', 'from' => '09:00', 'until' => '12:00', 'via' => 'copy', 'parcels' => 4])
-            ->assertOk()->assertJsonPath('pickup.parcels', 4)->assertJsonPath('pickup.awbs.0.orderId', $third);
+        $this->getJson('/api/admin/pickups')->assertJsonPath('waiting', 1);
+        $this->postJson('/api/admin/pickups', ['date' => '2026-11-24', 'from' => '09:00', 'until' => '12:00', 'parcels' => 4, 'heavy' => true])
+            ->assertOk()->assertJsonPath('pickup.parcels', 4)->assertJsonPath('pickup.heavy', true)->assertJsonPath('pickup.awbs.0.orderId', $third);
+    }
+
+    public function test_heavy_is_ticked_by_weight(): void
+    {
+        $s = Settings::get('smsa');
+        $s['pickup']['heavyKg'] = 2;
+        Settings::set('smsa', $s);
+        $id = $this->shipped(true, 1);   // 1.5 kg
+        $id2 = $this->shipped(true, 1);  // + 1.5 kg = 3 kg
+        $r = $this->postJson('/api/admin/pickups', ['orderIds' => [$id, $id2], 'date' => '2026-11-23', 'from' => '11:00', 'until' => '17:00'])->assertOk();
+        $this->assertSame('Yes', array_column($r->json('pickup.fields'), 'value', 'key')['heavy']);
     }
 
     public function test_window_rules(): void
     {
-        $this->pickupEmail();
         $id = $this->shipped();
-        $book = fn (array $w) => $this->postJson('/api/admin/pickups', $w + ['date' => '2026-11-23', 'via' => 'email', 'orderIds' => [$id]]);
+        $book = fn (array $w) => $this->postJson('/api/admin/pickups', $w + ['date' => '2026-11-23', 'orderIds' => [$id]]);
         $book(['from' => '15:00', 'until' => '18:00'])->assertStatus(422)->assertJsonPath('error.fields.from', 'SMSA collects between 09:00 and 17:00.');
         $book(['from' => '08:00', 'until' => '12:00'])->assertStatus(422);
         $book(['from' => '13:00', 'until' => '13:30'])->assertStatus(422)->assertJsonPath('error.fields.until', 'Give SMSA at least 1 hour to come.');
@@ -158,70 +169,57 @@ class SmsaPickupTest extends TestCase
         $this->assertSame(0, DB::table('smsa_pickups')->where('status', '<>', 'requested')->count());
     }
 
-    public function test_whatsapp_copy_and_sandbox(): void
+    public function test_sandbox_waybills_are_only_practice(): void
     {
-        $this->pickupEmail();
-        $id = $this->shipped();
-        $r = $this->postJson("/api/admin/pickups", ['orderIds' => [$id], 'date' => '2026-11-23', 'from' => '12:00', 'until' => '16:00', 'via' => 'whatsapp'])->assertOk();
-        $this->assertStringStartsWith('https://wa.me/97317000000?text=', $r->json('whatsappUrl'));
-        $this->assertStringContainsString(rawurlencode('Mon 23 Nov 2026, 12:00–16:00'), $r->json('whatsappUrl'));
-        $this->assertSame(0, DB::table('mail_outbox')->where('to_email', 'pickup@smsa.test')->count(), 'WhatsApp: no email');
-        $this->assertSame('whatsapp', DB::table('smsa_pickups')->value('sent_via'));
-        // copy: just the text
-        $id2 = $this->shipped();
-        $r2 = $this->postJson("/api/admin/pickups", ['orderIds' => [$id2], 'date' => '2026-11-23', 'from' => '12:00', 'until' => '16:00', 'via' => 'copy'])->assertOk();
-        $this->assertNull($r2->json('whatsappUrl'));
-        $this->assertStringContainsString('Please collect our shipments', $r2->json('text'));
-        // a sandbox waybill: saved, never sent to SMSA
         $sb = $this->shipped(false);
-        $r3 = $this->postJson("/api/admin/pickups", ['orderIds' => [$sb], 'date' => '2026-11-23', 'from' => '12:00', 'until' => '16:00', 'via' => 'email'])->assertOk();
-        $r3->assertJsonPath('emailed', false)->assertJsonPath('pickup.sentVia', 'sandbox');
-        $this->assertSame(0, DB::table('mail_outbox')->where('to_email', 'pickup@smsa.test')->count());
+        $r = $this->postJson('/api/admin/pickups', ['orderIds' => [$sb], 'date' => '2026-11-23', 'from' => '12:00', 'until' => '16:00'])->assertOk();
+        $r->assertJsonPath('pickup.sentVia', 'sandbox')->assertJsonPath('pickup.mode', 'test');
     }
 
-    public function test_cancel_tells_smsa_and_frees_the_waybill(): void
+    public function test_cancel_frees_the_waybill(): void
     {
-        $this->pickupEmail();
         $id = $this->shipped();
         $this->postJson('/api/admin/pickups/999/cancel')->assertNotFound();
-        $pid = $this->postJson("/api/admin/pickups", ['orderIds' => [$id], 'date' => '2026-11-23', 'from' => '11:00', 'until' => '17:00', 'via' => 'email'])->assertOk()->json('pickup.id');
+        $pid = $this->postJson("/api/admin/pickups", ['orderIds' => [$id], 'date' => '2026-11-23', 'from' => '11:00', 'until' => '17:00'])->assertOk()->json('pickup.id');
         $this->postJson("/api/admin/pickups/$pid/cancel")->assertOk()->assertJsonPath('pickup.status', 'cancelled');
         $this->postJson("/api/admin/pickups/$pid/cancel")->assertStatus(409);
         $this->assertNull(DB::table('shipments')->where('order_id', $id)->value('pickup_id'));
-        $this->assertSame(1, DB::table('mail_outbox')->where('to_email', 'pickup@smsa.test')->where('subject', 'like', 'CANCEL%')->count());
         // booked again for another time
-        $this->postJson("/api/admin/pickups", ['orderIds' => [$id], 'date' => '2026-11-24', 'from' => '09:00', 'until' => '13:00', 'via' => 'email'])->assertOk();
+        $this->postJson("/api/admin/pickups", ['orderIds' => [$id], 'date' => '2026-11-24', 'from' => '09:00', 'until' => '13:00'])->assertOk();
         $this->assertSame(2, DB::table('smsa_pickups')->count());
     }
 
     public function test_done_when_smsa_scans_the_parcel_and_no_waybill_no_booking(): void
     {
-        $this->pickupEmail();
         $id = $this->shipped();
-        $this->postJson("/api/admin/pickups", ['orderIds' => [$id], 'date' => '2026-11-23', 'from' => '11:00', 'until' => '17:00', 'via' => 'email'])->assertOk();
+        $this->postJson("/api/admin/pickups", ['orderIds' => [$id], 'date' => '2026-11-23', 'from' => '11:00', 'until' => '17:00'])->assertOk();
         DB::table('shipments')->where('order_id', $id)->update(['mode' => 'test']);   // tracking is read from the (faked) sandbox
         $this->postJson("/api/admin/orders/$id/track")->assertOk();
         $this->assertSame('moving', DB::table('shipments')->where('order_id', $id)->value('status'));
         $this->assertSame('done', DB::table('smsa_pickups')->value('status'));
-        $this->postJson("/api/admin/pickups", ['orderIds' => [$id], 'date' => '2026-11-23', 'from' => '11:00', 'until' => '17:00', 'via' => 'email'])
+        $this->postJson("/api/admin/pickups", ['orderIds' => [$id], 'date' => '2026-11-23', 'from' => '11:00', 'until' => '17:00'])
             ->assertStatus(409)->assertJsonPath('error.code', 'no_waybill');
         // an order without a waybill
         $token = $this->postJson('/api/checkout', ['items' => [['id' => $this->productId, 'qty' => 1]], 'country' => 'BH', 'method' => 'whatsapp', 'lang' => 'en',
             'first_name' => 'Ali', 'last_name' => 'Hasan', 'email' => 'ali@example.com', 'phone' => '+973 3333 5555', 'state' => 'Northern', 'city' => 'Riffa',
             'address1' => 'House 1, Road 2, Block 903', 'address2' => ''])->assertOk()->json('order.token');
         $plain = (int) DB::table('orders')->where('token', $token)->value('id');
-        $this->postJson("/api/admin/pickups", ['orderIds' => [$plain], 'date' => '2026-11-23', 'from' => '11:00', 'until' => '17:00', 'via' => 'email'])
+        $this->postJson("/api/admin/pickups", ['orderIds' => [$plain], 'date' => '2026-11-23', 'from' => '11:00', 'until' => '17:00'])
             ->assertStatus(409)->assertJsonPath('error.code', 'no_waybill');
     }
 
     public function test_pickup_settings_are_saved_and_checked(): void
     {
-        $this->putJson('/api/admin/smsa', ['pickup' => ['email' => 'not an email', 'from' => '09:00', 'until' => '17:00', 'minHours' => 1]])->assertStatus(422);
-        $this->putJson('/api/admin/smsa', ['pickup' => ['email' => 'Pickup@SMSA.test', 'whatsapp' => '+973 1700 0000', 'from' => '09:00', 'until' => '17:00', 'minHours' => 2]])
-            ->assertOk()->assertJsonPath('settings.pickup.email', 'pickup@smsa.test')->assertJsonPath('settings.pickup.minHours', 2);
-        $this->assertSame(['pickup@smsa.test'], SmsaPickups::emails());
-        $this->putJson('/api/admin/smsa', ['pickup' => ['email' => '', 'from' => '16:00', 'until' => '17:00', 'minHours' => 2]])->assertStatus(422);
+        $this->putJson('/api/admin/smsa', ['pickup' => ['dashboardUrl' => 'https://evil.example.com/', 'from' => '09:00', 'until' => '17:00', 'minHours' => 1]])->assertStatus(422);
+        $this->putJson('/api/admin/smsa', ['pickup' => ['dashboardUrl' => 'https://ecom.smsaexpress.com/Pickup/Create', 'from' => '09:00', 'until' => '17:00', 'minHours' => 2, 'heavyKg' => 25]])
+            ->assertOk()->assertJsonPath('settings.pickup.dashboardUrl', 'https://ecom.smsaexpress.com/Pickup/Create')
+            ->assertJsonPath('settings.pickup.minHours', 2)->assertJsonPath('settings.pickup.heavyKg', 25);
+        $this->assertSame('https://ecom.smsaexpress.com/Pickup/Create', SmsaPickups::cfg()['dashboardUrl']);
+        $this->putJson('/api/admin/smsa', ['pickup' => ['from' => '16:00', 'until' => '17:00', 'minHours' => 2]])->assertStatus(422);
+        // everyone who works on orders can book; only owners change the settings
         $this->signOut()->actingAsAdmin($this->makeAdmin('shop_staff'));
-        $this->putJson('/api/admin/smsa', ['pickup' => ['email' => 'x@y.test']])->assertForbidden();
+        $this->putJson('/api/admin/smsa', ['pickup' => ['dashboardUrl' => '']])->assertForbidden();
+        $this->getJson('/api/admin/pickups/form')->assertOk();
+        $this->getJson('/api/admin/pickups')->assertOk();
     }
 }

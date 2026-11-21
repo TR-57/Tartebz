@@ -122,9 +122,9 @@ return [
             'name' => 'Tartebz', 'phone' => '', 'country' => 'BH', 'city' => '', 'district' => '',
             'address1' => '', 'address2' => '', 'postalCode' => '',
         ],
-        // Pickup bookings (order page › Book SMSA pickup). SMSA's API has no pickup endpoint, so the request goes to
-        // SMSA's pickup desk / account manager by email, or on WhatsApp. Times are shop time.
-        'pickup' => ['email' => '', 'whatsapp' => '', 'from' => '09:00', 'until' => '17:00', 'minHours' => 1],
+        // Pickup bookings (Orders › Book SMSA pickup). SMSA's API cannot book a collection, so it is booked in SMSA's
+        // dashboard (Manage Pickup › Initiate Pickup Request) with the answers the button prepares. Times are shop time.
+        'pickup' => ['dashboardUrl' => 'https://ecom.smsaexpress.com/', 'from' => '09:00', 'until' => '17:00', 'minHours' => 1, 'heavyKg' => 30],
     ],
 
     // Maintenance mode (Admin › Maintenance): customers see a "back soon" page; the team keeps working.

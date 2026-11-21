@@ -134,15 +134,9 @@ class SmsaController extends Controller
         }
         if ($r->has('pickup')) {
             $pk = (array) $r->input('pickup');
-            $emails = array_values(array_filter(array_map('trim', preg_split('/[\s,;]+/', (string) ($pk['email'] ?? '')))));
-            foreach ($emails as $e) {
-                if (! filter_var($e, FILTER_VALIDATE_EMAIL)) {
-                    $f['pickup.email'] = 'Enter SMSA’s pickup email (or several, separated by commas).';
-                }
-            }
-            $wa = preg_replace('/[^\d+]/', '', (string) ($pk['whatsapp'] ?? ''));
-            if ($wa !== '' && strlen(preg_replace('/\D/', '', $wa)) < 8) {
-                $f['pickup.whatsapp'] = 'Enter the WhatsApp number with the country code.';
+            $url = trim((string) ($pk['dashboardUrl'] ?? ''));
+            if ($url !== '' && ! preg_match('#^https://[a-z0-9.-]*smsaexpress\.com(/\S*)?$#i', $url)) {
+                $f['pickup.dashboardUrl'] = 'Paste the address of SMSA’s pickup page (it starts with https:// and is on smsaexpress.com).';
             }
             $from = \App\Support\SmsaPickups::hhmm($pk['from'] ?? '') ?? '09:00';
             $until = \App\Support\SmsaPickups::hhmm($pk['until'] ?? '') ?? '17:00';
@@ -150,7 +144,8 @@ class SmsaController extends Controller
             if (strcmp($until, $from) <= 0 || (strtotime($until) - strtotime($from)) < $minH * 3600) {
                 $f['pickup.until'] = 'The pickup hours must be longer than the shortest window.';
             }
-            $next['pickup'] = ['email' => strtolower(implode(', ', $emails)), 'whatsapp' => $wa, 'from' => $from, 'until' => $until, 'minHours' => $minH];
+            $next['pickup'] = ['dashboardUrl' => $url, 'from' => $from, 'until' => $until, 'minHours' => $minH,
+                'heavyKg' => max(1, min(1000, (float) ($pk['heavyKg'] ?? 30)))];
         }
         if ($r->has('contents')) {
             $next['contents'] = $this->str($r, 'contents', 100);
