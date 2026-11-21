@@ -95,9 +95,10 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::post('orders/{id}/prepared', [OrdersController::class, 'prepared'])->whereNumber('id');
         Route::post('orders/{id}/check-payment', [OrdersController::class, 'refreshPayment'])->whereNumber('id');
         Route::post('orders/{id}/ship', [OrdersController::class, 'ship'])->whereNumber('id');
-        Route::get('orders/{id}/pickup', [OrdersController::class, 'pickupForm'])->whereNumber('id');
-        Route::post('orders/{id}/pickup', [OrdersController::class, 'bookPickup'])->whereNumber('id');
-        Route::post('orders/{id}/pickup/cancel', [OrdersController::class, 'cancelPickup'])->whereNumber('id');
+        Route::get('pickups', [\App\Http\Controllers\Admin\PickupsController::class, 'index']);
+        Route::get('pickups/form', [\App\Http\Controllers\Admin\PickupsController::class, 'form']);
+        Route::post('pickups', [\App\Http\Controllers\Admin\PickupsController::class, 'store']);
+        Route::post('pickups/{id}/cancel', [\App\Http\Controllers\Admin\PickupsController::class, 'cancel'])->whereNumber('id');
         Route::get('orders/{id}/label', [OrdersController::class, 'label'])->whereNumber('id');
         Route::get('orders/labels', [OrdersController::class, 'labels']);
         Route::post('orders/ship', [OrdersController::class, 'shipMany']);

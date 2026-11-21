@@ -51,6 +51,8 @@
       pk_copy: 'Copy the text', pk_booked: 'SMSA pickup booked', pk_cancel: 'Cancel pickup', pk_hours: 'SMSA collects between {a} and {b}.', pk_today: 'Today',
       pk_ok: 'Pickup booked', pk_done: 'Collected by SMSA', pk_sandbox: 'Sandbox – saved here, not sent to SMSA.', pk_no_email: 'No SMSA pickup email yet – choose WhatsApp or Copy.',
       pk_cancel_q: 'Cancel this SMSA pickup?', pk_none: 'No pickup times left in the next days.', pk_confirm: 'Book pickup',
+      pk_ref: 'SMSA booking no.', pk_parcels: 'parcels', pk_parcels_n: 'Parcels', pk_waybills: 'Waybills to collect', pk_tick: 'Tick at least one waybill.',
+      pk_no_waybills: 'No SMSA waybills are waiting for collection. Send the orders to SMSA first.',
       boxes: 'Boxes', weight_kg: 'Weight (kg)', smsa_off: 'SMSA is not switched on yet (Settings › Shipping).', live_ship: 'This books a real SMSA parcel. Continue?',
       prepared_by: 'Prepared by {n}', tick_hint: 'Tick when prepared', history: 'History', add_note: 'Add a note for the team', save: 'Save',
       link_hint: 'Send the customer a link to pay by card.', saved: 'Saved', err: 'Something went wrong. Try again.', offline: 'No connection. Check the internet.',
@@ -97,6 +99,8 @@
       pk_copy: 'نسخ النص', pk_booked: 'تم حجز استلام سمسا', pk_cancel: 'إلغاء الاستلام', pk_hours: 'سمسا تستلم بين {a} و{b}.', pk_today: 'اليوم',
       pk_ok: 'تم حجز الاستلام', pk_done: 'استلمتها سمسا', pk_sandbox: 'تجريبي – محفوظ هنا ولا يُرسل إلى سمسا.', pk_no_email: 'لا يوجد بريد استلام لسمسا بعد – اختر واتساب أو النسخ.',
       pk_cancel_q: 'إلغاء استلام سمسا هذا؟', pk_none: 'لا توجد أوقات استلام متاحة في الأيام القادمة.', pk_confirm: 'احجز الاستلام',
+      pk_ref: 'رقم حجز سمسا', pk_parcels: 'طرود', pk_parcels_n: 'عدد الطرود', pk_waybills: 'البوالص المطلوب استلامها', pk_tick: 'اختر بوليصة واحدة على الأقل.',
+      pk_no_waybills: 'لا توجد بوالص سمسا بانتظار الاستلام. أرسل الطلبات إلى سمسا أولاً.',
       boxes: 'عدد الصناديق', weight_kg: 'الوزن (كجم)', smsa_off: 'سمسا غير مفعّلة بعد (الإعدادات › الشحن).', live_ship: 'سيتم حجز شحنة حقيقية مع سمسا. متابعة؟',
       prepared_by: 'جهّزه {n}', tick_hint: 'علّم عند التجهيز', history: 'السجل', add_note: 'أضف ملاحظة للفريق', save: 'حفظ',
       link_hint: 'أرسل للعميل رابطًا ليدفع بالبطاقة.', saved: 'تم الحفظ', err: 'حدث خطأ. حاول مرة أخرى.', offline: 'لا يوجد اتصال. تأكد من الإنترنت.',
@@ -379,6 +383,7 @@
       '<div class="banner sound" id="sound-banner" role="button" tabindex="0" hidden>' + icon('bell') + '<span class="grow">' + esc(tr('tap_sound')) + '</span></div>' +
       '<div id="new-banner"></div>' +
       '<main class="wrap">' +
+      '<div class="pk-bar" id="pk-bar"></div>' +
       '<div class="filters">' +
       '<div class="chips" id="f-range" role="group">' + RANGES.map(function (r) { return '<button class="chip" data-range="' + r + '" aria-pressed="' + (S.range === r) + '">' + esc(tr(r)) + '</button>'; }).join('') + '</div>' +
       '<div class="dates" id="f-dates"' + (S.range === 'pick' ? '' : ' hidden') + '><label>' + esc(tr('from')) + ' <input type="date" id="f-from" value="' + esc(S.from) + '"></label>' +
@@ -391,7 +396,7 @@
       '</main>' +
       '<button class="btn btn-red fab" id="b-new">' + icon('plus') + esc(tr('new_order')) + '</button>';
     paintSoundBanner();
-    paintTabs(); paintCountries();
+    paintTabs(); paintCountries(); paintPickups();
     doc.getElementById('sound-banner').onclick = unlockAudio;
     doc.getElementById('b-sound').onclick = function () {
       S.sound = !S.sound; store.set('sound', S.sound); unlockAudio();
@@ -656,13 +661,9 @@
     }
     var pk = smsa.pickup;
     if (live && pk && pk.status === 'requested') {
-      h += '<p class="note" style="margin:0 0 8px">' + icon('truck') + ' <b>' + esc(tr('pk_booked')) + '</b> <bdi>' + esc(pk.when) + '</bdi>' + (pk.mode !== 'live' ? ' · ' + esc(tr('sandbox')) : '') + '</p>';
-      btns += '<button class="btn" id="o-pkc">' + esc(tr('pk_cancel')) + '</button>';
+      h += '<p class="note" style="margin:0 0 8px">' + icon('truck') + ' <b>' + esc(tr('pk_booked')) + '</b> <bdi>' + esc(pk.when) + '</bdi>' + (pk.smsaRef ? ' · ' + esc(tr('pk_ref')) + ' <b><bdi>' + esc(pk.smsaRef) + '</bdi></b>' : '') + (pk.mode !== 'live' ? ' · ' + esc(tr('sandbox')) : '') + '</p>';
     } else if (live && pk && pk.status === 'done') {
       h += '<p class="muted small" style="margin:0 0 8px">' + icon('check') + ' ' + esc(tr('pk_done')) + ' · <bdi>' + esc(pk.when) + '</bdi></p>';
-    } else if (live && sh.status === 'created') {
-      btns += '<button class="btn btn-red" id="o-pk">' + icon('truck') + esc(tr('pk_book')) + '</button>';
-      h += '<div id="o-pkf" hidden></div>';
     }
     if (canSend && smsa.configured) {
       h += (smsa.problems.length ? '<p class="note">' + smsa.problems.map(function (p) { return esc(srv(p)); }).join('<br>') + '</p>' : '') +
@@ -679,59 +680,77 @@
       busy(sh, api('orders/' + o.id + '/ship', { body: { parcels: +el.querySelector('#o-boxes').value || 1, weightKg: +el.querySelector('#o-kg').value || null } }))
         .then(function () { toast('SMSA ✓'); reload(); }, function (e) { toast(srv(e.message), true); reload(); });
     };
-    var pb = el.querySelector('#o-pk');
-    if (pb) pb.onclick = function () {
-      busy(pb, api('orders/' + o.id + '/pickup')).then(function (f) { pickupForm(el, o, f, reload); pb.hidden = true; }, function (e) { toast(srv(e.message), true); });
-    };
-    var pc = el.querySelector('#o-pkc');
-    if (pc) pc.onclick = function () {
-      if (!window.confirm(tr('pk_cancel_q'))) return;
-      busy(pc, api('orders/' + o.id + '/pickup/cancel', { body: {} })).then(function () { toast(tr('saved')); reload(); }, function (e) { toast(srv(e.message), true); });
-    };
     var tk = el.querySelector('#o-track');
     if (tk) tk.onclick = function () { busy(tk, api('orders/' + o.id + '/track', { body: {} })).then(function () { toast(tr('saved')); reload(); }, function (e) { toast(e.message, true); }); };
   }
 
-  /* SMSA pickup: a day and a window inside the pickup hours (09:00–17:00), then email / WhatsApp / copy. */
-  function pickupForm(el, o, f, reload) {
-    var box = el.querySelector('#o-pkf');
-    if (!box) return;
-    if (!f.days.length) { box.hidden = false; box.innerHTML = '<p class="note">' + esc(tr('pk_none')) + '</p>'; return; }
-    var live = f.mode === 'live';
-    var opt = function (list, sel) { return list.map(function (t) { return '<option' + (t === sel ? ' selected' : '') + '>' + t + '</option>'; }).join(''); };
-    box.hidden = false;
-    box.innerHTML = '<p class="muted small" style="margin:6px 0">' + esc(tr('pk_hours', { a: f.open, b: f.close })) + '</p>' +
-      (live ? '' : '<p class="note">' + esc(tr('pk_sandbox')) + '</p>') +
-      '<div class="field"><label for="pk-d">' + esc(tr('pk_day')) + '</label><select id="pk-d">' + f.days.map(function (d) {
-        return '<option value="' + d.date + '">' + esc((d.today ? tr('pk_today') + ' – ' : '') + (lang === 'ar' ? d.label.ar : d.label.en)) + '</option>'; }).join('') + '</select></div>' +
-      '<div class="row2"><div class="field"><label for="pk-f">' + esc(tr('pk_from')) + '</label><select id="pk-f" dir="ltr"></select></div>' +
-      '<div class="field"><label for="pk-u">' + esc(tr('pk_until')) + '</label><select id="pk-u" dir="ltr"></select></div></div>' +
-      (live ? '<div class="field"><label for="pk-v">' + esc(tr('pk_send')) + '</label><select id="pk-v">' +
-        (f.email.length ? '<option value="email">' + esc(tr('pk_email')) + '</option>' : '') + '<option value="whatsapp">' + esc(tr('pk_wa')) + '</option><option value="copy">' + esc(tr('pk_copy')) + '</option></select>' +
-        (f.email.length ? '' : '<p class="muted small">' + esc(tr('pk_no_email')) + '</p>') + '</div>' : '') +
-      '<div class="btns"><button class="btn btn-red" id="pk-ok">' + icon('check') + esc(tr('pk_confirm')) + '</button></div>';
-    var dS = box.querySelector('#pk-d'), fS = box.querySelector('#pk-f'), uS = box.querySelector('#pk-u');
-    var mins = function (t) { var x = String(t).split(':'); return +x[0] * 60 + +x[1]; };
-    function fix() {
-      var minEnd = mins(fS.value) + Math.round(f.minHours * 60);
-      [].forEach.call(uS.options, function (op) { op.disabled = mins(op.value) < minEnd; });
-      if (uS.selectedOptions[0] && uS.selectedOptions[0].disabled) { var ok = [].filter.call(uS.options, function (op) { return !op.disabled; })[0]; if (ok) uS.value = ok.value; }
-    }
-    function fill() {
-      var d = f.days.filter(function (x) { return x.date === dS.value; })[0] || f.days[0];
-      fS.innerHTML = opt(d.from, d.from[0]); uS.innerHTML = opt(d.until, d.until[d.until.length - 1]); fix();
-    }
-    dS.onchange = fill; fS.onchange = fix; fill();
-    var ok = box.querySelector('#pk-ok');
-    ok.onclick = function () {
-      var vEl = box.querySelector('#pk-v'), via = vEl ? vEl.value : 'email';
-      var win = via === 'whatsapp' ? window.open('', '_blank') : null;
-      busy(ok, api('orders/' + o.id + '/pickup', { body: { date: dS.value, from: fS.value, until: uS.value, via: via, orderIds: [] } })).then(function (r) {
-        if (r.whatsappUrl) { if (win) win.location = r.whatsappUrl; else window.open(r.whatsappUrl, '_blank'); } else if (win) win.close();
-        if (via === 'copy' && navigator.clipboard) navigator.clipboard.writeText(r.text).catch(function () {});
-        toast(tr('pk_ok')); reload();
-      }, function (e) { if (win) win.close(); toast(srv(e.message), true); });
-    };
+  /* SMSA pickups for the whole shop: the bar above the list (what is booked + "Book SMSA pickup") and the booking sheet. */
+  function paintPickups() {
+    var bar = doc.getElementById('pk-bar');
+    if (!bar) return;
+    api('pickups').then(function (r) {
+      bar.innerHTML = r.open.map(function (p) {
+        return '<div class="pk-item">' + icon('truck') + '<span class="grow"><b>' + esc(tr('pk_booked')) + '</b> <bdi>' + esc(p.when) + '</bdi>' +
+          (p.smsaRef ? ' · ' + esc(tr('pk_ref')) + ' <b><bdi>' + esc(p.smsaRef) + '</bdi></b>' : '') + ' · <bdi>' + p.parcels + '</bdi> ' + esc(tr('pk_parcels')) + '</span>' +
+          '<button class="btn btn-sm" data-pkc="' + p.id + '">' + esc(tr('pk_cancel')) + '</button></div>';
+      }).join('') + '<button class="btn btn-dark btn-block" id="pk-new">' + icon('truck') + esc(tr('pk_book')) + (r.waiting ? ' <span class="pk-count">' + r.waiting + '</span>' : '') + '</button>';
+      doc.getElementById('pk-new').onclick = pickupSheet;
+      [].forEach.call(bar.querySelectorAll('[data-pkc]'), function (b) {
+        b.onclick = function () {
+          if (!window.confirm(tr('pk_cancel_q'))) return;
+          busy(b, api('pickups/' + b.dataset.pkc + '/cancel', { body: {} })).then(function () { toast(tr('saved')); paintPickups(); }, function (e) { toast(srv(e.message), true); });
+        };
+      });
+    }, function () { bar.innerHTML = ''; });
+  }
+  function pickupSheet() {
+    api('pickups/form').then(function (f) {
+      if (!f.waiting.length) { toast(tr('pk_no_waybills'), true); return; }
+      if (!f.days.length) { toast(tr('pk_none'), true); return; }
+      var live = f.waiting.some(function (x) { return x.mode === 'live'; });
+      var opt = function (list, sel) { return list.map(function (t) { return '<option' + (t === sel ? ' selected' : '') + '>' + t + '</option>'; }).join(''); };
+      var el = sheet(esc(tr('pk_book')),
+        '<p class="muted small">' + esc(tr('pk_hours', { a: f.open, b: f.close })) + '</p>' +
+        (live ? '' : '<p class="note">' + esc(tr('pk_sandbox')) + '</p>') +
+        '<div class="field"><label for="pk-d">' + esc(tr('pk_day')) + '</label><select id="pk-d">' + f.days.map(function (d) {
+          return '<option value="' + d.date + '">' + esc((d.today ? tr('pk_today') + ' – ' : '') + (lang === 'ar' ? d.label.ar : d.label.en)) + '</option>'; }).join('') + '</select></div>' +
+        '<div class="row2"><div class="field"><label for="pk-f">' + esc(tr('pk_from')) + '</label><select id="pk-f" dir="ltr"></select></div>' +
+        '<div class="field"><label for="pk-u">' + esc(tr('pk_until')) + '</label><select id="pk-u" dir="ltr"></select></div></div>' +
+        '<div class="field"><label>' + esc(tr('pk_waybills')) + '</label>' + f.waiting.map(function (x) {
+          return '<label class="check"><input type="checkbox" data-wb="' + x.orderId + '" data-n="' + x.parcels + '" checked> <bdi>#' + esc(x.number) + ' · ' + esc(x.awb) + '</bdi>' + (x.name ? ' · ' + esc(x.name) : '') + '</label>'; }).join('') + '</div>' +
+        '<div class="field"><label for="pk-n">' + esc(tr('pk_parcels_n')) + '</label><input id="pk-n" type="number" min="1" max="999" dir="ltr"></div>' +
+        (live ? '<div class="field"><label for="pk-v">' + esc(tr('pk_send')) + '</label><select id="pk-v">' +
+          (f.email.length ? '<option value="email">' + esc(tr('pk_email')) + '</option>' : '') + '<option value="whatsapp">' + esc(tr('pk_wa')) + '</option><option value="copy">' + esc(tr('pk_copy')) + '</option></select>' +
+          (f.email.length ? '' : '<p class="muted small">' + esc(tr('pk_no_email')) + '</p>') + '</div>' : ''),
+        '<button class="btn btn-red btn-block btn-lg" id="pk-ok">' + icon('check') + esc(tr('pk_confirm')) + '</button>');
+      var dS = el.querySelector('#pk-d'), fS = el.querySelector('#pk-f'), uS = el.querySelector('#pk-u'), nI = el.querySelector('#pk-n');
+      var mins = function (t) { var x = String(t).split(':'); return +x[0] * 60 + +x[1]; };
+      function fix() {
+        var minEnd = mins(fS.value) + Math.round(f.minHours * 60);
+        [].forEach.call(uS.options, function (op) { op.disabled = mins(op.value) < minEnd; });
+        if (uS.selectedOptions[0] && uS.selectedOptions[0].disabled) { var ok = [].filter.call(uS.options, function (op) { return !op.disabled; })[0]; if (ok) uS.value = ok.value; }
+      }
+      function fill() {
+        var d = f.days.filter(function (x) { return x.date === dS.value; })[0] || f.days[0];
+        fS.innerHTML = opt(d.from, d.from[0]); uS.innerHTML = opt(d.until, d.until[d.until.length - 1]); fix();
+      }
+      function boxes() { nI.value = Math.max(1, [].reduce.call(el.querySelectorAll('[data-wb]:checked'), function (n, c) { return n + (+c.dataset.n || 1); }, 0)); }
+      [].forEach.call(el.querySelectorAll('[data-wb]'), function (c) { c.onchange = boxes; });
+      dS.onchange = fill; fS.onchange = fix; fill(); boxes();
+      var ok = el.querySelector('#pk-ok');
+      ok.onclick = function () {
+        var ids = [].map.call(el.querySelectorAll('[data-wb]:checked'), function (c) { return +c.dataset.wb; });
+        if (!ids.length) { toast(tr('pk_tick'), true); return; }
+        var vEl = el.querySelector('#pk-v'), via = vEl ? vEl.value : 'email';
+        var win = via === 'whatsapp' ? window.open('', '_blank') : null;
+        busy(ok, api('pickups', { body: { date: dS.value, from: fS.value, until: uS.value, via: via, orderIds: ids, parcels: +nI.value || 0 } })).then(function (r) {
+          if (r.whatsappUrl) { if (win) win.location = r.whatsappUrl; else window.open(r.whatsappUrl, '_blank'); } else if (win) win.close();
+          if (via === 'copy' && navigator.clipboard) navigator.clipboard.writeText(r.text).catch(function () {});
+          toast(r.pickup.smsaRef ? tr('pk_ref') + ' ' + r.pickup.smsaRef : tr('pk_ok'));
+          closeSheet(); paintPickups();
+        }, function (e) { if (win) win.close(); toast(srv(e.message), true); });
+      };
+    }, function (e) { toast(srv(e.message), true); });
   }
 
   /* ---------------- new order ---------------- */

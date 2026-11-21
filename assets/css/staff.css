@@ -208,3 +208,14 @@ bdi { unicode-bidi: isolate; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 .ship-pick { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
 .ship-pick select { flex: 1; min-height: 40px; border: 1px solid #d9d4c7; border-radius: 10px; padding: 0 8px; background: #fff; font-weight: 700; }
+
+/* SMSA pickups: bar above the list */
+.pk-bar { display: grid; gap: 8px; margin: 0 0 12px; }
+.pk-bar:empty { display: none; }
+.pk-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #FFF4D6; font-size: 14px; }
+.pk-item .grow { flex: 1; min-width: 0; }
+.pk-item svg { flex: none; width: 20px; height: 20px; }
+.pk-count { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; margin-inline-start: 6px; border-radius: 11px; background: #fff; color: #1F2024; font-size: 12px; }
+.check { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 14px; }
+.check input { width: 18px; height: 18px; flex: none; }
+.btn.btn-sm { min-height: 36px; padding: 6px 12px; font-size: 13px; }

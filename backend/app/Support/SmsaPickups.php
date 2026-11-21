@@ -131,56 +131,56 @@ class SmsaPickups
     public static function waiting(?string $mode = null, ?int $exceptOrder = null): array
     {
         return DB::table('shipments as sh')->join('orders as o', 'o.id', '=', 'sh.order_id')
-            ->where('sh.carrier', 'smsa')->where('sh.status', 'created')->where('sh.awb', '<>', '')->whereNull('sh.pickup_id')
+            ->where('sh.carrier', 'smsa')->where('sh.status', 'created')->where('sh.awb', '<>', '')
+            ->where(fn ($q) => $q->whereNull('sh.pickup_id')->orWhereIn('sh.pickup_id', DB::table('smsa_pickups')->where('status', '<>', 'requested')->select('id')))
             ->when($mode, fn ($q) => $q->where('sh.mode', $mode))->when($exceptOrder, fn ($q) => $q->where('o.id', '<>', $exceptOrder))
             ->whereNotIn('o.status', ['cancelled', 'refunded'])
             ->orderBy('sh.created_at')->limit(50)
-            ->get(['o.id', 'o.number', 'o.first_name', 'o.last_name', 'o.city', 'o.country', 'sh.awb', 'sh.created_at'])
+            ->get(['o.id', 'o.number', 'o.first_name', 'o.last_name', 'o.city', 'o.country', 'sh.awb', 'sh.mode', 'sh.parcels', 'sh.created_at'])
             ->map(fn ($x) => ['orderId' => (int) $x->id, 'number' => $x->number, 'name' => trim($x->first_name.' '.$x->last_name),
-                'place' => trim($x->city.', '.$x->country, ', '), 'awb' => $x->awb])->all();
+                'place' => trim($x->city.', '.$x->country, ', '), 'awb' => $x->awb, 'mode' => $x->mode, 'parcels' => max(1, (int) $x->parcels)])->all();
     }
 
     /**
-     * Books a pickup for $orderId's waybill (+ the waybills of $extraOrderIds that are also waiting).
+     * Books one SMSA pickup (a day and a window) for the waybills of $orderIds that are waiting for the courier.
+     * Empty $orderIds = every waybill waiting and not booked yet. $parcels overrides the box count (0 = from the waybills).
      * $via: email (to SMSA's pickup address) | whatsapp (returns the link) | copy (returns the text).
      *
      * @return array{pickup: object, text: string, whatsappUrl: ?string, emailed: bool}
      */
-    public static function book(int $orderId, string $date, string $from, string $until, array $extraOrderIds, string $note, string $via, ?object $admin): array
+    public static function book(array $orderIds, string $date, string $from, string $until, string $note, string $via, ?object $admin, int $parcels = 0): array
     {
         [$date, $from, $until] = self::validWindow($date, $from, $until);
         $via = in_array($via, ['email', 'whatsapp', 'copy'], true) ? $via : 'email';
         $note = mb_substr(trim($note), 0, 300);
+        $ids = array_values(array_unique(array_filter(array_map('intval', $orderIds), fn ($i) => $i > 0)));
 
-        return DB::transaction(function () use ($orderId, $date, $from, $until, $extraOrderIds, $note, $via, $admin) {
-            $main = DB::table('shipments')->where('order_id', $orderId)->lockForUpdate()->first();
-            if (! $main || $main->awb === '' || $main->status !== 'created') {
-                throw new ApiError('no_waybill', $main && $main->status !== 'created' && $main->awb !== ''
-                    ? 'SMSA already has this parcel (or the waybill was cancelled) – no pickup needed.'
-                    : 'Create the SMSA waybill first (Send to SMSA), then book the pickup.', 409);
+        return DB::transaction(function () use ($ids, $date, $from, $until, $note, $via, $admin, $parcels) {
+            $free = fn ($q) => $q->whereNull('pickup_id')->orWhereIn('pickup_id', DB::table('smsa_pickups')->where('status', '<>', 'requested')->select('id'));
+            $ships = DB::table('shipments')->where('carrier', 'smsa')->where('status', 'created')->where('awb', '<>', '')->where($free)
+                ->when($ids, fn ($q) => $q->whereIn('order_id', $ids))
+                ->whereIn('order_id', DB::table('orders')->whereNotIn('status', ['cancelled', 'refunded'])->select('id'))
+                ->orderBy('id')->lockForUpdate()->get();
+            if ($ships->isEmpty()) {
+                throw new ApiError('no_waybill', 'No SMSA waybills are waiting for collection. Send the orders to SMSA first (their waybills), then book the pickup.', 409);
             }
-            if ($main->pickup_id && DB::table('smsa_pickups')->where('id', $main->pickup_id)->where('status', 'requested')->exists()) {
-                throw new ApiError('booked', 'A pickup is already booked for this order. Cancel it first to book another time.', 409);
-            }
-            $ids = array_values(array_unique(array_filter(array_map('intval', $extraOrderIds), fn ($i) => $i > 0 && $i !== $orderId)));
-            $extra = $ids ? DB::table('shipments')->whereIn('order_id', $ids)->where('status', 'created')->where('awb', '<>', '')
-                ->where('mode', $main->mode)->where(fn ($q) => $q->whereNull('pickup_id')->orWhereIn('pickup_id', DB::table('smsa_pickups')->where('status', '<>', 'requested')->select('id')))
-                ->lockForUpdate()->get() : collect();
-            $ships = collect([$main])->merge($extra);
+            // one server per booking: live waybills go to SMSA; sandbox ones only when there are no live ones
+            $mode = $ships->contains(fn ($x) => $x->mode === 'live') ? 'live' : 'test';
+            $ships = $ships->where('mode', $mode)->values();
 
             $orders = DB::table('orders')->whereIn('id', $ships->pluck('order_id'))->get()->keyBy('id');
-            $parcels = 0;
+            $count = 0;
             $kg = 0.0;
             $lines = [];
             foreach ($ships as $sh) {
                 $o = $orders[$sh->order_id];
                 $n = max(1, (int) ($sh->parcels ?? 1));
                 $w = round($sh->weight_kg !== null && (float) $sh->weight_kg > 0 ? (float) $sh->weight_kg : max(0.1, (int) $o->weight_grams / 1000), 2);
-                $parcels += $n;
+                $count += $n;
                 $kg += $w;
                 $lines[] = ['awb' => $sh->awb, 'number' => $o->number, 'parcels' => $n, 'kg' => $w, 'to' => trim($o->city.', '.$o->country, ', ')];
             }
-            $mode = $main->mode;
+            $parcels = $parcels > 0 ? min(999, $parcels) : $count;
             $sandbox = $mode !== 'live';
             $id = DB::table('smsa_pickups')->insertGetId([
                 'mode' => $mode, 'pickup_date' => $date, 'ready_from' => $from, 'ready_until' => $until, 'status' => 'requested',
@@ -308,6 +308,13 @@ class SmsaPickups
         return $sent;
     }
 
+    /** Bookings still waiting for the courier (orders list, staff board, SMSA settings). */
+    public static function open(): array
+    {
+        return DB::table('smsa_pickups')->where('status', 'requested')->orderBy('pickup_date')->orderBy('ready_from')->limit(20)->get()
+            ->map(fn ($p) => self::present($p))->values()->all();
+    }
+
     /** For the order page. */
     public static function forOrder(int $orderId): ?array
     {
@@ -320,7 +327,7 @@ class SmsaPickups
     public static function present(object $p): array
     {
         return [
-            'id' => (int) $p->id, 'mode' => $p->mode, 'date' => substr((string) $p->pickup_date, 0, 10), 'from' => $p->ready_from, 'until' => $p->ready_until,
+            'id' => (int) $p->id, 'mode' => $p->mode, 'smsaRef' => (string) ($p->smsa_ref ?? ''), 'date' => substr((string) $p->pickup_date, 0, 10), 'from' => $p->ready_from, 'until' => $p->ready_until,
             'when' => self::when($p), 'status' => $p->status, 'parcels' => (int) $p->parcels, 'weightKg' => (float) $p->weight_kg, 'note' => $p->note,
             'sentVia' => $p->sent_via, 'sentTo' => $p->sent_to, 'by' => $p->created_by, 'createdAt' => $p->created_at, 'message' => (string) $p->message,
             'awbs' => DB::table('shipments as sh')->join('orders as o', 'o.id', '=', 'sh.order_id')->where('sh.pickup_id', $p->id)

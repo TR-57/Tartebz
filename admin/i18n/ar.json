@@ -1506,9 +1506,22 @@
   "emailed to SMSA": "أُرسل لسمسا بالبريد",
   "sent on WhatsApp": "أُرسل عبر واتساب",
   "copied to send": "نُسخ لإرساله",
-  "sandbox – not sent to SMSA": "تجريبي – لم يُرسل إلى سمسا"
+  "sandbox – not sent to SMSA": "تجريبي – لم يُرسل إلى سمسا",
+  "SMSA booking no.": "رقم حجز سمسا",
+  "Waybills to collect": "البوالص المطلوب استلامها",
+  "Parcels": "عدد الطرود",
+  "parcel": "طرد",
+  "parcels": "طرود",
+  "Tick at least one waybill.": "اختر بوليصة واحدة على الأقل.",
+  "No SMSA waybills are waiting for collection. Send the orders to SMSA first.": "لا توجد بوالص سمسا بانتظار الاستلام. أرسل الطلبات إلى سمسا أولاً.",
+  "No SMSA waybills are waiting for collection. Send the orders to SMSA first (their waybills), then book the pickup.": "لا توجد بوالص سمسا بانتظار الاستلام. أرسل الطلبات إلى سمسا أولاً (بوالصها)، ثم احجز الاستلام.",
+  "Sandbox waybills: the booking is saved here but not sent to SMSA.": "بوالص تجريبية: الحجز يُحفظ هنا ولا يُرسل إلى سمسا."
  },
  "patterns": [
+  [
+   "SMSA booking no\\. (.+)",
+   "رقم حجز سمسا $1"
+  ],
   [
    "SMSA pickup booked for (.+) \\(request #(\\d+), (.+)\\)\\.",
    "تم حجز استلام سمسا في $1 (الطلب #$2، $3)."

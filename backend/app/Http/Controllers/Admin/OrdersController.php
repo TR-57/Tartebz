@@ -127,43 +127,6 @@ class OrdersController extends Controller
         ]]);
     }
 
-    /** GET – the pickup booking form: days and times on offer, other waybills waiting, how it reaches SMSA. */
-    public function pickupForm(int $id)
-    {
-        $this->find($id);
-        $sh = Smsa::shipment($id);
-        $c = \App\Support\SmsaPickups::cfg();
-
-        return $this->ok(\App\Support\SmsaPickups::options() + [
-            'mode' => $sh->mode ?? Smsa::mode(),
-            'others' => \App\Support\SmsaPickups::waiting($sh->mode ?? null, $id),
-            'email' => \App\Support\SmsaPickups::emails(), 'whatsapp' => $c['whatsapp'],
-            'pickup' => \App\Support\SmsaPickups::forOrder($id),
-        ]);
-    }
-
-    /** {date, from, until, orderIds[], note, via: email|whatsapp|copy} – book an SMSA pickup for this order's waybill (and others). */
-    public function bookPickup(Request $r, int $id)
-    {
-        $this->find($id);
-        $res = \App\Support\SmsaPickups::book($id, $this->str($r, 'date', 10), $this->str($r, 'from', 5), $this->str($r, 'until', 5),
-            (array) $r->input('orderIds', []), $this->str($r, 'note', 300), $this->str($r, 'via', 10), $this->admin($r));
-        Audit::log($r, 'smsa_pickup_booked', 'order', $id, ['pickup' => $res['pickup']->id, 'date' => $res['pickup']->pickup_date, 'via' => $res['pickup']->sent_via]);
-
-        return $this->ok(['pickup' => \App\Support\SmsaPickups::present($res['pickup']), 'text' => $res['text'], 'whatsappUrl' => $res['whatsappUrl'], 'emailed' => $res['emailed']]);
-    }
-
-    /** Cancels this order's pickup booking. */
-    public function cancelPickup(Request $r, int $id)
-    {
-        $this->find($id);
-        $pid = DB::table('shipments')->where('order_id', $id)->value('pickup_id') ?? throw new ApiError('no_pickup', 'No pickup is booked for this order.', 409);
-        $p = \App\Support\SmsaPickups::cancel((int) $pid, $this->admin($r));
-        Audit::log($r, 'smsa_pickup_cancelled', 'order', $id, ['pickup' => $p->id]);
-
-        return $this->ok(['pickup' => \App\Support\SmsaPickups::present($p)]);
-    }
-
     /** {status: processing|ready|shipped|delivered, notify (default true): email the customer} – the hand-moved steps. */
     public function status(Request $r, int $id)
     {
