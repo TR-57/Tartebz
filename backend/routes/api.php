@@ -95,6 +95,9 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::post('orders/{id}/prepared', [OrdersController::class, 'prepared'])->whereNumber('id');
         Route::post('orders/{id}/check-payment', [OrdersController::class, 'refreshPayment'])->whereNumber('id');
         Route::post('orders/{id}/ship', [OrdersController::class, 'ship'])->whereNumber('id');
+        Route::get('orders/{id}/pickup', [OrdersController::class, 'pickupForm'])->whereNumber('id');
+        Route::post('orders/{id}/pickup', [OrdersController::class, 'bookPickup'])->whereNumber('id');
+        Route::post('orders/{id}/pickup/cancel', [OrdersController::class, 'cancelPickup'])->whereNumber('id');
         Route::get('orders/{id}/label', [OrdersController::class, 'label'])->whereNumber('id');
         Route::get('orders/labels', [OrdersController::class, 'labels']);
         Route::post('orders/ship', [OrdersController::class, 'shipMany']);

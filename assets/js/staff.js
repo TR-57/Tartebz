@@ -47,6 +47,10 @@
       st_created: 'Waiting for SMSA pickup', st_moving: 'On the way with SMSA', st_delivered: 'Delivered by SMSA', st_failed: 'Refused by SMSA', st_cancelled: 'Waybill cancelled',
       sv_EIDL: 'By air (EIDL)', sv_EIED: 'By road (EIED)', sv_EDDL: 'Inside Bahrain (EDDL)', duties_c: 'Import VAT and duty: the customer pays on delivery', duties_s: 'Import VAT and duty: we pay',
       sandbox: 'Sandbox', del_method: 'Delivery', free: 'Free', quoted: 'Quoted after order', shipped: 'Mark as shipped', delivered: 'Mark as delivered',
+      pk_book: 'Book SMSA pickup', pk_day: 'Day', pk_from: 'Ready from', pk_until: 'Until', pk_send: 'Send the request', pk_email: 'By email', pk_wa: 'On WhatsApp',
+      pk_copy: 'Copy the text', pk_booked: 'SMSA pickup booked', pk_cancel: 'Cancel pickup', pk_hours: 'SMSA collects between {a} and {b}.', pk_today: 'Today',
+      pk_ok: 'Pickup booked', pk_done: 'Collected by SMSA', pk_sandbox: 'Sandbox – saved here, not sent to SMSA.', pk_no_email: 'No SMSA pickup email yet – choose WhatsApp or Copy.',
+      pk_cancel_q: 'Cancel this SMSA pickup?', pk_none: 'No pickup times left in the next days.', pk_confirm: 'Book pickup',
       boxes: 'Boxes', weight_kg: 'Weight (kg)', smsa_off: 'SMSA is not switched on yet (Settings › Shipping).', live_ship: 'This books a real SMSA parcel. Continue?',
       prepared_by: 'Prepared by {n}', tick_hint: 'Tick when prepared', history: 'History', add_note: 'Add a note for the team', save: 'Save',
       link_hint: 'Send the customer a link to pay by card.', saved: 'Saved', err: 'Something went wrong. Try again.', offline: 'No connection. Check the internet.',
@@ -89,6 +93,10 @@
       st_created: 'بانتظار استلام سمسا', st_moving: 'في الطريق مع سمسا', st_delivered: 'سلّمته سمسا', st_failed: 'رفضته سمسا', st_cancelled: 'البوليصة ملغاة',
       sv_EIDL: 'شحن جوي (EIDL)', sv_EIED: 'شحن بري (EIED)', sv_EDDL: 'داخل البحرين (EDDL)', duties_c: 'ضريبة الاستيراد والجمارك: يدفعها العميل عند الاستلام', duties_s: 'ضريبة الاستيراد والجمارك: ندفعها نحن',
       sandbox: 'تجريبي', del_method: 'التوصيل', free: 'مجاني', quoted: 'يُحدَّد بعد الطلب', shipped: 'تم الشحن', delivered: 'تم التوصيل',
+      pk_book: 'حجز استلام من سمسا', pk_day: 'اليوم', pk_from: 'جاهز من', pk_until: 'إلى', pk_send: 'إرسال الطلب', pk_email: 'بالبريد', pk_wa: 'عبر واتساب',
+      pk_copy: 'نسخ النص', pk_booked: 'تم حجز استلام سمسا', pk_cancel: 'إلغاء الاستلام', pk_hours: 'سمسا تستلم بين {a} و{b}.', pk_today: 'اليوم',
+      pk_ok: 'تم حجز الاستلام', pk_done: 'استلمتها سمسا', pk_sandbox: 'تجريبي – محفوظ هنا ولا يُرسل إلى سمسا.', pk_no_email: 'لا يوجد بريد استلام لسمسا بعد – اختر واتساب أو النسخ.',
+      pk_cancel_q: 'إلغاء استلام سمسا هذا؟', pk_none: 'لا توجد أوقات استلام متاحة في الأيام القادمة.', pk_confirm: 'احجز الاستلام',
       boxes: 'عدد الصناديق', weight_kg: 'الوزن (كجم)', smsa_off: 'سمسا غير مفعّلة بعد (الإعدادات › الشحن).', live_ship: 'سيتم حجز شحنة حقيقية مع سمسا. متابعة؟',
       prepared_by: 'جهّزه {n}', tick_hint: 'علّم عند التجهيز', history: 'السجل', add_note: 'أضف ملاحظة للفريق', save: 'حفظ',
       link_hint: 'أرسل للعميل رابطًا ليدفع بالبطاقة.', saved: 'تم الحفظ', err: 'حدث خطأ. حاول مرة أخرى.', offline: 'لا يوجد اتصال. تأكد من الإنترنت.',
@@ -162,7 +170,7 @@
     if (nums.length && D.phrases[tpl]) return D.phrases[tpl].replace(/\{(\d+)\}/g, function (m, i) { return nums[+i]; });
     for (var i = 0; i < (D.patterns || []).length; i++) {
       var m = msg.match(new RegExp('^' + D.patterns[i][0] + '$'));
-      if (m) return D.patterns[i][1].replace(/\$(\d)/g, function (x, n) { return m[+n] || ''; });
+      if (m) return D.patterns[i][1].replace(/\$(\d)/g, function (x, n) { var v = m[+n] || ''; return D.phrases[v] || v; });
     }
     return msg;
   }
@@ -646,6 +654,16 @@
         '<button class="btn" id="o-track">' + icon('truck') + esc(tr('track')) + '</button>' +
         '<a class="btn" target="_blank" rel="noopener" href="' + esc(sh.trackUrl) + '">' + esc(tr('track_page')) + '</a>';
     }
+    var pk = smsa.pickup;
+    if (live && pk && pk.status === 'requested') {
+      h += '<p class="note" style="margin:0 0 8px">' + icon('truck') + ' <b>' + esc(tr('pk_booked')) + '</b> <bdi>' + esc(pk.when) + '</bdi>' + (pk.mode !== 'live' ? ' · ' + esc(tr('sandbox')) : '') + '</p>';
+      btns += '<button class="btn" id="o-pkc">' + esc(tr('pk_cancel')) + '</button>';
+    } else if (live && pk && pk.status === 'done') {
+      h += '<p class="muted small" style="margin:0 0 8px">' + icon('check') + ' ' + esc(tr('pk_done')) + ' · <bdi>' + esc(pk.when) + '</bdi></p>';
+    } else if (live && sh.status === 'created') {
+      btns += '<button class="btn btn-red" id="o-pk">' + icon('truck') + esc(tr('pk_book')) + '</button>';
+      h += '<div id="o-pkf" hidden></div>';
+    }
     if (canSend && smsa.configured) {
       h += (smsa.problems.length ? '<p class="note">' + smsa.problems.map(function (p) { return esc(srv(p)); }).join('<br>') + '</p>' : '') +
         '<div class="row2"><div class="field"><label for="o-boxes">' + esc(tr('boxes')) + '</label><input id="o-boxes" type="number" min="1" max="25" value="1" dir="ltr"></div>' +
@@ -661,8 +679,59 @@
       busy(sh, api('orders/' + o.id + '/ship', { body: { parcels: +el.querySelector('#o-boxes').value || 1, weightKg: +el.querySelector('#o-kg').value || null } }))
         .then(function () { toast('SMSA ✓'); reload(); }, function (e) { toast(srv(e.message), true); reload(); });
     };
+    var pb = el.querySelector('#o-pk');
+    if (pb) pb.onclick = function () {
+      busy(pb, api('orders/' + o.id + '/pickup')).then(function (f) { pickupForm(el, o, f, reload); pb.hidden = true; }, function (e) { toast(srv(e.message), true); });
+    };
+    var pc = el.querySelector('#o-pkc');
+    if (pc) pc.onclick = function () {
+      if (!window.confirm(tr('pk_cancel_q'))) return;
+      busy(pc, api('orders/' + o.id + '/pickup/cancel', { body: {} })).then(function () { toast(tr('saved')); reload(); }, function (e) { toast(srv(e.message), true); });
+    };
     var tk = el.querySelector('#o-track');
     if (tk) tk.onclick = function () { busy(tk, api('orders/' + o.id + '/track', { body: {} })).then(function () { toast(tr('saved')); reload(); }, function (e) { toast(e.message, true); }); };
+  }
+
+  /* SMSA pickup: a day and a window inside the pickup hours (09:00–17:00), then email / WhatsApp / copy. */
+  function pickupForm(el, o, f, reload) {
+    var box = el.querySelector('#o-pkf');
+    if (!box) return;
+    if (!f.days.length) { box.hidden = false; box.innerHTML = '<p class="note">' + esc(tr('pk_none')) + '</p>'; return; }
+    var live = f.mode === 'live';
+    var opt = function (list, sel) { return list.map(function (t) { return '<option' + (t === sel ? ' selected' : '') + '>' + t + '</option>'; }).join(''); };
+    box.hidden = false;
+    box.innerHTML = '<p class="muted small" style="margin:6px 0">' + esc(tr('pk_hours', { a: f.open, b: f.close })) + '</p>' +
+      (live ? '' : '<p class="note">' + esc(tr('pk_sandbox')) + '</p>') +
+      '<div class="field"><label for="pk-d">' + esc(tr('pk_day')) + '</label><select id="pk-d">' + f.days.map(function (d) {
+        return '<option value="' + d.date + '">' + esc((d.today ? tr('pk_today') + ' – ' : '') + (lang === 'ar' ? d.label.ar : d.label.en)) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="row2"><div class="field"><label for="pk-f">' + esc(tr('pk_from')) + '</label><select id="pk-f" dir="ltr"></select></div>' +
+      '<div class="field"><label for="pk-u">' + esc(tr('pk_until')) + '</label><select id="pk-u" dir="ltr"></select></div></div>' +
+      (live ? '<div class="field"><label for="pk-v">' + esc(tr('pk_send')) + '</label><select id="pk-v">' +
+        (f.email.length ? '<option value="email">' + esc(tr('pk_email')) + '</option>' : '') + '<option value="whatsapp">' + esc(tr('pk_wa')) + '</option><option value="copy">' + esc(tr('pk_copy')) + '</option></select>' +
+        (f.email.length ? '' : '<p class="muted small">' + esc(tr('pk_no_email')) + '</p>') + '</div>' : '') +
+      '<div class="btns"><button class="btn btn-red" id="pk-ok">' + icon('check') + esc(tr('pk_confirm')) + '</button></div>';
+    var dS = box.querySelector('#pk-d'), fS = box.querySelector('#pk-f'), uS = box.querySelector('#pk-u');
+    var mins = function (t) { var x = String(t).split(':'); return +x[0] * 60 + +x[1]; };
+    function fix() {
+      var minEnd = mins(fS.value) + Math.round(f.minHours * 60);
+      [].forEach.call(uS.options, function (op) { op.disabled = mins(op.value) < minEnd; });
+      if (uS.selectedOptions[0] && uS.selectedOptions[0].disabled) { var ok = [].filter.call(uS.options, function (op) { return !op.disabled; })[0]; if (ok) uS.value = ok.value; }
+    }
+    function fill() {
+      var d = f.days.filter(function (x) { return x.date === dS.value; })[0] || f.days[0];
+      fS.innerHTML = opt(d.from, d.from[0]); uS.innerHTML = opt(d.until, d.until[d.until.length - 1]); fix();
+    }
+    dS.onchange = fill; fS.onchange = fix; fill();
+    var ok = box.querySelector('#pk-ok');
+    ok.onclick = function () {
+      var vEl = box.querySelector('#pk-v'), via = vEl ? vEl.value : 'email';
+      var win = via === 'whatsapp' ? window.open('', '_blank') : null;
+      busy(ok, api('orders/' + o.id + '/pickup', { body: { date: dS.value, from: fS.value, until: uS.value, via: via, orderIds: [] } })).then(function (r) {
+        if (r.whatsappUrl) { if (win) win.location = r.whatsappUrl; else window.open(r.whatsappUrl, '_blank'); } else if (win) win.close();
+        if (via === 'copy' && navigator.clipboard) navigator.clipboard.writeText(r.text).catch(function () {});
+        toast(tr('pk_ok')); reload();
+      }, function (e) { if (win) win.close(); toast(srv(e.message), true); });
+    };
   }
 
   /* ---------------- new order ---------------- */

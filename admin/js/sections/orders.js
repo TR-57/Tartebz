@@ -293,6 +293,7 @@ function bindRefunds(main, o, id, act, reload) {
 /* SMSA (as in Sniper Safety): the waybill, its label, tracking – or why SMSA refused it, and "Try again". */
 const SMSA_STATUS = { created: ['Waiting for SMSA pickup', 'amber'], moving: ['On the way with SMSA', 'blue'], delivered: ['Delivered by SMSA', 'green'], failed: ['Refused by SMSA', 'red'], cancelled: ['Waybill cancelled', 'hidden'] };
 const SERVICE = { EIDL: 'By air (EIDL)', EIED: 'By road (EIED)', EDDL: 'Inside Bahrain (EDDL)' };
+const PICKUP_VIA = { email: 'Emailed to SMSA', whatsapp: 'Sent on WhatsApp', copy: 'Copied to send', sandbox: 'Sandbox – not sent to SMSA' };
 
 function shipBox(o, smsa) {
   const sh = o.shipment;
@@ -317,6 +318,13 @@ function shipBox(o, smsa) {
   } else if (live && sh.lastScan) {
     h += `<p>${icon('truck')} <span data-noi18n>${esc(sh.lastScan)}</span></p>`;
   }
+  const pk = smsa.pickup;
+  if (live && pk && pk.status === 'requested') {
+    h += `<div class="box info small pickup-box">${icon('truck')} <b>SMSA pickup booked</b> <span data-noi18n dir="ltr">${esc(pk.when)}</span>
+      <div class="muted"><span>${esc(PICKUP_VIA[pk.sentVia] || pk.sentVia)}</span>${pk.sentTo ? ` <span data-noi18n>(${esc(pk.sentTo)})</span>` : ''} · <span>Request</span> <span data-noi18n>#${pk.id}</span> · <span data-noi18n>${nf(pk.awbs.length)}</span> <span>${pk.awbs.length === 1 ? 'waybill' : 'waybills'}</span>${pk.awbs.length > 1 ? ` <span class="muted" data-noi18n>(${pk.awbs.map((x) => esc(x.number)).join(', ')})</span>` : ''}</div></div>`;
+  } else if (live && pk && pk.status === 'done') {
+    h += `<p class="muted small">${icon('check')} <span>Collected by SMSA (pickup</span> <span data-noi18n>#${pk.id}, ${esc(pk.when)}</span>)</p>`;
+  }
   if (canSend && smsa.configured) {
     h += `${smsa.problems.length ? `<div class="box warn small">${smsa.problems.map(esc).join('<br>')}</div>` : ''}
       <details class="ship-more"><summary class="muted small">Boxes and weight</summary><div class="form-grid ship-form">
@@ -329,9 +337,70 @@ function shipBox(o, smsa) {
       <button class="btn btn-sm" id="track">${icon('truck')} Refresh tracking</button>
       <a class="btn btn-sm" href="${esc(sh.trackUrl)}" target="_blank" rel="noopener">SMSA tracking page</a>` : ''}
     ${canSend && smsa.configured ? `<button class="btn btn-sm${live ? '' : ' btn-primary'}" id="ship" ${smsa.problems.length ? 'disabled' : ''}>${icon('truck')} ${sh && sh.status === 'failed' ? 'Try again' : 'Send to SMSA now'}</button>` : ''}
+    ${live && sh.status === 'created' && !(pk && pk.status === 'requested') ? `<button class="btn btn-sm btn-primary" id="bpick">${icon('truck')} Book SMSA pickup</button>` : ''}
+    ${live && pk && pk.status === 'requested' ? `<button class="btn btn-sm" id="vpick">${icon('eye')} See the request</button><button class="btn btn-sm btn-ghost" id="cpick">Cancel pickup</button>` : ''}
     ${live && can('manager') && ['created'].includes(sh.status) ? '<button class="btn btn-sm btn-ghost" id="cship">Cancel waybill</button>' : ''}</div>`;
   return h;
 }
+
+/* Book SMSA to collect this waybill (and others waiting): a day and a window inside the pickup hours (09:00–17:00). */
+async function pickupModal(o, done) {
+  let f;
+  try { f = await api(`orders/${o.id}/pickup`); } catch (e) { toastErr(e); return; }
+  if (!f.days.length) { toast('No pickup times left in the next days.', 'err'); return; }
+  const ar = isAr();
+  const opts = (list, sel) => list.map((t) => `<option value="${t}"${t === sel ? ' selected' : ''}>${t}</option>`).join('');
+  modal({
+    title: 'Book SMSA pickup', wide: true,
+    body: `<form id="pkf" class="form-grid" novalidate>
+      <p class="muted small full"><span>SMSA collects between</span> <b data-noi18n dir="ltr">${esc(f.open)}–${esc(f.close)}</b>. <span>Choose the day and when the parcels are ready.</span></p>
+      ${f.mode !== 'live' ? '<div class="box warn small full">Sandbox waybill: the booking is saved here but not sent to SMSA.</div>' : ''}
+      <div class="field" data-field="date"><label for="pkd">Day</label><select class="input" id="pkd" name="date">${f.days.map((d) => `<option value="${d.date}">${esc(d.today ? (ar ? 'اليوم – ' : 'Today – ') : '')}${esc(ar ? d.label.ar : d.label.en)}</option>`).join('')}</select></div>
+      <div class="field" data-field="from"><label for="pkfrom">Ready from</label><select class="input" id="pkfrom" name="from" dir="ltr" data-noi18n></select></div>
+      <div class="field" data-field="until"><label for="pkuntil">Until</label><select class="input" id="pkuntil" name="until" dir="ltr" data-noi18n></select></div>
+      ${f.others.length ? `<div class="field full"><span class="field-label">Also collect these waybills (same visit)</span><div class="chips">${f.others.map((x) => `<label class="chip-check"><input type="checkbox" data-other="${x.orderId}"><span data-noi18n>#${esc(x.number)} · ${esc(x.awb)}${x.name ? ' · ' + esc(x.name) : ''}</span></label>`).join('')}</div></div>` : ''}
+      <div class="field full" data-field="note"><label for="pknote">Note for SMSA (optional)</label><input class="input" id="pknote" name="note" maxlength="300" dir="auto" placeholder="${esc(ar ? 'مثال: اتصل عند الوصول' : 'e.g. call when you arrive')}"></div>
+      ${f.mode === 'live' ? `<div class="field full" data-field="via"><span class="field-label">Send the request</span><div class="seg" role="radiogroup" aria-label="Send the request">
+        <label><input type="radio" name="via" value="email"${f.email.length ? ' checked' : ' disabled'}><span>By email</span></label>
+        <label><input type="radio" name="via" value="whatsapp"${f.email.length ? '' : ' checked'}><span>On WhatsApp</span></label>
+        <label><input type="radio" name="via" value="copy"><span>Copy the text</span></label></div>
+        <span class="hint">${f.email.length ? `<span>To</span> <span data-noi18n>${esc(f.email.join(', '))}</span>` : '<span>No SMSA pickup email yet – add it in Settings › SMSA shipping.</span>'}</span></div>` : ''}
+    </form>`,
+    foot: '<button class="btn" data-close>Cancel</button><button class="btn btn-primary" id="pkok">Book pickup</button>',
+    onOpen: (el, close) => {
+      const form = el.querySelector('#pkf');
+      const dSel = el.querySelector('#pkd'), fSel = el.querySelector('#pkfrom'), uSel = el.querySelector('#pkuntil');
+      const fill = () => {
+        const d = f.days.find((x) => x.date === dSel.value) || f.days[0];
+        const keepF = fSel.value, keepU = uSel.value;
+        fSel.innerHTML = opts(d.from, d.from.includes(keepF) ? keepF : d.from[0]);
+        uSel.innerHTML = opts(d.until, d.until.includes(keepU) ? keepU : d.until[d.until.length - 1]);
+        fixUntil();
+      };
+      const fixUntil = () => {   // "until" never before "from" + the shortest window
+        const minEnd = toMin(fSel.value) + Math.round(f.minHours * 60);
+        [...uSel.options].forEach((op) => { op.disabled = toMin(op.value) < minEnd; });
+        if (uSel.selectedOptions[0] && uSel.selectedOptions[0].disabled) uSel.value = [...uSel.options].find((op) => !op.disabled).value;
+      };
+      dSel.addEventListener('change', fill); fSel.addEventListener('change', fixUntil); fill();
+      el.querySelector('#pkok').addEventListener('click', async (e) => {
+        clearErrors(form);
+        const via = (form.querySelector('[name=via]:checked') || {}).value || 'email';
+        const win = via === 'whatsapp' ? window.open('', '_blank') : null;
+        try {
+          const res = await busy(e.currentTarget, () => api(`orders/${o.id}/pickup`, { method: 'POST', body: {
+            date: dSel.value, from: fSel.value, until: uSel.value, note: form.note.value, via,
+            orderIds: [...form.querySelectorAll('[data-other]:checked')].map((x) => +x.dataset.other) } }));
+          if (res.whatsappUrl) { if (win) win.location = res.whatsappUrl; else window.open(res.whatsappUrl, '_blank', 'noopener'); } else if (win) win.close();
+          if (via === 'copy' && f.mode === 'live') { try { await navigator.clipboard.writeText(res.text); } catch (err) { /* shown in the order */ } }
+          toast(f.mode !== 'live' ? 'Pickup saved (sandbox – not sent)' : res.emailed ? 'Pickup request emailed to SMSA' : via === 'copy' ? 'Pickup saved – text copied' : 'Pickup saved');
+          close(); done();
+        } catch (err) { if (win) win.close(); showErrors(form, err); toastErr(err); }
+      });
+    },
+  });
+}
+const toMin = (t) => { const [h, m] = String(t).split(':').map(Number); return h * 60 + m; };
 
 /* The label as SMSA made it, or with a share of the goods value printed on this copy only (never sent to SMSA). */
 export function labelModal(id, subtotal) {
@@ -357,7 +426,7 @@ export function labelModal(id, subtotal) {
   });
 }
 
-function bindShip(main, o, smsa, act) {
+function bindShip(main, o, smsa, act, reload) {
   const ship = main.querySelector('#ship');
   if (ship) ship.addEventListener('click', async () => {
     if (smsa.mode === 'live' && !(await confirmBox('Create a real SMSA waybill for this order?', { ok: 'Send to SMSA' }))) return;
@@ -368,6 +437,18 @@ function bindShip(main, o, smsa, act) {
   if (lb) lb.addEventListener('click', () => labelModal(o.id, o.subtotal - o.discount));
   const tr = main.querySelector('#track');
   if (tr) tr.addEventListener('click', () => act(tr, 'track', {}, 'Tracking updated'));
+  const bp = main.querySelector('#bpick');
+  if (bp) bp.addEventListener('click', () => pickupModal(o, reload));
+  const vp = main.querySelector('#vpick');
+  if (vp) vp.addEventListener('click', () => modal({ title: 'SMSA pickup request', wide: true,
+    body: `<pre class="pickup-text" dir="ltr" data-noi18n>${esc(smsa.pickup.message)}</pre>`,
+    foot: '<button class="btn" data-close>Close</button><button class="btn btn-primary" id="pcopy">Copy</button>',
+    onOpen: (el) => el.querySelector('#pcopy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(smsa.pickup.message); toast('Copied'); } catch (e) { toastErr(e); } }) }));
+  const cp = main.querySelector('#cpick');
+  if (cp) cp.addEventListener('click', async () => {
+    if (!(await confirmBox(smsa.pickup.sentVia === 'email' ? 'Cancel this SMSA pickup? SMSA is emailed that it is cancelled.' : 'Cancel this SMSA pickup? If you sent it on WhatsApp, tell SMSA too.', { ok: 'Cancel pickup', danger: true }))) return;
+    act(cp, 'pickup/cancel', {}, 'Pickup cancelled');
+  });
   const cs = main.querySelector('#cship');
   if (cs) cs.addEventListener('click', async () => {
     if (!(await confirmBox('Cancel this SMSA waybill? It can no longer be used.', { ok: 'Cancel waybill', danger: true }))) return;

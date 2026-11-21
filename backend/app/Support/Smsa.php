@@ -227,7 +227,8 @@ class Smsa
         $intl = strtoupper((string) $payload['ConsigneeAddress']['Country']) !== strtoupper((string) $payload['ShipperAddress']['Country']);
         $dutiesBy = $intl ? ($payload['VatPaid'] && $payload['DutyPaid'] ? 'shipper' : 'consignee') : null;
         $row = ['carrier' => 'smsa', 'mode' => $mode, 'awb' => mb_substr($awb, 0, 40), 'service' => (string) $payload['ServiceCode'], 'duties_by' => $dutiesBy,
-            'status' => 'created', 'error' => '', 'attempts' => (int) ($have->attempts ?? 0) + 1, 'scans' => null, 'last_scan' => '', 'checked_at' => null, 'updated_at' => now()];
+            'status' => 'created', 'error' => '', 'attempts' => (int) ($have->attempts ?? 0) + 1, 'scans' => null, 'last_scan' => '', 'checked_at' => null, 'updated_at' => now(),
+            'parcels' => $parcels, 'weight_kg' => $kg, 'pickup_id' => null];
         if ($have) {
             DB::table('shipments')->where('id', $have->id)->update($row);
         } else {
@@ -432,7 +433,8 @@ class Smsa
             throw new ApiError('shipped', 'SMSA already has this parcel – it cannot be cancelled here. Call SMSA.', 409);
         }
         self::call('PATCH', '/api/Shipment/b2c/'.rawurlencode($sh->awb).'/cancel', null, $sh->mode);
-        DB::table('shipments')->where('id', $sh->id)->update(['status' => 'cancelled', 'updated_at' => now()]);
+        DB::table('shipments')->where('id', $sh->id)->update(['status' => 'cancelled', 'pickup_id' => null, 'updated_at' => now()]);
+        SmsaPickups::settle($sh->pickup_id ?? null);   // its pickup booking: done or empty now
         DB::table('orders')->where('id', $orderId)->update(['awb' => '', 'label_path' => '', 'tracking_status' => '', 'updated_at' => now()]);
         Orders::event($orderId, 'shipment', 'SMSA waybill '.$sh->awb.' cancelled.', [], $admin);
     }
@@ -638,6 +640,9 @@ class Smsa
         DB::table('shipments')->where('id', $sh->id)->update(['scans' => json_encode($scans, JSON_UNESCAPED_UNICODE), 'status' => $status, 'checked_at' => now(),
             'last_scan' => $lastText, 'last_scan_at' => $last && strtotime($last['at']) ? date('Y-m-d H:i:s', strtotime($last['at'])) : $sh->last_scan_at, 'updated_at' => now()]);
         DB::table('orders')->where('id', $sh->order_id)->update(['tracking_status' => mb_substr((string) $lastText, 0, 200), 'tracking_at' => now()]);
+        if ($status !== $sh->status) {
+            SmsaPickups::settle($sh->pickup_id ?? null);   // SMSA collected it: the pickup booking is done once all its parcels are
+        }
 
         if (! empty(self::cfg()['autoStatus']) && $status !== $sh->status) {
             $o = DB::table('orders')->find($sh->order_id);

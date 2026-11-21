@@ -89,6 +89,18 @@ function paint(main, d, reload) {
       <p class="muted small">For shipments outside Bahrain only. Deliveries inside Bahrain have no import VAT or customs duty. It applies to waybills created from now on – a waybill already created keeps what it was created with (each order’s SMSA panel and history say which).</p>
       <div class="smsa-duties">${Object.entries(DUTIES).map(([k, [t, x]]) => `<label class="smsa-duty${s.dutiesBy === k ? ' on' : ''}"><input type="radio" name="dutiesBy" value="${k}" ${s.dutiesBy === k ? 'checked' : ''}>
         <span><b>${esc(t)}</b><small>${esc(x)}</small></span></label>`).join('')}</div></div>
+    <div class="card"><h2>${icon('truck')} Pickups</h2>
+      <p class="muted small">Each order with a waybill has “Book SMSA pickup”: the day and a time window inside the hours below. SMSA’s API cannot take pickup bookings, so the request goes to SMSA by email (or WhatsApp). Ask your SMSA account manager which address takes pickup requests.</p>
+      <div class="form-grid">
+        ${field('pickup.email', 'SMSA pickup email', s.pickup.email, { dir: 'ltr', hint: 'One or more, separated by commas. A copy goes to the store notification addresses.' })}
+        ${field('pickup.whatsapp', 'SMSA WhatsApp number (optional)', s.pickup.whatsapp, { dir: 'ltr', type: 'tel', hint: 'With the country code. Used when you choose “On WhatsApp”.' })}
+        ${field('pickup.from', 'Pickup hours from', s.pickup.from, { type: 'time', dir: 'ltr' })}
+        ${field('pickup.until', 'Pickup hours until', s.pickup.until, { type: 'time', dir: 'ltr' })}
+        ${field('pickup.minHours', 'Shortest window (hours)', s.pickup.minHours, { type: 'number', step: '0.5', min: '0.5', max: '8', dir: 'ltr' })}
+      </div>
+      ${d.pickups.length ? `<h3>Booked</h3><ul class="list-rows small">${d.pickups.map((p) => `<li><b data-noi18n>#${p.id} · ${esc(p.when)}</b> ${p.mode !== 'live' ? pill('Sandbox', 'amber') : ''}
+        <span data-noi18n>${p.awbs.map((x) => `<a href="#/orders/${x.orderId}">#${esc(x.number)}</a>`).join(', ')}</span> <span class="muted" data-noi18n>· ${nf(p.parcels)} × · ${esc(p.by)}</span></li>`).join('')}</ul>` : '<p class="muted small">No pickups booked.</p>'}
+    </div>
     <div class="savebar"><button type="submit" class="btn btn-primary" id="save">Save</button></div>
     </form>`;
 
@@ -109,6 +121,7 @@ function paint(main, d, reload) {
       services: Object.fromEntries(d.methods.filter((m) => m.abroad && v('svc_' + m.id)).map((m) => [m.id, v('svc_' + m.id).value])),
       shipper: Object.fromEntries(['name', 'phone', 'country', 'city', 'district', 'address1', 'address2', 'postalCode'].map((k) => [k, v('shipper.' + k).value])),
       testKey: v('testKey').value.trim(), liveKey: v('liveKey').value.trim(),
+      pickup: { email: v('pickup.email').value, whatsapp: v('pickup.whatsapp').value, from: v('pickup.from').value, until: v('pickup.until').value, minHours: +v('pickup.minHours').value || 1 },
     };
     ['clearTestKey', 'clearLiveKey'].forEach((k) => { if (v(k)) body[k] = v(k).checked; });
     if (duties !== s.dutiesBy && !(await confirmBox(`Import VAT and duty on shipments outside Bahrain will be paid by: ${DUTIES[duties][0]}. This applies to waybills created from now on.`, { ok: 'Continue' }))) return;

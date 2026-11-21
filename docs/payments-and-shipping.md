@@ -153,6 +153,28 @@ billable parcel**. Only orders placed after SMSA was switched on are sent by the
   **Send to SMSA**.
 - The staff board (/staff) has the same print button and SMSA panel on each order.
 
+### Pickups – “Book SMSA pickup” on the order
+
+Every order whose SMSA waybill is waiting for the courier has **Book SMSA pickup** (Admin › Orders › the order, and on the
+staff board):
+
+1. Choose the day – today by default, or one of the next 6 days – and the window the parcels are ready: inside the pickup
+   hours (**09:00–17:00** by default), at least 1 hour long. Today starts at the next half hour; after 16:00 the first
+   choice is tomorrow.
+2. Tick other waybills that are also waiting, so one courier visit collects them all.
+3. Send the request **by email** (to SMSA’s pickup address), **on WhatsApp** (opens WhatsApp with the message written)
+   or **copy the text**. The request lists the date and time, the sender address and phone, the account (retail ID),
+   the number of parcels, the weight and every waybill.
+
+SMSA’s eCom API has no way to book a pickup (only waybills, tracking and customer returns), so the request goes to the
+people at SMSA who arrange collections. **Set it up once** in Settings › SMSA shipping › Pickups: SMSA’s pickup email
+(ask your SMSA account manager which address takes pickup requests), their WhatsApp number (optional) and the pickup
+hours. A copy of each email goes to the store notification addresses.
+
+The booking shows on each of its orders and in their history, and in Settings › SMSA shipping › Pickups. **Cancel
+pickup** frees the waybills (SMSA is emailed the cancellation if the request was emailed). The booking closes by itself
+when SMSA’s tracking shows the parcels were collected. A sandbox waybill can be booked to try it out; nothing is sent.
+
 ## Pages Tap asks for
 
 | Requirement | Page |
