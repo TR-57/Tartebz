@@ -267,8 +267,8 @@
     "where": "assets/js/pages.js"
    },
    "co_customs_text": {
-    "en": "{country} may charge customs duty or import tax when the parcel arrives. These charges are not included in your order total and are paid by the recipient to the courier on delivery. {shop} is not responsible for customs duties or taxes in the destination country.",
-    "ar": "قد تفرض {country} رسوماً جمركية أو ضريبة استيراد عند وصول الشحنة. هذه الرسوم غير مشمولة في مجموع طلبك، ويدفعها المستلم لشركة الشحن عند التسليم. {shop} غير مسؤولة عن الرسوم الجمركية أو الضرائب في بلد الاستلام.",
+    "en": "Some countries may charge customs duties or import taxes on shipments, according to each country’s rules and policies. These charges are not included in your order total and are paid by the recipient to the courier on delivery. {shop} is not responsible for customs duties or taxes in the destination country.",
+    "ar": "قد تُفرض رسوم جمركية أو ضرائب استيراد على الشحنات في بعض الدول، حسب أنظمة وسياسات كل دولة. هذه الرسوم غير مشمولة في مجموع طلبك، ويدفعها المستلم لشركة الشحن عند التسليم. {shop} غير مسؤولة عن الرسوم الجمركية أو الضرائب في بلد الاستلام.",
     "where": "assets/js/pages.js"
    },
    "co_customs_title": {

@@ -353,7 +353,7 @@
     var cu = TZ.customs || { home: 'BH', customerPays: true };
     if (!c || !cu.customerPays || c.code === cu.home) return '';
     var home = TZ.countries.filter(function (x) { return x.code === cu.home; })[0];
-    var v = { home: home ? TZ.L(home.name) : cu.home, shop: TZ.L(TZ.store.name), country: TZ.L(c.name) };
+    var v = { home: home ? TZ.L(home.name) : cu.home, shop: TZ.L(TZ.store.name) };
     return '<div class="co-customs" role="note">' + TZ.icon('shield') + '<div><b>' + e(t('co_customs_title', v)) + '</b>' +
       '<p>' + e(t('co_customs_text', v)) + '</p>' +
       '<a class="btn-link" href="' + TZ.url('delivery.html') + '" target="_blank">' + e(t('co_customs_more')) + '</a></div></div>';
