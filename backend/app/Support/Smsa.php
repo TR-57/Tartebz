@@ -230,7 +230,7 @@ class Smsa
             'status' => 'created', 'error' => '', 'attempts' => (int) ($have->attempts ?? 0) + 1, 'scans' => null, 'last_scan' => '', 'checked_at' => null, 'updated_at' => now(),
             'parcels' => $parcels, 'weight_kg' => $kg, 'pickup_id' => null];
         if ($have) {
-            DB::table('shipments')->where('id', $have->id)->update($row);
+            DB::table('shipments')->where('id', $have->id)->update($row + ['created_at' => now()]);   // a new waybill
         } else {
             DB::table('shipments')->insert($row + ['order_id' => $orderId, 'created_at' => now()]);
         }
@@ -408,7 +408,7 @@ class Smsa
     {
         $row = ['carrier' => 'smsa', 'mode' => self::mode(), 'status' => 'failed', 'error' => mb_substr($why, 0, 500), 'attempts' => (int) ($have->attempts ?? 0) + 1, 'updated_at' => now()];
         if ($have) {
-            DB::table('shipments')->where('id', $have->id)->update($row);
+            DB::table('shipments')->where('id', $have->id)->update($row + ['created_at' => now()]);   // a new waybill
         } else {
             DB::table('shipments')->insert($row + ['order_id' => $o->id, 'created_at' => now()]);
         }

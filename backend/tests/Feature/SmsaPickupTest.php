@@ -222,4 +222,34 @@ class SmsaPickupTest extends TestCase
         $this->getJson('/api/admin/pickups/form')->assertOk();
         $this->getJson('/api/admin/pickups')->assertOk();
     }
+    public function test_past_bookings_close_and_old_waybills_are_not_offered(): void
+    {
+        $id = $this->shipped();
+        $this->postJson('/api/admin/pickups', ['orderIds' => [$id], 'date' => '2026-11-23', 'from' => '11:00', 'until' => '17:00'])->assertOk();
+        $this->getJson('/api/admin/pickups')->assertJsonCount(1, 'open');
+        // two days later SMSA never came: the booking closes and the waybill can be booked again
+        $this->travelTo(Carbon::parse('2026-11-25 10:00:00', 'Asia/Bahrain'));
+        $this->signOut()->actingAsAdmin($this->makeAdmin('shop_staff'));
+        $this->getJson('/api/admin/pickups')->assertOk()->assertJsonCount(0, 'open')->assertJsonPath('waiting', 1);
+        $this->assertSame('cancelled', DB::table('smsa_pickups')->value('status'));
+        $this->assertNull(DB::table('shipments')->where('order_id', $id)->value('pickup_id'));
+        $this->assertSame(1, DB::table('order_events')->where('order_id', $id)->where('message', 'like', '%its day passed%')->count());
+        // a waybill made more than 14 days ago is no longer offered
+        DB::table('shipments')->where('order_id', $id)->update(['created_at' => now()->subDays(15)]);
+        $this->getJson('/api/admin/pickups')->assertJsonPath('waiting', 0);
+        $this->postJson('/api/admin/pickups', ['date' => '2026-11-25', 'from' => '11:00', 'until' => '17:00'])->assertStatus(409)->assertJsonPath('error.code', 'no_waybill');
+    }
+
+    public function test_to_prepare_shows_unpacked_orders_whatever_the_date_filter(): void
+    {
+        $id = $this->shipped();   // paid on Mon 23 Nov, not ticked as prepared
+        $this->travelTo(Carbon::parse('2026-11-24 09:30:00', 'Asia/Bahrain'));
+        $this->signOut()->actingAsAdmin($this->makeAdmin('shop_staff'));
+        $today = ['from' => '2026-11-24', 'to' => '2026-11-24'];
+        $r = $this->getJson('/api/admin/orders?'.http_build_query($today + ['tab' => 'prepare']))->assertOk();
+        $this->assertSame([$id], array_column($r->json('orders'), 'id'), 'yesterday’s order is still to prepare today');
+        $r->assertJsonPath('counts.prepare', 1)->assertJsonPath('counts.all', 0);   // other tabs follow the date filter
+        $this->postJson("/api/admin/orders/$id/prepared", ['done' => true])->assertOk();
+        $this->getJson('/api/admin/orders?'.http_build_query($today + ['tab' => 'prepare']))->assertJsonPath('counts.prepare', 0);
+    }
 }

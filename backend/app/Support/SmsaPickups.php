@@ -20,6 +20,26 @@ class SmsaPickups
 
     public const DAYS_AHEAD = 6;
 
+    /** A waybill older than this is not offered for a collection (a parcel does not wait that long). */
+    public const WAYBILL_DAYS = 14;
+
+    /**
+     * Bookings whose day has passed without SMSA scanning the parcels are closed, so they stop showing above the
+     * list and their waybills can be booked again. Runs whenever pickups are listed or booked.
+     */
+    public static function expire(): void
+    {
+        $old = DB::table('smsa_pickups')->where('status', 'requested')->where('pickup_date', '<', self::now()->toDateString())->get();
+        foreach ($old as $p) {
+            $orderIds = DB::table('shipments')->where('pickup_id', $p->id)->where('status', 'created')->pluck('order_id');
+            DB::table('smsa_pickups')->where('id', $p->id)->where('status', 'requested')->update(['status' => 'cancelled', 'cancelled_at' => now(), 'updated_at' => now()]);
+            DB::table('shipments')->where('pickup_id', $p->id)->where('status', 'created')->update(['pickup_id' => null]);
+            foreach ($orderIds as $oid) {
+                Orders::event((int) $oid, 'smsa_pickup', 'SMSA pickup #'.$p->id.' closed – its day passed and SMSA did not collect it. Book a new pickup.');
+            }
+        }
+    }
+
     public static function cfg(): array
     {
         $p = (array) (Smsa::cfg()['pickup'] ?? []);
@@ -124,8 +144,10 @@ class SmsaPickups
     /** Waybills that are waiting for the courier and not booked yet (same server as $mode), for "add these too". */
     public static function waiting(?string $mode = null, ?int $exceptOrder = null): array
     {
+        self::expire();
+
         return DB::table('shipments as sh')->join('orders as o', 'o.id', '=', 'sh.order_id')
-            ->where('sh.carrier', 'smsa')->where('sh.status', 'created')->where('sh.awb', '<>', '')
+            ->where('sh.carrier', 'smsa')->where('sh.status', 'created')->where('sh.awb', '<>', '')->where('sh.created_at', '>=', now()->subDays(self::WAYBILL_DAYS))
             ->where(fn ($q) => $q->whereNull('sh.pickup_id')->orWhereIn('sh.pickup_id', DB::table('smsa_pickups')->where('status', '<>', 'requested')->select('id')))
             ->when($mode, fn ($q) => $q->where('sh.mode', $mode))->when($exceptOrder, fn ($q) => $q->where('o.id', '<>', $exceptOrder))
             ->whereNotIn('o.status', ['cancelled', 'refunded'])
@@ -147,9 +169,12 @@ class SmsaPickups
         $note = mb_substr(trim($note), 0, 300);
         $ids = array_values(array_unique(array_filter(array_map('intval', $orderIds), fn ($i) => $i > 0)));
 
+        self::expire();
+
         return DB::transaction(function () use ($ids, $date, $from, $until, $note, $admin, $parcels, $heavy) {
             $free = fn ($q) => $q->whereNull('pickup_id')->orWhereIn('pickup_id', DB::table('smsa_pickups')->where('status', '<>', 'requested')->select('id'));
             $ships = DB::table('shipments')->where('carrier', 'smsa')->where('status', 'created')->where('awb', '<>', '')->where($free)
+                ->where('created_at', '>=', now()->subDays(self::WAYBILL_DAYS))
                 ->when($ids, fn ($q) => $q->whereIn('order_id', $ids))
                 ->whereIn('order_id', DB::table('orders')->whereNotIn('status', ['cancelled', 'refunded'])->select('id'))
                 ->orderBy('id')->lockForUpdate()->get();
@@ -293,6 +318,8 @@ class SmsaPickups
     /** Bookings still waiting for the courier (orders list, staff board, SMSA settings). */
     public static function open(): array
     {
+        self::expire();
+
         return DB::table('smsa_pickups')->where('status', 'requested')->orderBy('pickup_date')->orderBy('ready_from')->limit(20)->get()
             ->map(fn ($p) => self::present($p))->values()->all();
     }

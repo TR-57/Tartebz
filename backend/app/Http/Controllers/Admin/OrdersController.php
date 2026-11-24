@@ -47,23 +47,27 @@ class OrdersController extends Controller
             $base->where(fn ($w) => $w->where('number', 'like', $like)->orWhere('first_name', 'like', $like)->orWhere('last_name', 'like', $like)
                 ->orWhere('phone', 'like', $like)->orWhere('email', 'like', $like)->orWhere('awb', 'like', $like));
         }
-        foreach (['from' => '>=', 'to' => '<='] as $k => $op) {
-            $d = (string) $r->query($k, '');
-            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $d)) {
-                $base->where('created_at', $op, $d.($k === 'from' ? ' 00:00:00' : ' 23:59:59'));
-            }
-        }
         $country = strtoupper((string) $r->query('country', ''));
         if (preg_match('/^[A-Z]{2}$/', $country)) {
             $base->where('country', $country);
         }
+        // The date filter (Today, Yesterday, …) narrows every tab except the work still to do: an order paid
+        // yesterday and not packed yet stays in "To prepare" until it is ticked, whatever day is chosen.
+        $dated = clone $base;
+        foreach (['from' => '>=', 'to' => '<='] as $k => $op) {
+            $d = (string) $r->query($k, '');
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $d)) {
+                $dated->where('created_at', $op, $d.($k === 'from' ? ' 00:00:00' : ' 23:59:59'));
+            }
+        }
+        $pick = fn (string $k) => clone ($k === 'prepare' ? $base : $dated);
         $counts = [];
         foreach (array_keys(self::TABS) as $k) {
-            $counts[$k] = $this->inTab(clone $base, $k)->count();
+            $counts[$k] = $this->inTab($pick($k), $k)->count();
         }
         $per = max(10, min(100, (int) $r->query('per', 50)));
         $page = max(1, (int) $r->query('page', 1));
-        $q = $this->inTab(clone $base, $tab);
+        $q = $this->inTab($pick($tab), $tab);
         $total = (clone $q)->count();
         $rows = $q->orderByDesc('id')->offset(($page - 1) * $per)->limit($per)->get();
         $lines = DB::table('order_items')->whereIn('order_id', $rows->pluck('id')->all() ?: [0])->orderBy('id')->get()->groupBy('order_id');

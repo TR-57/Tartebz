@@ -34,8 +34,7 @@ class SmsaController extends Controller
                 'retailId' => (string) ($s['retailId'] ?? ''), 'testUrl' => $s['testUrl'], 'liveUrl' => $s['liveUrl'],
                 'pickup' => \App\Support\SmsaPickups::cfg(),
             ],
-            'pickups' => DB::table('smsa_pickups')->where('status', 'requested')->orderBy('pickup_date')->orderBy('ready_from')->limit(30)->get()
-                ->map(fn ($p) => \App\Support\SmsaPickups::present($p))->values(),
+            'pickups' => \App\Support\SmsaPickups::open(),
             'keys' => ['test' => Secret::describe($s['testKey'] ?? ''), 'live' => Secret::describe($s['liveKey'] ?? '')],
             'active' => Smsa::enabled(),
             'missing' => Smsa::missing(),

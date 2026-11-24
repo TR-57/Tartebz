@@ -1559,6 +1559,10 @@
  },
  "patterns": [
   [
+   "SMSA pickup #(\\d+) closed – its day passed and SMSA did not collect it\\. Book a new pickup\\.",
+   "أُغلق استلام سمسا #$1 – مضى يومه ولم تستلم سمسا الطرود. احجز استلاماً جديداً."
+  ],
+  [
    "SMSA pickup planned for (.+) \\(#(\\d+)(, sandbox)?\\)\\.",
    "تم تجهيز استلام سمسا في $1 (#$2$3)."
   ],
