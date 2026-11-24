@@ -76,6 +76,8 @@ class StorefrontController extends Controller
                 ], \App\Support\Shipping::destinations())),
             ],
             'maintenance' => \App\Support\Maintenance::on(),
+            // the customs notice at checkout: orders leaving the shop's country, when the customer pays import duty on delivery
+            'customs' => ['home' => \App\Support\Smsa::home(), 'customerPays' => \App\Support\Smsa::dutiesBy() !== 'shipper'],
             'payments' => \App\Http\Controllers\Api\CheckoutController::methods() + ['testMode' => \App\Support\Tap::enabled() && \App\Support\Tap::mode() === 'test'],
             'baseCurrency' => Currency::base(),
             'currencies' => Currency::forStorefront(),

@@ -348,6 +348,17 @@
     } else get.then(function (r) { draw(r, ''); });
   }
 
+  /* Orders leaving the shop's country: customs duty / import tax is the customer's, paid to the courier on delivery. */
+  function customsNote(c) {
+    var cu = TZ.customs || { home: 'BH', customerPays: true };
+    if (!c || !cu.customerPays || c.code === cu.home) return '';
+    var home = TZ.countries.filter(function (x) { return x.code === cu.home; })[0];
+    var v = { home: home ? TZ.L(home.name) : cu.home, shop: TZ.L(TZ.store.name), country: TZ.L(c.name) };
+    return '<div class="co-customs" role="note">' + TZ.icon('shield') + '<div><b>' + e(t('co_customs_title', v)) + '</b>' +
+      '<p>' + e(t('co_customs_text', v)) + '</p>' +
+      '<a class="btn-link" href="' + TZ.url('delivery.html') + '" target="_blank">' + e(t('co_customs_more')) + '</a></div></div>';
+  }
+
   TZ.pages = {
     /* ================= HOME ================= */
     home: function () {
@@ -744,6 +755,7 @@
         '<button type="button" class="btn btn-ghost" id="cp-apply">' + e(t('cp_apply')) + '</button></div>' +
         '<p class="field-err" id="err-coupon" role="alert"></p><p class="co-coupon-ok" id="cp-ok" hidden></p></details>' +
         '<p class="co-charge" id="co-charge" hidden></p>' +
+        customsNote(c) +
         '<div class="co-msg" id="co-msg" role="alert" hidden></div>' +
         '<button class="btn btn-primary btn-block btn-lg" type="submit" form="co-form" id="place-order">' + TZ.icon(chosen === 'tap' ? 'shield' : 'arrow') + e(t(chosen === 'tap' ? 'co_go_pay' : 'co_go_wa')) + '</button>' +
         '<p class="co-secure">' + TZ.icon('shield') + e(chosen === 'tap' ? t('pay_note') : t('pay_wa_note')) + '</p>' +

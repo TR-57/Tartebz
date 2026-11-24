@@ -1307,3 +1307,10 @@ html[lang="en"]:not(.tz-text) [data-i18n], html[lang="en"]:not(.tz-text) [data-i
 .rv-thanks { text-align: center; justify-items: center; }
 .rv-thanks > .ico { width: 40px; height: 40px; color: var(--green); }
 #co-disc-row[hidden], .reviews-sec[hidden], .co-coupon-ok[hidden] { display: none !important; }
+
+/* checkout: customs notice for orders leaving the shop's country */
+.co-customs { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 12px; padding: 12px 14px; border-radius: 12px; background: #FFF6DB; border: 1px solid #F3D27A; color: var(--ink); font-size: .86rem; line-height: 1.6; }
+.co-customs > .ico { flex: none; width: 20px; height: 20px; margin-top: 2px; color: #B7791F; }
+.co-customs b { display: block; font-size: .9rem; }
+.co-customs p { margin: 2px 0 4px; color: var(--ink); }
+.co-customs .btn-link { font-size: .82rem; font-weight: 700; }

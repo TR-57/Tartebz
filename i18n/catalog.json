@@ -261,6 +261,21 @@
     "ar": "كمّل التسوق",
     "where": "assets/js/pages.js"
    },
+   "co_customs_more": {
+    "en": "Delivery policy",
+    "ar": "سياسة التوصيل",
+    "where": "assets/js/pages.js"
+   },
+   "co_customs_text": {
+    "en": "{country} may charge customs duty or import tax when the parcel arrives. These charges are not included in your order total and are paid by the recipient to the courier on delivery. {shop} is not responsible for customs duties or taxes in the destination country.",
+    "ar": "قد تفرض {country} رسوماً جمركية أو ضريبة استيراد عند وصول الشحنة. هذه الرسوم غير مشمولة في مجموع طلبك، ويدفعها المستلم لشركة الشحن عند التسليم. {shop} غير مسؤولة عن الرسوم الجمركية أو الضرائب في بلد الاستلام.",
+    "where": "assets/js/pages.js"
+   },
+   "co_customs_title": {
+    "en": "Customs duties for orders outside {home}",
+    "ar": "الرسوم الجمركية للطلبات خارج {home}",
+    "where": "assets/js/pages.js"
+   },
    "co_delivered": {
     "en": "Your order was delivered. Enjoy! 🍬",
     "ar": "تم توصيل طلبك. بالعافية! 🍬",
