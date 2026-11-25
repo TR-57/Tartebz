@@ -335,15 +335,55 @@ class Smsa
             }
         }
         [$cc, $num] = Shipping::splitPhone((string) $o->phone, (string) $o->country);
-        $line2 = trim((string) $o->address2);
+        [$line1, $line2, $district] = self::addressLines((string) $o->address1, (string) $o->address2, (string) ($o->state ?? ''), (string) $o->city);
 
         return [[
             'ContactName' => mb_substr(trim($o->first_name.' '.$o->last_name), 0, 150), 'ContactPhoneNumber' => $num !== '' ? $cc.$num : '',
             'ContactPhoneNumber2' => '', 'Coordinates' => '', 'Country' => strtoupper((string) $o->country),
-            'District' => mb_substr($line2 !== '' ? $line2 : trim((string) $o->city), 0, 100), 'PostalCode' => '',
-            'City' => mb_substr(trim((string) $o->city), 0, 50), 'AddressLine1' => mb_substr(trim((string) $o->address1), 0, 100),
-            'AddressLine2' => mb_substr($line2, 0, 100), 'ConsigneeID' => '', 'ShortCode' => '',
+            'District' => $district, 'PostalCode' => '',
+            'City' => self::cut(trim((string) $o->city), 50), 'AddressLine1' => $line1,
+            'AddressLine2' => $line2, 'ConsigneeID' => '', 'ShortCode' => '',
         ], $problems];
+    }
+
+    /**
+     * The customer's address in SMSA's fields and limits: AddressLine1 10–100 characters, AddressLine2 up to 100,
+     * District up to 50. A long first line flows into the second (split between words); the district is the area the
+     * customer gave (else the city) – never the free-text second line, which is often long (building, landmark…).
+     *
+     * @return array{0: string, 1: string, 2: string} [line 1, line 2, district]
+     */
+    public static function addressLines(string $address1, string $address2, string $area, string $city): array
+    {
+        $clean = fn (string $x) => trim(preg_replace('/\s+/u', ' ', $x), " ,\t");
+        $a1 = $clean($address1);
+        $a2 = $clean($address2);
+        $line1 = self::cut($a1, 100);
+        $rest = $clean(mb_substr($a1, mb_strlen($line1)));
+        $line2 = $clean(trim($rest.($rest !== '' && $a2 !== '' ? ', ' : '').$a2));
+        if (mb_strlen($line2) > 100) {
+            $line2 = self::cut($line2, 100);
+        }
+        if (mb_strlen($line1) < 10) {   // SMSA wants at least 10 characters: add the area / city
+            $line1 = self::cut($clean($line1.', '.($clean($area) ?: $clean($city))), 100);
+        }
+        $district = self::cut($clean($area) !== '' ? $clean($area) : $clean($city), 50);
+
+        return [$line1, $line2, $district];
+    }
+
+    /** At most $max characters, cut between words when it can be. */
+    public static function cut(string $s, int $max): string
+    {
+        $s = trim($s);
+        if (mb_strlen($s) <= $max) {
+            return $s;
+        }
+        $part = mb_substr($s, 0, $max);
+        $comma = mb_strrpos($part, ',') ?: 0;   // a comma keeps parts of the address together ("Gate 2"), so it comes first
+        $sp = $comma > $max * 0.6 ? $comma : max(mb_strrpos($part, ' ') ?: 0, $comma);
+
+        return rtrim($sp > $max * 0.6 ? mb_substr($part, 0, $sp) : $part, " ,");
     }
 
     public static function shipper(): array

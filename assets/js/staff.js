@@ -61,11 +61,14 @@
       pk_title: 'SMSA pickup', pk_not_yet: 'Not booked in SMSA yet', pk_finish: 'Finish in SMSA', pk_answers: 'Form answers', pk_in_smsa: 'Book it in SMSA',
       pk_opened: 'SMSA’s dashboard opened in a new tab.', pk_open: 'Open SMSA’s dashboard.', pk_go: 'Go to Manage Pickup › Initiate Pickup Request.',
       pk_step2: 'Copy each answer below into SMSA’s form, then submit it.', pk_step3: 'Paste the booking number SMSA shows, and save.',
-      pk_save_ref: 'Save booking number', pk_continue: 'Continue in SMSA', pk_heavy_yes: 'Yes, it is heavy', pk_note: 'Note for SMSA (optional)', copy: 'Copy', copied: 'Copied',
+      pk_save_ref: 'Save booking number', pk_continue: 'Continue in SMSA', pk_heavy_yes: 'Yes, it is heavy', pk_note: 'Note for SMSA (optional)', pk_cp: 'Copy', pk_cpd: 'Copied',
       pkf_contact: 'Contact name', pkf_phone: 'Contact phone', pkf_address: 'Pickup address', pkf_postal: 'Postal code', pkf_city: 'Origin city',
       pkf_heavy: 'Heavy shipment', pkf_ready: 'Shipment ready time', pkf_closing: 'Branch closing time', pkf_notes: 'Notes',
       pk_ref: 'SMSA booking no.', pk_parcels: 'parcels', pk_parcels_n: 'Parcels', pk_waybills: 'Waybills to collect', pk_tick: 'Tick at least one waybill.',
       pk_no_waybills: 'No SMSA waybills are waiting for collection. Send the orders to SMSA first.',
+      edit_customer: 'Edit', first_name: 'First name', last_name: 'Last name', c_addr: 'Address', c_addr2: 'Address line 2', area: 'Area / region',
+      addr_hint: 'Up to 100 characters – the rest (building, flat, landmark) goes in the next line.', cancel: 'Cancel',
+      waybill_old_addr: 'The SMSA waybill already made keeps the old address – cancel it and send it again to use the new one.',
       boxes: 'Boxes', weight_kg: 'Weight (kg)', smsa_off: 'SMSA is not switched on yet (Settings › Shipping).', live_ship: 'This books a real SMSA parcel. Continue?',
       prepared_by: 'Prepared by {n}', tick_hint: 'Tick when prepared', history: 'History', add_note: 'Add a note for the team', save: 'Save',
       link_hint: 'Send the customer a link to pay by card.', saved: 'Saved', err: 'Something went wrong. Try again.', offline: 'No connection. Check the internet.',
@@ -122,11 +125,14 @@
       pk_title: 'استلام سمسا', pk_not_yet: 'لم يُحجز في سمسا بعد', pk_finish: 'أكمل في سمسا', pk_answers: 'إجابات النموذج', pk_in_smsa: 'احجزه في سمسا',
       pk_opened: 'فُتحت لوحة سمسا في تبويب جديد.', pk_open: 'افتح لوحة سمسا.', pk_go: 'اذهب إلى Manage Pickup › Initiate Pickup Request.',
       pk_step2: 'انسخ كل إجابة أدناه إلى نموذج سمسا، ثم أرسله.', pk_step3: 'الصق رقم الحجز الذي تعطيه سمسا، واحفظ.',
-      pk_save_ref: 'احفظ رقم الحجز', pk_continue: 'أكمل في سمسا', pk_heavy_yes: 'نعم، الشحنة ثقيلة', pk_note: 'ملاحظة لسمسا (اختياري)', copy: 'نسخ', copied: 'تم النسخ',
+      pk_save_ref: 'احفظ رقم الحجز', pk_continue: 'أكمل في سمسا', pk_heavy_yes: 'نعم، الشحنة ثقيلة', pk_note: 'ملاحظة لسمسا (اختياري)', pk_cp: 'نسخ', pk_cpd: 'تم النسخ',
       pkf_contact: 'اسم جهة الاتصال', pkf_phone: 'هاتف جهة الاتصال', pkf_address: 'عنوان الاستلام', pkf_postal: 'الرمز البريدي', pkf_city: 'مدينة الإرسال',
       pkf_heavy: 'شحنة ثقيلة', pkf_ready: 'وقت جاهزية الشحنة', pkf_closing: 'وقت إغلاق الفرع', pkf_notes: 'ملاحظات',
       pk_ref: 'رقم حجز سمسا', pk_parcels: 'طرود', pk_parcels_n: 'عدد الطرود', pk_waybills: 'البوالص المطلوب استلامها', pk_tick: 'اختر بوليصة واحدة على الأقل.',
       pk_no_waybills: 'لا توجد بوالص سمسا بانتظار الاستلام. أرسل الطلبات إلى سمسا أولاً.',
+      edit_customer: 'تعديل', first_name: 'الاسم الأول', last_name: 'اسم العائلة', c_addr: 'العنوان', c_addr2: 'سطر العنوان 2', area: 'المنطقة',
+      addr_hint: 'حتى 100 حرف – والباقي (المبنى، الشقة، معلم قريب) في السطر التالي.', cancel: 'إلغاء',
+      waybill_old_addr: 'بوليصة سمسا المُنشأة تبقى بالعنوان القديم – ألغها وأرسلها من جديد لاستخدام العنوان الجديد.',
       boxes: 'عدد الصناديق', weight_kg: 'الوزن (كجم)', smsa_off: 'سمسا غير مفعّلة بعد (الإعدادات › الشحن).', live_ship: 'سيتم حجز شحنة حقيقية مع سمسا. متابعة؟',
       prepared_by: 'جهّزه {n}', tick_hint: 'علّم عند التجهيز', history: 'السجل', add_note: 'أضف ملاحظة للفريق', save: 'حفظ',
       link_hint: 'أرسل للعميل رابطًا ليدفع بالبطاقة.', saved: 'تم الحفظ', err: 'حدث خطأ. حاول مرة أخرى.', offline: 'لا يوجد اتصال. تأكد من الإنترنت.',
@@ -620,7 +626,8 @@
       '<div class="card"><h3>' + esc(tr('customer')) + '</h3><p style="margin:0 0 8px"><b>' + esc((o.firstName + ' ' + o.lastName).trim()) + '</b><br><bdi>' + esc(o.phone) + '</bdi>' + (o.email ? '<br><bdi>' + esc(o.email) + '</bdi>' : '') + '</p>' +
       '<p class="muted" style="margin:0 0 10px">' + esc([o.address1, o.address2].filter(Boolean).join(', ')) + '<br>' + esc([o.city, o.state].filter(Boolean).join(', ')) + ' · ' + flag(o.country) + ' ' + esc(cname(o.country)) + '</p>' +
       (o.notes ? '<p class="note">' + esc(o.notes) + '</p>' : '') +
-      '<div class="btns"><a class="btn" href="tel:+' + waNum + '">' + icon('phone') + esc(tr('call')) + '</a><a class="btn btn-green" target="_blank" rel="noopener" href="https://wa.me/' + waNum + '">' + icon('wa') + esc(tr('whatsapp')) + '</a></div></div>' +
+      '<div class="btns"><a class="btn" href="tel:+' + waNum + '">' + icon('phone') + esc(tr('call')) + '</a><a class="btn btn-green" target="_blank" rel="noopener" href="https://wa.me/' + waNum + '">' + icon('wa') + esc(tr('whatsapp')) + '</a>' +
+      '<button class="btn" id="o-cedit" type="button">' + icon('edit') + esc(tr('edit_customer')) + '</button></div><div id="o-cform" hidden></div></div>' +
       '<div class="card"><h3>' + esc(tr('products')) + '</h3><ul class="lines">' + o.items.map(function (i) {
         return '<li>' + (i.image ? '<img src="' + esc(i.image) + '" alt="">' : '') + '<span class="grow"><b>' + esc(L(i)) + '</b><br><span class="muted small">' + i.qty + ' × ' + money(i.price) + '</span></span><b>' + money(i.lineTotal) + '</b></li>';
       }).join('') + '</ul>' +
@@ -665,6 +672,8 @@
       api('orders/' + o.id + '/note', { body: { note: v } }).then(function () { toast(tr('saved')); reload(); }, function (er) { toast(er.message, true); });
     };
     bindShip(el, o, r.smsa, reload);
+    var ce = el.querySelector('#o-cedit');
+    if (ce) ce.onclick = function () { customerForm(el, o, reload); ce.hidden = true; };
   }
   function shipBox(o, smsa) {
     var sh = o.shipment, live = sh && sh.awb && sh.status !== 'cancelled';
@@ -748,14 +757,14 @@
         '<li>' + esc(tr('pk_step2')) + '</li><li>' + esc(tr('pk_step3')) + '</li></ol>' : '<p class="note">' + esc(tr('pk_sandbox')) + '</p>') +
       p.fields.map(function (x, k) {
         return '<div class="pk-field"><span class="pk-label">' + esc(tr('pkf_' + x.key)) + '</span><span class="pk-value" dir="auto">' + esc(x.value || '—') + '</span>' +
-          '<button class="btn btn-sm" data-cp="' + k + '"' + (x.value ? '' : ' disabled') + '>' + icon('copy') + esc(tr('copy')) + '</button></div>';
+          '<button class="btn btn-sm" data-cp="' + k + '"' + (x.value ? '' : ' disabled') + '>' + icon('copy') + esc(tr('pk_cp')) + '</button></div>';
       }).join('') +
       (live ? '<div class="field" style="margin-top:12px"><label for="pk-r">' + esc(tr('pk_ref')) + '</label><input id="pk-r" dir="ltr" autocomplete="off" value="' + esc(p.smsaRef) + '"></div>' : ''),
       live ? '<button class="btn btn-red btn-block btn-lg" id="pk-save">' + icon('check') + esc(tr('pk_save_ref')) + '</button>' : '');
     [].forEach.call(el.querySelectorAll('[data-cp]'), function (b) {
       b.onclick = function () {
         var v = p.fields[+b.dataset.cp].value;
-        (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject(new Error('copy'))).then(function () { b.classList.add('btn-dark'); toast(tr('copied')); }, function () { toast(v); });
+        (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject(new Error('copy'))).then(function () { b.classList.add('btn-dark'); toast(tr('pk_cpd')); }, function () { toast(v); });
       };
     });
     var sv = el.querySelector('#pk-save');
@@ -814,6 +823,39 @@
         }, function (e) { if (win) win.close(); toast(srv(e.message), true); });
       };
     }, function (e) { toast(srv(e.message), true); });
+  }
+
+  /* Fix the customer's details on an order (a wrong phone, an address SMSA refused…). Same limits as checkout. */
+  function customerForm(el, o, reload) {
+    var box = el.querySelector('#o-cform');
+    if (!box) return;
+    var f = function (name, label, value, max, attrs) {
+      return '<div class="field"><label for="ce-' + name + '">' + esc(label) + '</label><input id="ce-' + name + '" name="' + name + '" value="' + esc(value || '') + '" maxlength="' + max + '" ' + (attrs || 'dir="auto"') + '>' +
+        '<span class="field-err small" data-err="' + name + '"></span></div>';
+    };
+    box.hidden = false;
+    box.innerHTML = '<div class="row2">' + f('first_name', tr('first_name'), o.firstName, 80) + f('last_name', tr('last_name'), o.lastName, 80) + '</div>' +
+      '<div class="row2">' + f('phone', tr('phone'), o.phone, 30, 'dir="ltr" type="tel"') + f('email', tr('email'), o.email, 190, 'dir="ltr" type="email"') + '</div>' +
+      f('address1', tr('c_addr'), o.address1, 100) + '<p class="muted small" style="margin:-4px 0 8px">' + esc(tr('addr_hint')) + '</p>' +
+      f('address2', tr('c_addr2'), o.address2, 100) +
+      '<div class="row2">' + f('city', tr('city'), o.city, 50) + f('state', tr('area'), o.state, 50) + '</div>' +
+      '<div class="btns"><button class="btn btn-red" id="ce-save" type="button">' + icon('check') + esc(tr('save')) + '</button><button class="btn" id="ce-cancel" type="button">' + esc(tr('cancel')) + '</button></div>';
+    box.querySelector('#ce-cancel').onclick = function () { box.hidden = true; box.innerHTML = ''; var b = el.querySelector('#o-cedit'); if (b) b.hidden = false; };
+    var sv = box.querySelector('#ce-save');
+    sv.onclick = function () {
+      var body = {};
+      [].forEach.call(box.querySelectorAll('input[name]'), function (x) { body[x.name] = x.value; });
+      [].forEach.call(box.querySelectorAll('[data-err]'), function (x) { x.textContent = ''; });
+      busy(sv, api('orders/' + o.id + '/customer', { method: 'PUT', body: body })).then(function (r) {
+        toast(tr('saved'));
+        if (r.waybillKeepsOldAddress) toast(tr('waybill_old_addr'), true);
+        reload();
+      }, function (e) {
+        var fields = (e.data && e.data.error && e.data.error.fields) || e.fields || {};
+        Object.keys(fields).forEach(function (k) { var x = box.querySelector('[data-err="' + k + '"]'); if (x) x.textContent = srv(fields[k]); });
+        if (!Object.keys(fields).length) toast(srv(e.message), true);
+      });
+    };
   }
 
   /* ---------------- new order ---------------- */
@@ -895,8 +937,9 @@
       requote();
     }
     function fld(n, label, type, ac, dir) {
-      return '<div class="field" data-f="' + n + '"><label for="n-' + n + '">' + esc(label) + '</label><input id="n-' + n + '" name="' + n + '" type="' + type + '" autocomplete="' + ac + '"' + (dir ? ' dir="' + dir + '"' : '') + ' value="' + esc(N[n]) + '"><span class="err"></span></div>';
+      return '<div class="field" data-f="' + n + '"><label for="n-' + n + '">' + esc(label) + '</label><input id="n-' + n + '" name="' + n + '" type="' + type + '" autocomplete="' + ac + '"' + (dir ? ' dir="' + dir + '"' : '') + ' value="' + esc(N[n]) + '"' + (FMAX[n] ? ' maxlength="' + FMAX[n] + '"' : '') + '><span class="err"></span></div>';
     }
+    var FMAX = { name: 160, address1: 100, address2: 100, city: 50, state: 50 }; // what SMSA accepts
     function payOpt(v, title, hint, off) {
       return '<label class="pay-opt' + (off ? ' disabled' : '') + '"><input type="radio" name="pay" value="' + v + '"' + (N.payment === v ? ' checked' : '') + (off ? ' disabled' : '') + '><span><b>' + esc(title) + '</b><br><span class="muted small">' + esc(hint) + '</span></span></label>';
     }

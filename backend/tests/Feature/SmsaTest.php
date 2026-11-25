@@ -178,7 +178,7 @@ class SmsaTest extends TestCase
         DB::table('orders')->where('id', $id)->update(['address1' => 'Sheikh Zayed Road, Tower 2']);
         $this->postJson("/api/admin/orders/$id/ship")->assertOk()->assertJsonPath('order.shipment.service', 'EIED');
         Http::assertSent(fn ($r) => str_ends_with($r->url(), '/api/shipment/b2c/new') && $r['ConsigneeAddress']['Country'] === 'AE'
-            && $r['ConsigneeAddress']['District'] === 'Dubai' && $r['ServiceCode'] === 'EIED' && $r['Weight'] == 1.0);
+            && $r['ConsigneeAddress']['District'] === 'Northern' && $r['ConsigneeAddress']['City'] === 'Dubai' && $r['ServiceCode'] === 'EIED' && $r['Weight'] == 1.0);
     }
 
     public function test_smsa_lists_what_is_missing_and_stays_off(): void

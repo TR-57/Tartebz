@@ -101,6 +101,14 @@ class BoardController extends Controller
         if (mb_strlen($c['address1']) < 2) {
             $f['address1'] = 'Enter the address (house, road, block).';
         }
+        // The same limits as checkout, so SMSA accepts the address (lines up to 100 characters, city and area up to 50).
+        foreach (['address1' => 'Keep the address under 100 characters – put the rest (building, flat, landmark) in the second line.',
+            'address2' => 'Keep this line under 100 characters.', 'city' => 'Keep the city under 50 characters.',
+            'state' => 'Keep the area under 50 characters.'] as $k => $msg) {
+            if (! isset($f[$k]) && mb_strlen($c[$k]) > \App\Support\CustomerDetails::MAX[$k]) {
+                $f[$k] = $msg;
+            }
+        }
         if ($payment === '') {
             $f['payment'] = 'Choose how the customer pays.';
         }

@@ -144,6 +144,18 @@ billable parcel**. Only orders placed after SMSA was switched on are sent by the
 - Any paid order can be **sent to SMSA by hand** from the order (boxes and weight can be changed), and a waybill can be
   **cancelled** by a manager before SMSA picks it up.
 
+### Addresses SMSA accepts, and fixing a customer’s details
+
+SMSA refuses an address line over 100 characters and a city or district over 50. So:
+
+- **Checkout** stops longer entries (street/area and the second line up to 100 characters, city and area up to 50) and tells
+  the customer, in their language, to move building, flat and landmark to the second line. The staff board’s “New order” form has the same limits.
+- **The waybill** never sends text over SMSA’s limits: a long first line flows into the second (split at a comma or between words),
+  and the district is the area the customer typed (else the city) – never the free-text second line.
+- **Edit** on the customer card (admin order page and the staff board) fixes the name, phone, email or address – same rules as checkout.
+  The country stays (it set the delivery price). The history shows what changed and who changed it. If SMSA refused the order,
+  edit, then press **Try again** in the SMSA box. A waybill already made keeps the old address: cancel it and send it again.
+
 ### Printing
 - **Print SMSA label** on the order: the label as SMSA made it, or with a *part of the value* printed as the declared value
   (on that copy only – SMSA keeps the full value).

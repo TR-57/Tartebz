@@ -132,6 +132,41 @@ class OrdersController extends Controller
         ]]);
     }
 
+    /**
+     * {first_name, last_name, phone, email, address1, address2, city, state} – fix the customer's details (a wrong
+     * phone, an address SMSA refused…). Same rules as checkout; the country stays (it decided the delivery price).
+     * The history says what changed and who changed it. A waybill already made keeps the old address.
+     */
+    public function customer(Request $r, int $id)
+    {
+        $o = $this->find($id);
+        $in = [];
+        foreach (array_keys(\App\Support\CustomerDetails::MAX) as $k) {
+            $v = $r->input($k);   // an emptied box arrives as null: it clears the field (e.g. the area)
+            $in[$k] = $r->exists($k) && ($v === null || is_scalar($v)) ? mb_substr((string) $v, 0, 500) : (string) ($o->{$k} ?? '');
+        }
+        [$c, $f] = \App\Support\CustomerDetails::check($in, (string) $o->country, $o->payment_method === 'tap' && (string) $o->email !== '');
+        if ($f) {
+            throw ApiError::validation($f);
+        }
+        $changed = [];
+        foreach ($c as $k => $v) {
+            if ((string) ($o->{$k} ?? '') !== $v) {
+                $changed[$k] = ['from' => (string) ($o->{$k} ?? ''), 'to' => $v];
+            }
+        }
+        if ($changed) {
+            DB::table('orders')->where('id', $id)->update($c + ['updated_at' => now()]);
+            $names = ['first_name' => 'first name', 'last_name' => 'last name', 'phone' => 'phone', 'email' => 'email', 'address1' => 'address', 'address2' => 'address line 2', 'city' => 'city', 'state' => 'area'];
+            Orders::event($id, 'customer', 'Customer details changed: '.implode(', ', array_map(fn ($k) => $names[$k], array_keys($changed))).'.', $changed, $this->admin($r));
+            Audit::log($r, 'order_customer', 'order', $id, ['fields' => array_keys($changed)]);
+        }
+        $sh = Smsa::shipment($id);
+
+        return $this->ok(['order' => $this->full(DB::table('orders')->find($id)), 'changed' => array_keys($changed),
+            'waybillKeepsOldAddress' => $changed && $sh && $sh->awb !== '' && in_array($sh->status, ['created', 'moving'], true)]);
+    }
+
     /** {status: processing|ready|shipped|delivered, notify (default true): email the customer} – the hand-moved steps. */
     public function status(Request $r, int $id)
     {

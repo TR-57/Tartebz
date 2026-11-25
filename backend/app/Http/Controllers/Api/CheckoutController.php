@@ -51,33 +51,13 @@ class CheckoutController extends Controller
         if (! ($methods[$method] ?? false)) {
             throw ApiError::validation(['method' => 'Choose how you want to pay.']);
         }
-        $c = [
-            'first_name' => $this->str($r, 'first_name', 80), 'last_name' => $this->str($r, 'last_name', 80),
-            'email' => mb_strtolower($this->str($r, 'email', 190)), 'phone' => $this->str($r, 'phone', 30),
-            'state' => $this->str($r, 'state', 80), 'city' => $this->str($r, 'city', 80),
-            'address1' => $this->str($r, 'address1', 200), 'address2' => $this->str($r, 'address2', 200),
-            'notes' => mb_substr(trim((string) $r->input('notes', '')), 0, 1000),
-            'lang' => $r->input('lang') === 'en' ? 'en' : 'ar',
-        ];
         $country = strtoupper($this->str($r, 'country', 2));
-        $f = [];
-        foreach (['first_name' => 'Enter your first name.', 'last_name' => 'Enter your last name.', 'address1' => 'Enter your street / area.', 'city' => 'Enter your city.'] as $k => $msg) {
-            if (mb_strlen($c[$k]) < 2) {
-                $f[$k] = $msg;
-            }
+        $in = [];
+        foreach (array_keys(\App\Support\CustomerDetails::MAX) as $k) {
+            $in[$k] = is_scalar($r->input($k)) ? mb_substr((string) $r->input($k), 0, 500) : '';
         }
-        // Email: needed for card payments (receipt, confirmation); optional when ordering on WhatsApp.
-        if ($c['email'] !== '' || $method === 'tap') {
-            if (! filter_var($c['email'], FILTER_VALIDATE_EMAIL)) {
-                $f['email'] = 'Enter a valid email.';
-            }
-        }
-        [$phone, $phoneErr] = \App\Support\Phone::check($c['phone'], strtoupper($this->str($r, 'country', 2)));
-        if ($phoneErr) {
-            $f['phone'] = $phoneErr;
-        } else {
-            $c['phone'] = $phone;
-        }
+        [$c, $f] = \App\Support\CustomerDetails::check($in, $country, $method === 'tap');
+        $c += ['notes' => mb_substr(trim((string) $r->input('notes', '')), 0, 1000), 'lang' => $r->input('lang') === 'en' ? 'en' : 'ar'];
         if (! Shipping::delivers($country)) {
             $f['country'] = 'We do not deliver to that country yet.';
         }

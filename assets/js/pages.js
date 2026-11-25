@@ -708,8 +708,8 @@
         return '<div class="field' + (opts.half ? ' half' : '') + '"><label for="f-' + name + '">' + e(label) + (req ? ' <abbr title="' + e(t('err_required')) + '">*</abbr>' : '') + '</label>' +
           (opts.textarea ? '<textarea id="f-' + name + '" name="' + name + '" rows="3"' + (opts.ph ? ' placeholder="' + e(opts.ph) + '"' : '') + '></textarea>' :
             '<input id="f-' + name + '" name="' + name + '" type="' + (opts.type || 'text') + '"' + (req ? ' required' : '') + (opts.ac ? ' autocomplete="' + opts.ac + '"' : '') +
-            (opts.ph ? ' placeholder="' + e(opts.ph) + '"' : '') + (opts.dir ? ' dir="' + opts.dir + '"' : '') + '>') +
-          '<span class="field-err" id="err-' + name + '"></span></div>';
+            (opts.ph ? ' placeholder="' + e(opts.ph) + '"' : '') + (opts.dir ? ' dir="' + opts.dir + '"' : '') + (opts.max ? ' maxlength="' + opts.max + '"' : '') + '>') +
+          '<span class="field-err" id="err-' + name + '"></span>' + (opts.hint ? '<small class="field-hint">' + e(opts.hint) + '</small>' : '') + '</div>';
       }
       var P = TZ.payments || {};
       var methods = [];
@@ -727,14 +727,14 @@
       root.innerHTML =
         (P.testMode ? '<div class="test-ribbon" role="note">' + TZ.icon('bolt') + e(t('test_mode')) + '</div>' : '') +
         '<form class="co-form" id="co-form" novalidate><div class="co-card"><h2>' + TZ.icon('pin') + e(t('co_billing')) + '</h2><div class="fields">' +
-        field('first', t('f_first'), { half: true, ac: 'given-name' }) + field('last', t('f_last'), { half: true, ac: 'family-name' }) +
+        field('first', t('f_first'), { half: true, ac: 'given-name', max: 80 }) + field('last', t('f_last'), { half: true, ac: 'family-name', max: 80 }) +
         TZ.phoneField('phone', t('f_phone'), (fromForm ? dialTouched && memo.dial : memo.dial) || (TZ.phones.some(function (p) { return p.code === c.code; }) ? c.code : 'BH')) +
         field('email', chosen === 'tap' ? t('f_email') : t('f_email_opt'), { type: 'email', ac: 'email', dir: 'ltr', optional: chosen !== 'tap' }) +
         '<div class="field"><label for="f-country">' + e(t('f_country')) + ' <abbr>*</abbr></label><span class="select-wrap"><select id="f-country" data-country>' + TZ.countryOptions() + '</select>' + TZ.icon('chevron', 'chev') + '</span></div>' +
         '<div class="field">' + TZ.methodPicker('checkout') + '</div>' +
-        field('city', t('f_city'), { half: true, ac: 'address-level2' }) + field('state', t('f_state'), { half: true, ac: 'address-level1', optional: true }) +
-        field('addr1', t('f_addr1'), { ph: t('f_addr1_ph'), ac: 'address-line1' }) +
-        field('addr2', t('f_addr2'), { ph: t('f_addr2_ph'), optional: true, ac: 'address-line2' }) +
+        field('city', t('f_city'), { half: true, ac: 'address-level2', max: 50 }) + field('state', t('f_state'), { half: true, ac: 'address-level1', optional: true, max: 50 }) +
+        field('addr1', t('f_addr1'), { ph: t('f_addr1_ph'), ac: 'address-line1', max: 100, hint: t('f_addr1_hint') }) +
+        field('addr2', t('f_addr2'), { ph: t('f_addr2_ph'), optional: true, ac: 'address-line2', max: 100 }) +
         field('notes', t('f_notes'), { optional: true, textarea: true }) +
         '<label class="remember"><input type="checkbox" id="f-remember"' + (saved === null || saved ? ' checked' : '') + '> <span>' + e(t('remember_me')) + '</span></label>' +
         '</div></div>' +
@@ -853,9 +853,12 @@
         if (sending) return;
         var ok = true, first;
         var ph = TZ.phoneTidy(form.elements.phone.value, form.elements.dial.value);
-        ['first', 'last', 'phone', 'email', 'city', 'addr1'].forEach(function (n) {
-          var f = form.elements[n], v = f.value.trim(), msg = '';
-          if (!v && !(n === 'email' && chosen !== 'tap')) msg = t('err_required');
+        var LONG = { first: 80, last: 80, city: 50, state: 50, addr1: 100, addr2: 100 };
+        ['first', 'last', 'phone', 'email', 'city', 'state', 'addr1', 'addr2'].forEach(function (n) {
+          var f = form.elements[n], v = f.value.trim().replace(/\s+/g, ' '), msg = '';
+          if (!v && (n === 'state' || n === 'addr2')) msg = '';
+          else if (!v && !(n === 'email' && chosen !== 'tap')) msg = t('err_required');
+          else if (LONG[n] && v.length > LONG[n]) msg = t(n === 'addr1' ? 'err_addr_long' : 'err_too_long', { n: LONG[n] });
           else if (n === 'email' && v && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) msg = t('err_email');
           else if (n === 'phone' && !ph.ok) msg = t('err_phone_cc', { country: TZ.phoneLabel(ph.code).name, example: TZ.ltrText('+' + ph.rule.dial + ' ' + ph.rule.example) });
           showErr(n, msg);
@@ -897,7 +900,13 @@
           if (err.code === 'changed' && d.quote) { if (d.quote.method) TZ.chooseMethod(d.quote.method.id); syncCart(d.quote); showMsg(t('co_changed')); TZ.pages.checkout(); showMsg(t('co_changed')); return; }
           if (err.fields) {
             var map = { first_name: 'first', last_name: 'last', address1: 'addr1', address2: 'addr2' };
-            Object.keys(err.fields).forEach(function (k) { showErr(map[k] || k, err.fields[k]); });
+            // The server's words are English; Arabic shoppers get the same meaning in Arabic.
+            var arMsg = { address1: t('err_addr_long', { n: 100 }), address2: t('err_too_long', { n: 100 }), city: t('err_too_long', { n: 50 }), state: t('err_too_long', { n: 50 }) };
+            Object.keys(err.fields).forEach(function (k) {
+              var m = err.fields[k];
+              if (TZ.lang() !== 'en') m = /under \d+ characters/.test(m) && arMsg[k] ? arMsg[k] : (k === 'email' ? t('err_email') : k === 'phone' ? t('err_phone') : /^Enter/.test(m) ? t('err_required') : m);
+              showErr(map[k] || k, m);
+            });
             return;
           }
           showMsg(res.status === 502 ? t('co_unavailable') : (err.message && TZ.lang() === 'en' ? err.message : t('co_err')));

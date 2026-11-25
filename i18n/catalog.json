@@ -556,6 +556,11 @@
     "ar": "كهرباء",
     "where": "assets/js/pages.js"
    },
+   "err_addr_long": {
+    "en": "Keep the address to {n} characters or fewer – put the rest (building, flat, landmark) in the next line",
+    "ar": "اختصر العنوان إلى {n} حرف أو أقل – واكتب الباقي (المبنى، الشقة، أقرب معلم) في السطر الثاني",
+    "where": "assets/js/pages.js"
+   },
    "err_email": {
     "en": "Enter a valid email",
     "ar": "أدخل بريداً إلكترونياً صحيحاً",
@@ -564,7 +569,7 @@
    "err_phone": {
     "en": "Enter a valid phone number",
     "ar": "أدخل رقم هاتف صحيح",
-    "where": ""
+    "where": "assets/js/pages.js"
    },
    "err_phone_cc": {
     "en": "This {country} mobile number doesn’t look right. Example: {example}",
@@ -575,6 +580,11 @@
     "en": "This field is required",
     "ar": "هذا الحقل مطلوب",
     "where": "assets/js/app.js, assets/js/pages.js"
+   },
+   "err_too_long": {
+    "en": "Keep it to {n} characters or fewer",
+    "ar": "اختصرها إلى {n} حرفاً أو أقل",
+    "where": "assets/js/pages.js"
    },
    "eta_cday": {
     "en": "day",
@@ -604,6 +614,11 @@
    "f_addr1": {
     "en": "Street / Area",
     "ar": "عنوان الشارع / الحي",
+    "where": "assets/js/pages.js"
+   },
+   "f_addr1_hint": {
+    "en": "Up to 100 characters. Building, flat and landmark go in the next line.",
+    "ar": "حتى 100 حرف. المبنى والشقة وأقرب معلم في السطر التالي.",
     "where": "assets/js/pages.js"
    },
    "f_addr1_ph": {
@@ -3264,7 +3279,32 @@
    "No waybill yet: the automatic job on the server (cron) is not running, so waybills are not made by themselves. Send it by hand below.": "لا توجد بوليصة بعد: المهمة التلقائية على السيرفر (cron) لا تعمل، فلا تُنشأ البوالص وحدها. أرسله يدوياً من الأسفل.",
    "Settings › SMSA shipping": "الإعدادات › شحن سمسا",
    "Tick it in Settings › SMSA shipping": "فعّلها في الإعدادات › شحن سمسا",
-   "docs/hostinger.md › cron": "docs/hostinger.md › cron"
+   "docs/hostinger.md › cron": "docs/hostinger.md › cron",
+   "Edit customer details": "تعديل بيانات العميل",
+   "First name": "الاسم الأول",
+   "Last name": "اسم العائلة",
+   "Area / region": "المنطقة / المحافظة",
+   "Up to 100 characters – the rest (building, flat, landmark) goes in the next line.": "حتى 100 حرف – والباقي (المبنى، الشقة، أقرب معلم) في السطر التالي.",
+   "(it decided the delivery price, so it stays)": "(حُدّد على أساسها سعر التوصيل، لذلك لا تتغير)",
+   "Nothing changed": "لم يتغير شيء",
+   "The SMSA waybill already made keeps the old address – cancel it and send it again to use the new one.": "بوليصة سمسا المنشأة تبقى بالعنوان القديم – ألغِها وأرسلها مرة أخرى لاستخدام العنوان الجديد.",
+   "Keep the address under 100 characters – put the rest (building, flat, landmark) in the second line.": "اختصر العنوان إلى أقل من 100 حرف – واكتب الباقي (المبنى، الشقة، أقرب معلم) في السطر الثاني.",
+   "Keep this line under 100 characters.": "اختصر هذا السطر إلى أقل من 100 حرف.",
+   "Keep the city under 50 characters.": "اختصر اسم المدينة إلى أقل من 50 حرفاً.",
+   "Keep the area under 50 characters.": "اختصر اسم المنطقة إلى أقل من 50 حرفاً.",
+   "Keep the name under 80 characters.": "اختصر الاسم إلى أقل من 80 حرفاً.",
+   "Enter your first name.": "أدخل الاسم الأول.",
+   "Enter your last name.": "أدخل اسم العائلة.",
+   "Enter your street / area.": "أدخل الشارع / المنطقة.",
+   "Enter your city.": "أدخل المدينة.",
+   "first name": "الاسم الأول",
+   "last name": "اسم العائلة",
+   "phone": "الهاتف",
+   "email": "البريد",
+   "address": "العنوان",
+   "address line 2": "السطر الثاني من العنوان",
+   "city": "المدينة",
+   "area": "المنطقة"
   }
  }
 }

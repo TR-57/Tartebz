@@ -41,7 +41,9 @@
       if (m) {
         return patterns[i][1].replace(/\$(\d)/g, function (x, n) {
           var v = m[+n] || '';
-          var t = Object.prototype.hasOwnProperty.call(dict, v) ? dict[v] : v;
+          var has = function (w) { return Object.prototype.hasOwnProperty.call(dict, w); };
+          // A list ("address, city") is translated word by word when the whole is not a phrase.
+          var t = has(v) ? dict[v] : (v.indexOf(', ') > 0 && v.split(', ').every(has) ? v.split(', ').map(function (w) { return dict[w]; }).join('، ') : v);
           return /[\d@.]/.test(t) && !/[؀-ۿ]/.test(t) ? LRI + t + PDI : t;
         });
       }

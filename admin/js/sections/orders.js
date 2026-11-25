@@ -127,7 +127,7 @@ async function detail(main, route, alive) {
         </div>
       </div>
       <div class="ed-side">
-        <div class="card"><h2>Customer</h2>
+        <div class="card"><div class="card-head"><h2>Customer</h2><button class="btn btn-sm" id="cedit" type="button">${icon('edit')} Edit</button></div>
           <p><b>${d(o.firstName + ' ' + o.lastName)}</b><br>${ltr(o.phone)} · <a href="${esc(o.whatsapp)}" target="_blank" rel="noopener">WhatsApp</a><br>${o.email ? `<a href="mailto:${esc(o.email)}">${ltr(o.email)}</a>` : ''}</p>
           <p class="muted small">Address</p>
           <p data-noi18n>${esc([o.address1, o.address2].filter(Boolean).join(', '))}<br>${esc([o.city, o.state, o.country].filter(Boolean).join(', '))}</p>
@@ -193,6 +193,7 @@ async function detail(main, route, alive) {
       } catch (e) { if (win) win.close(); toastErr(e); }
     })),
   }));
+  main.querySelector('#cedit').addEventListener('click', () => editCustomer(o, reload));
   const mp = main.querySelector('#mpaid');
   if (mp) mp.addEventListener('click', () => modal({
     title: 'Mark as paid',
@@ -351,6 +352,38 @@ function shipBox(o, smsa) {
     ${canSend && smsa.configured ? `<button class="btn btn-sm${live ? '' : ' btn-primary'}" id="ship" ${smsa.problems.length ? 'disabled' : ''}>${icon('truck')} ${sh && sh.status === 'failed' ? 'Try again' : 'Send to SMSA now'}</button>` : ''}
     ${live && can('manager') && ['created'].includes(sh.status) ? '<button class="btn btn-sm btn-ghost" id="cship">Cancel waybill</button>' : ''}</div>`;
   return h;
+}
+
+/* Fix the customer's details (a wrong phone, an address SMSA refused…). Same limits as checkout. */
+function editCustomer(o, done) {
+  const f = (name, label, value, max, opts = {}) => `<div class="field${opts.full ? ' full' : ''}" data-field="${name}"><label for="ce-${name}">${esc(label)}</label>
+    <input class="input" id="ce-${name}" name="${name}" value="${esc(value || '')}" maxlength="${max}" dir="${opts.dir || 'auto'}"${opts.type ? ` type="${opts.type}"` : ''}>
+    ${opts.hint ? `<span class="hint">${esc(opts.hint)}</span>` : ''}</div>`;
+  modal({
+    title: 'Edit customer details', wide: true,
+    body: `<form id="cef" class="form-grid" novalidate>
+      ${f('first_name', 'First name', o.firstName, 80)}${f('last_name', 'Last name', o.lastName, 80)}
+      ${f('phone', 'Phone', o.phone, 30, { dir: 'ltr', type: 'tel', hint: 'With the country code.' })}${f('email', 'Email', o.email, 190, { dir: 'ltr', type: 'email' })}
+      ${f('address1', 'Address', o.address1, 100, { full: true, hint: 'Up to 100 characters – the rest (building, flat, landmark) goes in the next line.' })}
+      ${f('address2', 'Address line 2', o.address2, 100, { full: true })}
+      ${f('city', 'City', o.city, 50)}${f('state', 'Area / region', o.state, 50)}
+      <p class="muted small full"><span>Country</span>: <b data-noi18n>${esc(o.country)}</b> <span>(it decided the delivery price, so it stays)</span></p>
+    </form>`,
+    foot: '<button class="btn" data-close>Cancel</button><button class="btn btn-primary" id="cesave">Save</button>',
+    onOpen: (el, close) => {
+      const form = el.querySelector('#cef');
+      el.querySelector('#cesave').addEventListener('click', async (e) => {
+        clearErrors(form);
+        const body = Object.fromEntries([...form.querySelectorAll('input[name]')].map((x) => [x.name, x.value]));
+        try {
+          const res = await busy(e.currentTarget, () => api(`orders/${o.id}/customer`, { method: 'PUT', body }));
+          toast(res.changed.length ? 'Saved' : 'Nothing changed');
+          if (res.waybillKeepsOldAddress) toast('The SMSA waybill already made keeps the old address – cancel it and send it again to use the new one.', 'err');
+          close(); done();
+        } catch (err) { showErrors(form, err); }
+      });
+    },
+  });
 }
 
 /* The shop's SMSA pickups. SMSA's API cannot book a collection, so "Book SMSA pickup" plans it here (day, ready time,
