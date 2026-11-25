@@ -252,4 +252,34 @@ class SmsaPickupTest extends TestCase
         $this->postJson("/api/admin/orders/$id/prepared", ['done' => true])->assertOk();
         $this->getJson('/api/admin/orders?'.http_build_query($today + ['tab' => 'prepare']))->assertJsonPath('counts.prepare', 0);
     }
+    public function test_the_order_says_why_it_has_no_waybill(): void
+    {
+        $token = $this->postJson('/api/checkout', [
+            'items' => [['id' => $this->productId, 'qty' => 1]], 'country' => 'BH', 'method' => 'tap', 'lang' => 'en',
+            'first_name' => 'Sara', 'last_name' => 'Ali', 'email' => 'sara@example.com', 'phone' => '+973 3333 4444',
+            'state' => 'Northern', 'city' => 'Riffa', 'address1' => 'House 12, Road 34, Block 905', 'address2' => '',
+        ])->assertOk()->json('order.token');
+        $id = (int) DB::table('orders')->where('token', $token)->value('id');
+        $this->getJson("/api/admin/orders/$id")->assertJsonPath('smsa.why', 'unpaid');
+        $this->getJson('/api/orders/'.$token);   // Tap says paid
+        $o = DB::table('orders')->find($id);
+        $this->assertSame('paid', $o->payment_status);
+        // its delivery method is not one of "Delivery methods sent with SMSA"
+        $this->getJson("/api/admin/orders/$id")->assertJsonPath('smsa.why', 'method');
+        $s = Settings::get('smsa');
+        $s['methods'][] = $o->shipping_method;
+        Settings::set('smsa', $s);
+        // ticked, but the server's scheduled job has not run lately
+        \Illuminate\Support\Facades\Cache::forget('cron:last-run');
+        $this->getJson("/api/admin/orders/$id")->assertJsonPath('smsa.why', 'cron');
+        \Illuminate\Support\Facades\Cache::forever('cron:last-run', now()->toIso8601String());
+        $this->getJson("/api/admin/orders/$id")->assertJsonPath('smsa.why', 'soon');
+        // switched off
+        $s['enabled'] = false;
+        Settings::set('smsa', $s);
+        $this->getJson("/api/admin/orders/$id")->assertJsonPath('smsa.why', 'off');
+        // with a waybill there is nothing to explain
+        $this->postJson("/api/admin/orders/$id/ship")->assertOk();
+        $this->getJson("/api/admin/orders/$id")->assertJsonPath('smsa.why', null);
+    }
 }

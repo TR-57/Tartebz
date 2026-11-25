@@ -312,9 +312,18 @@ function shipBox(o, smsa) {
   }
   if (sh && sh.status === 'failed') h += `<div class="box warn small"><b>${esc(st[0])}</b> <span data-noi18n>${esc(sh.error)}</span>${sh.attempts > 1 ? ` <span class="muted" data-noi18n>(${nf(sh.attempts)}×)</span>` : ''}</div>`;
   if (!sh || sh.status === 'cancelled') {
-    h += `<p class="muted">${!paid ? 'The waybill is created once the order is paid.'
-      : smsa.enabled && smsa.method ? 'The waybill is being created – it appears here within a minute.'
-        : smsa.configured ? 'Not sent to SMSA yet. Send it by hand below.' : 'SMSA is not set up. Admin › SMSA shipping: paste the API key and the sender address.'}</p>`;
+    const why = smsa.why || (!paid ? 'unpaid' : smsa.enabled && smsa.method ? 'soon' : smsa.configured ? 'method' : 'setup');
+    const m = o.shippingMethodName ? (isAr() ? o.shippingMethodName.ar : o.shippingMethodName.en) : '';
+    const WHY = {
+      unpaid: ['The waybill is created once the order is paid.'], closed: ['This order is cancelled – no waybill.'],
+      setup: ['SMSA is not set up yet.', '#/smsa', 'Settings › SMSA shipping'],
+      off: ['No waybill yet: automatic SMSA waybills are switched off. Send it by hand below.', '#/smsa', 'Settings › SMSA shipping'],
+      method: ['No waybill yet: this order’s delivery method is not set to go with SMSA by itself. Send it by hand below.', '#/smsa', 'Tick it in Settings › SMSA shipping'],
+      before: ['No waybill yet: this order was placed before SMSA was switched on. Send it by hand below.'],
+      cron: ['No waybill yet: the automatic job on the server (cron) is not running, so waybills are not made by themselves. Send it by hand below.', null, 'docs/hostinger.md › cron'],
+      soon: ['The waybill is being created – it appears here within a minute.'],
+    }[why] || [''];
+    h += `<p class="${why === 'soon' || why === 'unpaid' ? 'muted' : 'box warn small'}"><span>${esc(WHY[0])}</span>${why === 'method' && m ? ` <span class="muted" data-noi18n>(${esc(m)})</span>` : ''}${WHY[2] ? ` ${WHY[1] ? `<a href="${WHY[1]}">${esc(WHY[2])}</a>` : `<span class="muted">${esc(WHY[2])}</span>`}` : ''}</p>`;
   }
   if (live && sh.scans && sh.scans.length) {
     h += `<ul class="scans">${sh.scans.slice(0, 8).map((x) => `<li><span class="muted small" data-noi18n>${esc(fmtDate(x.at))}</span> <span data-noi18n>${esc(x.what)}</span>${x.city ? ` <span class="muted small" data-noi18n>${esc(x.city)}</span>` : ''}</li>`).join('')}</ul>`;

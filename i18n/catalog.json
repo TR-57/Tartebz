@@ -3255,7 +3255,16 @@
    "Shipment ready time": "وقت جاهزية الشحنة",
    "Branch closing time": "وقت إغلاق الفرع",
    "Notes": "ملاحظات",
-   ", sandbox": "، تجريبي"
+   ", sandbox": "، تجريبي",
+   "This order is cancelled – no waybill.": "هذا الطلب ملغي – لا توجد بوليصة.",
+   "SMSA is not set up yet.": "سمسا غير مُعدّة بعد.",
+   "No waybill yet: automatic SMSA waybills are switched off. Send it by hand below.": "لا توجد بوليصة بعد: إنشاء بوالص سمسا تلقائياً متوقف. أرسله يدوياً من الأسفل.",
+   "No waybill yet: this order’s delivery method is not set to go with SMSA by itself. Send it by hand below.": "لا توجد بوليصة بعد: طريقة توصيل هذا الطلب غير مضبوطة لتُرسل مع سمسا تلقائياً. أرسله يدوياً من الأسفل.",
+   "No waybill yet: this order was placed before SMSA was switched on. Send it by hand below.": "لا توجد بوليصة بعد: هذا الطلب قبل تفعيل سمسا. أرسله يدوياً من الأسفل.",
+   "No waybill yet: the automatic job on the server (cron) is not running, so waybills are not made by themselves. Send it by hand below.": "لا توجد بوليصة بعد: المهمة التلقائية على السيرفر (cron) لا تعمل، فلا تُنشأ البوالص وحدها. أرسله يدوياً من الأسفل.",
+   "Settings › SMSA shipping": "الإعدادات › شحن سمسا",
+   "Tick it in Settings › SMSA shipping": "فعّلها في الإعدادات › شحن سمسا",
+   "docs/hostinger.md › cron": "docs/hostinger.md › cron"
   }
  }
 }

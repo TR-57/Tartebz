@@ -128,6 +128,7 @@ class OrdersController extends Controller
             'enabled' => Smsa::enabled(), 'configured' => Smsa::configured(), 'mode' => Smsa::mode(), 'method' => Smsa::methodOf($o) !== null,
             'problems' => array_merge(Smsa::consignee($o)[1], Smsa::shipperProblems()),
             'pickup' => \App\Support\SmsaPickups::forOrder($o->id),
+            'why' => Smsa::whyNoWaybill($o),
         ]]);
     }
 

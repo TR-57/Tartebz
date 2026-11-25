@@ -44,6 +44,13 @@
       ship: 'Send to SMSA now', retry: 'Try again', label: 'Print SMSA label', track: 'Refresh tracking', track_page: 'SMSA tracking page',
       print_both: 'Print invoice + SMSA waybill', waybill: 'Waybill', smsa_wait: 'The waybill is being created – it appears here within a minute.',
       smsa_paid_first: 'The waybill is created once the order is paid.', smsa_hand: 'Not sent to SMSA yet. Send it by hand below.',
+      why_unpaid: 'The waybill is created once the order is paid.', why_closed: 'This order is cancelled – no waybill.',
+      why_setup: 'SMSA is not set up yet (Settings › SMSA shipping: API key and sender address).',
+      why_off: 'No waybill yet: automatic SMSA waybills are switched off (Settings › SMSA shipping). Send it by hand below.',
+      why_method: 'No waybill yet: this order’s delivery method ({m}) is not set to go with SMSA by itself (Settings › SMSA shipping › Delivery methods sent with SMSA). Send it by hand below.',
+      why_before: 'No waybill yet: this order was placed before SMSA was switched on. Send it by hand below.',
+      why_cron: 'No waybill yet: the automatic job on the server (cron) is not running, so waybills are not made by themselves. Send it by hand below, and ask for the cron job to be set up.',
+      why_soon: 'The waybill is being created – it appears here within a minute.',
       st_created: 'Waiting for SMSA pickup', st_moving: 'On the way with SMSA', st_delivered: 'Delivered by SMSA', st_failed: 'Refused by SMSA', st_cancelled: 'Waybill cancelled',
       sv_EIDL: 'By air (EIDL)', sv_EIED: 'By road (EIED)', sv_EDDL: 'Inside Bahrain (EDDL)', duties_c: 'Import VAT and duty: the customer pays on delivery', duties_s: 'Import VAT and duty: we pay',
       sandbox: 'Sandbox', del_method: 'Delivery', free: 'Free', quoted: 'Quoted after order', shipped: 'Mark as shipped', delivered: 'Mark as delivered',
@@ -98,6 +105,13 @@
       ship: 'إرسال إلى سمسا الآن', retry: 'إعادة المحاولة', label: 'طباعة بوليصة سمسا', track: 'تحديث التتبع', track_page: 'صفحة تتبع سمسا',
       print_both: 'طباعة الفاتورة + بوليصة سمسا', waybill: 'البوليصة', smsa_wait: 'جارٍ إنشاء البوليصة – تظهر هنا خلال دقيقة.',
       smsa_paid_first: 'تُنشأ البوليصة بعد دفع الطلب.', smsa_hand: 'لم يُرسل إلى سمسا بعد. أرسله يدويًا من الأسفل.',
+      why_unpaid: 'تُنشأ البوليصة بعد دفع الطلب.', why_closed: 'هذا الطلب ملغي – لا توجد بوليصة.',
+      why_setup: 'سمسا غير مُعدّة بعد (الإعدادات › شحن سمسا: مفتاح API وعنوان المرسل).',
+      why_off: 'لا توجد بوليصة بعد: إنشاء بوالص سمسا تلقائياً متوقف (الإعدادات › شحن سمسا). أرسله يدوياً من الأسفل.',
+      why_method: 'لا توجد بوليصة بعد: طريقة توصيل هذا الطلب ({m}) غير مضبوطة لتُرسل مع سمسا تلقائياً (الإعدادات › شحن سمسا › طرق التوصيل المرسلة مع سمسا). أرسله يدوياً من الأسفل.',
+      why_before: 'لا توجد بوليصة بعد: هذا الطلب قبل تفعيل سمسا. أرسله يدوياً من الأسفل.',
+      why_cron: 'لا توجد بوليصة بعد: المهمة التلقائية على السيرفر (cron) لا تعمل، فلا تُنشأ البوالص وحدها. أرسله يدوياً من الأسفل، واطلب ضبط مهمة cron.',
+      why_soon: 'جارٍ إنشاء البوليصة – تظهر هنا خلال دقيقة.',
       st_created: 'بانتظار استلام سمسا', st_moving: 'في الطريق مع سمسا', st_delivered: 'سلّمته سمسا', st_failed: 'رفضته سمسا', st_cancelled: 'البوليصة ملغاة',
       sv_EIDL: 'شحن جوي (EIDL)', sv_EIED: 'شحن بري (EIED)', sv_EDDL: 'داخل البحرين (EDDL)', duties_c: 'ضريبة الاستيراد والجمارك: يدفعها العميل عند الاستلام', duties_s: 'ضريبة الاستيراد والجمارك: ندفعها نحن',
       sandbox: 'تجريبي', del_method: 'التوصيل', free: 'مجاني', quoted: 'يُحدَّد بعد الطلب', shipped: 'تم الشحن', delivered: 'تم التوصيل',
@@ -602,6 +616,7 @@
       '<div class="card"><div class="btns" style="margin-bottom:8px">' + payPill(o) + (o.testMode ? '<span class="pill amber">TEST</span>' : '') + '</div>' +
       (!closed ? '<label class="set-row" style="border:0;padding:4px 0"><span class="grow"><b>' + esc(tr('prepared')) + '</b>' + (o.prepared && o.preparedBy ? '<br><span class="muted small">' + esc(tr('prepared_by', { n: o.preparedBy })) + '</span>' : '') + '</span><input type="checkbox" class="switch" id="o-prep"' + (o.prepared ? ' checked' : '') + '></label>' : '') +
       (o.createdBy ? '<p class="muted small" style="margin:6px 0 0">' + esc(tr('created_by', { n: o.createdBy })) + '</p>' : '') + '</div>' +
+      '<div class="card"><h3>' + icon('truck') + 'SMSA</h3>' + shipBox(o, r.smsa) + '</div>' +
       '<div class="card"><h3>' + esc(tr('customer')) + '</h3><p style="margin:0 0 8px"><b>' + esc((o.firstName + ' ' + o.lastName).trim()) + '</b><br><bdi>' + esc(o.phone) + '</bdi>' + (o.email ? '<br><bdi>' + esc(o.email) + '</bdi>' : '') + '</p>' +
       '<p class="muted" style="margin:0 0 10px">' + esc([o.address1, o.address2].filter(Boolean).join(', ')) + '<br>' + esc([o.city, o.state].filter(Boolean).join(', ')) + ' · ' + flag(o.country) + ' ' + esc(cname(o.country)) + '</p>' +
       (o.notes ? '<p class="note">' + esc(o.notes) + '</p>' : '') +
@@ -614,7 +629,6 @@
       (!paid && !closed ? '<div class="card"><h3>' + icon('link') + esc(tr('payment')) + '</h3><p class="muted small" style="margin:0 0 10px">' + esc(tr('link_hint')) + '</p>' +
         '<div class="btns"><button class="btn btn-green" id="o-link-wa">' + icon('wa') + esc(tr('send_wa')) + '</button>' + (o.email ? '<button class="btn" id="o-link-mail">' + icon('mail') + esc(tr('send_email')) + '</button>' : '') +
         '<button class="btn" id="o-paid">' + icon('cash') + esc(tr('mark_paid')) + '</button></div></div>' : '') +
-      '<div class="card"><h3>' + icon('truck') + 'SMSA</h3>' + shipBox(o, r.smsa) + '</div>' +
       '<div class="card"><h3>' + esc(tr('history')) + '</h3><form id="o-note" class="btns" style="margin-bottom:10px"><input class="input" name="note" placeholder="' + esc(tr('add_note')) + '" style="flex:1 1 200px"><button class="btn">' + esc(tr('save')) + '</button></form>' +
       '<ul class="hist">' + o.events.slice(0, 30).map(function (e) { return '<li><span class="muted small">' + esc(when(e.at)) + (e.by ? ' · ' + esc(e.by) : '') + '</span><br>' + esc(srv(e.message)) + '</li>'; }).join('') + '</ul></div>';
     el.querySelector('.sheet-body').innerHTML = body;
@@ -664,7 +678,11 @@
         (sh.lastScan ? '<p class="small" style="margin:0 0 8px">' + icon('truck') + ' ' + esc(sh.lastScan) + '</p>' : '');
     }
     if (sh && sh.status === 'failed') h += '<p class="note">' + esc(tr('st_failed')) + ': ' + esc(srv(sh.error)) + '</p>';
-    if (!sh || sh.status === 'cancelled') h += '<p class="muted small" style="margin:0 0 8px">' + esc(!paid ? tr('smsa_paid_first') : smsa.enabled && smsa.method ? tr('smsa_wait') : smsa.configured ? tr('smsa_hand') : tr('smsa_off')) + '</p>';
+    if (!sh || sh.status === 'cancelled') {
+      var why = smsa.why || (!paid ? 'unpaid' : smsa.enabled && smsa.method ? 'soon' : smsa.configured ? 'method' : 'setup');
+      var m = o.shippingMethodName ? (lang === 'ar' ? o.shippingMethodName.ar : o.shippingMethodName.en) : '';
+      h += '<p class="' + (why === 'soon' || why === 'unpaid' ? 'muted small' : 'note') + '" style="margin:0 0 8px">' + esc(tr('why_' + why, { m: m || '—' })) + '</p>';
+    }
     var btns = '';
     if (live) {
       btns += '<a class="btn btn-dark" target="_blank" rel="noopener" href="/api/admin/orders/' + o.id + '/label">' + icon('printer') + esc(tr('label')) + '</a>' +

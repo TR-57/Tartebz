@@ -132,6 +132,45 @@ class Smsa
         return $id !== '' && in_array($id, (array) (self::cfg()['methods'] ?? []), true) ? Shipping::findMethod($id) : null;
     }
 
+    /**
+     * Why an order has no waybill yet, for the order page and the staff board (null when it has one or SMSA refused it –
+     * the refusal is shown instead): unpaid | closed | setup | off | method | before | cron | soon.
+     */
+    public static function whyNoWaybill(object $o): ?string
+    {
+        $sh = self::shipment((int) $o->id);
+        if ($sh && $sh->status !== 'cancelled') {
+            return null;
+        }
+        if (in_array($o->status, ['cancelled', 'refunded'], true)) {
+            return 'closed';
+        }
+        if ($o->payment_status !== 'paid') {
+            return 'unpaid';
+        }
+        if (! self::configured()) {
+            return 'setup';
+        }
+        if ($sh) {
+            return 'method';   // its waybill was cancelled: a new one is only made by hand
+        }
+        if (empty(self::cfg()['enabled'])) {
+            return 'off';
+        }
+        if (! self::methodOf($o)) {
+            return 'method';
+        }
+        $since = self::cfg()['since'] ?? null;
+        if ($since && strtotime((string) $o->created_at) < strtotime((string) $since)) {
+            return 'before';
+        }
+        if (! in_array($o->status, ['paid', 'processing'], true)) {
+            return 'method';
+        }
+
+        return Doctor::cronRecent() ? 'soon' : 'cron';
+    }
+
     public static function shipment(int $orderId): ?object
     {
         return DB::table('shipments')->where('order_id', $orderId)->first();
